@@ -2,6 +2,7 @@ import type {
   IMediaImage,
   IProduct,
   IProductSpecification,
+  ISpecSchemaField,
 } from "../types/product";
 
 type UnknownRecord = Record<string, unknown>;
@@ -82,6 +83,21 @@ export const getObjectId = (value: unknown): string => {
 export const getProductSubCategory = (product?: Partial<IProduct> | UnknownRecord) =>
   (product as UnknownRecord | undefined)?.subCategory ||
   (product as UnknownRecord | undefined)?.sub_category;
+
+// Returns the spec-field definitions declared on the product's (populated)
+// category, used to label/order storefront spec rows. Empty when the category
+// is unpopulated or hasn't defined a schema.
+export const getCategorySpecSchema = (
+  product?: Partial<IProduct> | UnknownRecord,
+): ISpecSchemaField[] => {
+  const category = (product as UnknownRecord | undefined)?.category;
+  if (isRecord(category) && Array.isArray(category.spec_schema)) {
+    return (category.spec_schema as ISpecSchemaField[]).filter(
+      (field) => field && typeof field.key === "string",
+    );
+  }
+  return [];
+};
 
 export const getProductSpecification = (
   product?: Partial<IProduct> | UnknownRecord,

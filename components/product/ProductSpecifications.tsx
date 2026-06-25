@@ -1,6 +1,6 @@
 import React from "react";
 import type { IProduct } from "../../types/product";
-import { getProductSpecification } from "../../utils/productCatalog";
+import { getProductSpecification, getCategorySpecSchema } from "../../utils/productCatalog";
 import { isFieldVisible, specVisibilityKey } from "../../utils/fieldVisibility";
 
 type SpecificationValue = string | number | boolean;
@@ -31,15 +31,33 @@ const formatValue = (value: SpecificationValue): string => {
 
 export function ProductSpecifications({ product }: { product?: IProduct }) {
   const specification = getProductSpecification(product);
+
+  // Prefer the category's spec_schema for labels (with unit) and row ordering;
+  // fall back to a humanized key for fields the schema doesn't define.
+  const specSchema = getCategorySpecSchema(product);
+  const schemaByKey = new Map(specSchema.map((field) => [field.key, field]));
+  const schemaOrder = new Map(specSchema.map((field, index) => [field.key, index]));
+
+  const labelFor = (key: string): string => {
+    const def = schemaByKey.get(key);
+    if (!def) return labelFromKey(key);
+    const label = def.label || labelFromKey(key);
+    return def.unit ? `${label} (${def.unit})` : label;
+  };
+  const orderFor = (key: string, encounterIndex: number): number =>
+    schemaOrder.has(key) ? (schemaOrder.get(key) as number) : specSchema.length + encounterIndex;
+
   const fields = Object.entries(specification)
     .filter(([key, value]) => !HIDDEN_KEYS.has(key) && hasDisplayValue(value))
     // Admin can hide individual specification rows from the storefront.
     .filter(([key]) => isFieldVisible(product as Record<string, unknown>, specVisibilityKey(key)))
-    .map(([key, value]) => ({
+    .map(([key, value], encounterIndex) => ({
       key,
-      label: labelFromKey(key),
+      label: labelFor(key),
       value: formatValue(value as SpecificationValue),
-    }));
+      order: orderFor(key, encounterIndex),
+    }))
+    .sort((a, b) => a.order - b.order);
 
   if (!fields.length) {
     return <p className="product-spec-empty">Not Available</p>;

@@ -6,6 +6,18 @@ export interface IBrand {
   description?: string
 }
 
+// Definition of a spec field a category exposes (mirrors the backend
+// ISpecSchemaField). Drives storefront spec labels/units/ordering.
+export interface ISpecSchemaField {
+  key: string
+  label: string
+  type: 'number' | 'select' | 'text'
+  options?: string[]
+  required?: boolean
+  unit?: string
+  default_value?: unknown
+}
+
 export interface ICategory {
   _id: string
   name: string
@@ -15,6 +27,9 @@ export interface ICategory {
   filters?: IFilterMetadata[]
   image?: string
   description?: string
+  // Category-wide inherited attribute defaults and spec-field definitions.
+  common_attributes?: Record<string, unknown>
+  spec_schema?: ISpecSchemaField[]
 }
 
 export interface ISubCategory {
@@ -23,6 +38,7 @@ export interface ISubCategory {
   slug: string
   category: string | ICategory
   gst?: number
+  common_attributes?: Record<string, unknown>
 }
 
 export interface IProductSpecification {
