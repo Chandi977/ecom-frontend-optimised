@@ -1,0 +1,138 @@
+.footertext{
+    color: var(--white, #FFF);
+font-size: 20px;
+font-style: normal;
+font-weight: 400;
+line-height: 20px; 
+}
+.footertextheader{
+  display: block;
+  color: var(--white, #FFF);
+font-size: 40px;
+font-style: normal;
+font-weight: 700;
+line-height: 20px; 
+}
+@media (max-width: 900px) {
+  .footertextheader {
+    display: none;
+  }
+}
+
+/* rootdiv */
+.rootdiv{
+  background-color: #132348;
+  
+  
+  
+}
+/* @media (max-width: 900px) {
+  .rootdiv {
+    background-color: #000;
+  }
+} */
+/* mainbody */
+.mainbody{
+    margin-top: 10px; 
+    margin-left: 0px;
+    margin-bottom: 0px;
+    margin-right: 0px;
+    padding-left: 110px !important;
+    padding-right: 110px !important;
+  }
+  @media (max-width: 900px) {
+    .mainbody {
+      padding-left: 30px !important;
+      padding-right: 30px !important;
+      
+    }
+  }
+
+
+  /* contentlayout */
+.contentlayout{
+   display: flex;
+   flex-direction: row;
+  }
+  @media (max-width: 900px) {
+    .contentlayout {
+        flex-direction: column;
+      
+    }
+  }
+
+    /* insidecontentlayout */
+.insidecontentlayout{
+    
+   }
+   @media (max-width: 900px) {
+     .insidecontentlayout {
+         width: 100% !important;
+       
+     }
+   }
+
+   
+
+     /* callandenquirediv */
+.callandenquirediv{
+    display: none;
+}
+@media (max-width: 900px) {
+  .callandenquirediv {
+      display: block;
+      width: 100% !important;
+      height: 54px;
+  }
+}
+
+/* only mobiledisplay */
+.onlymobiledisplay{
+  
+  display: none;
+  
+}
+@media (max-width: 900px) {
+  .onlymobiledisplay {
+    display: block;
+  }
+}
+
+/* only windowdisplay */
+.onlywindowdisplay{
+  
+  display: block;
+  
+}
+@media (max-width: 900px) {
+  .onlywindowdisplay {
+    display: none;
+  }
+}
+
+/* only windowdisplay inputfields layout */
+.onlywindowdisplayinputs{
+  
+  display: flex;
+  
+}
+@media (max-width: 900px) {
+  .onlywindowdisplayinputs {
+    display: none;
+  }
+}
+
+/* breakline */
+.breakline{
+  
+  
+  margin-top:50px !important;  
+  height:1px !important;
+  border:1px solid #fff !important;
+  
+}
+@media (max-width: 900px) {
+  .breakline {
+    display: none;
+  }
+}

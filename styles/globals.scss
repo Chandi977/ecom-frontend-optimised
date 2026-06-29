@@ -1,0 +1,62 @@
+.yesssss {
+    margin-left: 30px;
+    .slick-center {
+        transform: scale(1.15);
+        filter: blur(0px) !important;
+    }
+
+    .slick-active {
+        filter: blur(2px);
+    }
+
+    .slick-slide {
+        margin-top: 40px;
+    }
+
+}
+
+@media(max-width:768px)
+{
+.yesssss {
+        margin-left: 0px;
+
+        .slick-center {
+            transform: scale(1.15);
+            filter: blur(0px) !important;
+        }
+
+        .slick-active {
+            filter: blur(2px);
+        }
+
+        .slick-slide {
+            margin-top: 40px;
+        }
+
+    }
+}
+
+.lollla{
+    .diveeee{
+        .custom-select{
+            color: #222;
+            text-align: right;
+            font-family: "Montserrat", sans-serif;
+            font-size: 12.045px;
+            font-style: normal;
+            font-weight: 400;
+            border-radius:0px;
+            display: flex;
+            justify-content: center;
+        }
+        .css-1u9des2-indicatorSeparator{
+            display: none !important;
+            background-color: white !important;
+        }
+    }
+    
+    // .css-1hb7zxy-IndicatorsContainer{
+    //     display: none !important;
+    // }
+}
+
