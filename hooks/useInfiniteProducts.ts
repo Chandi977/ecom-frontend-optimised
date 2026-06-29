@@ -4,7 +4,7 @@ import { getPrimaryPriceTier } from "../utils/productCatalog";
 export const DEFAULT_INITIAL_LIMIT = 20;
 export const DEFAULT_NEXT_LIMIT = 10;
 
-const sortProductsByPrice = (items, sortBy) => {
+const sortProductsByPrice = (items: any[], sortBy: string) => {
   if (!sortBy) {
     return items;
   }
@@ -29,10 +29,10 @@ const sortProductsByPrice = (items, sortBy) => {
   return items;
 };
 
-const getTotalCount = (meta) =>
+const getTotalCount = (meta: any) =>
   typeof meta?.total === "number" ? meta.total : null;
 
-const getHasMore = (meta, count, limit) => {
+const getHasMore = (meta: any, count: number, limit: number) => {
   if (typeof meta?.total === "number") {
     return count < meta.total;
   }
@@ -40,14 +40,21 @@ const getHasMore = (meta, count, limit) => {
 };
 
 export const useInfiniteProducts = ({
-  initialProducts = [],
-  initialMeta = null,
-  initialFilter = {},
+  initialProducts = [] as any[],
+  initialMeta = null as any,
+  initialFilter = {} as any,
   fetcher,
   initialLimit = DEFAULT_INITIAL_LIMIT,
   nextLimit = DEFAULT_NEXT_LIMIT,
+}: {
+  initialProducts?: any[];
+  initialMeta?: any;
+  initialFilter?: any;
+  fetcher: (payload: any) => Promise<any>;
+  initialLimit?: number;
+  nextLimit?: number;
 }) => {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<any[]>(initialProducts);
   const [sortBy, setSortBy] = useState("");
   const [totalCount, setTotalCount] = useState(getTotalCount(initialMeta));
   const [offset, setOffset] = useState(initialProducts.length);
@@ -57,7 +64,7 @@ export const useInfiniteProducts = ({
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentFilter, setCurrentFilter] = useState(initialFilter);
-  const [observerNode, setObserverNode] = useState(null);
+  const [observerNode, setObserverNode] = useState<any>(null);
   const sortRef = useRef(sortBy);
 
   useEffect(() => {
@@ -65,7 +72,7 @@ export const useInfiniteProducts = ({
   }, [sortBy]);
 
   const applyFilter = useCallback(
-    async (payload) => {
+    async (payload: any) => {
       setIsLoading(true);
       try {
         const requestPayload = {
@@ -139,8 +146,8 @@ export const useInfiniteProducts = ({
     offset,
   ]);
 
-  const loadMoreRef = useCallback((node) => {
-    setObserverNode((prev) => (prev === node ? prev : node));
+  const loadMoreRef = useCallback((node: any) => {
+    setObserverNode((prev: any) => (prev === node ? prev : node));
   }, []);
 
   useEffect(() => {

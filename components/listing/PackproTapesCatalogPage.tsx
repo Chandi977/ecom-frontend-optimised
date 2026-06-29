@@ -49,7 +49,7 @@ const isTapeSubcategory = (item) => {
   return /\btape\b/i.test(haystack);
 };
 
-const getTapeTypeOptions = (subcategories = []) =>
+const getTapeTypeOptions = (subcategories: any[] = []) =>
   subcategories
     .filter(
       (item) =>
@@ -140,7 +140,7 @@ const PackproTapesCatalogPage = ({
   const [length, setLength] = useState([SIZE_RANGE.min, SIZE_RANGE.max]);
   const [width, setWidth] = useState([SIZE_RANGE.min, SIZE_RANGE.max]);
   const [thickness, setThickness] = useState([SIZE_RANGE.min, SIZE_RANGE.max]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState<any[]>([]);
   const [sizeFilterActive, setSizeFilterActive] = useState(false);
   const label = { inputProps: { "aria-label": "tape type filter" } };
 

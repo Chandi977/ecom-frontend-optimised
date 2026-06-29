@@ -15,15 +15,51 @@ export const POLY_BAG_DEFAULT_COLOR = "Outer White & Inner Black";
 export const POLY_BAG_DEFAULT_MATERIAL = "virgin plastic with 20% recycled content";
 export const POLY_BAG_DEFAULT_ADHESIVE = "Hot Melt Adhesive";
 
+const formatBoolean = (value: unknown): string => {
+  if (value === true || value === "true" || value === "Yes") return "Yes";
+  return "No";
+};
+
+const TAX_AND_SUSTAINABILITY_CONFIG = [
+  { label: "HSN Code", keys: ["hsn_code"] },
+  { label: "SAC Code", keys: ["sac_code"] },
+  { label: "Tax Category", keys: ["tax_category"] },
+  { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
+  { label: "Recyclable", keys: ["recyclable"], format: formatBoolean },
+  { label: "Biodegradable", keys: ["biodegradable"], format: formatBoolean },
+  { label: "FSC Certified", keys: ["fsc_certified"], format: formatBoolean },
+  { label: "Certifications", keys: ["certifications"] },
+];
+
+function mergeUniqueFields(baseFields: OverviewField[], extraFields: OverviewField[]): OverviewField[] {
+  const seenLabels = new Set(baseFields.map(f => f.label.toLowerCase().trim()));
+  const merged = [...baseFields];
+  for (const field of extraFields) {
+    const labelLower = field.label.toLowerCase().trim();
+    if (!seenLabels.has(labelLower)) {
+      merged.push(field);
+      seenLabels.add(labelLower);
+    }
+  }
+  return merged;
+}
+
 const COMMON_FIELDS = [
+  { label: "Brand", getValue: (product) => getProductBrandName(product) || "Not Available" },
   { label: "Model", keys: ["model"] },
   { label: "Material", keys: ["material"] },
   { label: "Colour", keys: ["color"] },
   { label: "HSN Code", keys: ["hsn_code"] },
+  { label: "SAC Code", keys: ["sac_code"] },
+  { label: "Tax Category", keys: ["tax_category"] },
   { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
   { label: "Type", keys: ["name"] },
   { label: "Labels per Roll", keys: ["label_in_roll"] },
   { label: "Form", keys: ["form"] },
+  { label: "Recyclable", keys: ["recyclable"], format: formatBoolean },
+  { label: "Biodegradable", keys: ["biodegradable"], format: formatBoolean },
+  { label: "FSC Certified", keys: ["fsc_certified"], format: formatBoolean },
+  { label: "Certifications", keys: ["certifications"] },
 ];
 
 const GENERIC_DIMENSION_FIELDS = [
@@ -53,6 +89,15 @@ const getFirstValue = (product: Record<string, unknown> | undefined, keys: strin
     if (hasValue(value)) return value;
   }
   return undefined;
+};
+
+const getProductBrandName = (product: Record<string, unknown> | undefined): string => {
+  const brand = product?.brand;
+  if (brand && typeof brand === "object") {
+    const name = (brand as Record<string, unknown>).name;
+    if (hasValue(name)) return String(name);
+  }
+  return "";
 };
 
 export function formatGst(value: unknown, fallback = "Not Available"): string {
@@ -290,41 +335,37 @@ function buildAutoOverviewFields(
   if (!product) return [];
 
   const currentProduct = getLegacyCompatibleProduct(product);
-
   const productKind = getProductKind(currentProduct);
+  const taxAndSustainability = buildFieldsFromConfig(currentProduct, TAX_AND_SUSTAINABILITY_CONFIG, weightValue);
+
+  let fields: OverviewField[] = [];
 
   if (productKind === "corrugated") {
-    const brandName = "Rollabel™";
-    return [
+    fields = [
+      { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
+      { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
+      { label: "Brand", value: getProductBrandName(currentProduct) || "Not Available" },
+    ].filter((field) => field.value !== "Not Available");
+  } else if (productKind === "label") {
+    const brandName = getProductBrandName(currentProduct) || "Rollabel™";
+    fields = [
       { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
       { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
       { label: "Brand", value: brandName },
     ].filter((field) => field.value !== "Not Available");
-  }
-
-  if (productKind === "label") {
-    const brandName = "Rollabel™";
-    return [
+  } else if (productKind === "paperbag") {
+    const brandName = getProductBrandName(currentProduct) || "Not Available";
+    fields = [
       { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
       { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
       { label: "Brand", value: brandName },
     ].filter((field) => field.value !== "Not Available");
-  }
-
-  if (productKind === "paperbag") {
-    const brandName = String((currentProduct?.brand as Record<string, unknown>)?.name || "");
-    return [
-      { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
-      { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
-      { label: "Brand", value: brandName || "Not Available" },
-    ].filter((field) => field.value !== "Not Available");
-  }
-
-  if (productKind === "foil-paper") {
+  } else if (productKind === "foil-paper") {
     const categoryName = typeof currentProduct?.category === "object" ? (currentProduct?.category as Record<string, unknown>)?.name || "" : "";
     const subCategoryName = typeof currentProduct?.sub_category === "object" ? (currentProduct?.sub_category as Record<string, unknown>)?.name || "" : "";
-    return [
+    fields = [
       { label: "Name", value: String(currentProduct?.name || "Not Available") },
+      { label: "Brand", value: getProductBrandName(currentProduct) || "Not Available" },
       { label: "Length (inches)", value: formatWithUnit(getFirstValue(currentProduct, ["length_inch"]) || getSizeInchPart(currentProduct, 0), "inches") },
       { label: "Breadth (inches)", value: formatWithUnit(getFirstValue(currentProduct, ["breadth_inch", "height_inch", "width"]) || getSizeInchPart(currentProduct, 1), "inches") },
       { label: "Thickness (gsm)", value: formatWithUnit(currentProduct?.thickness, "gsm") },
@@ -333,32 +374,29 @@ function buildAutoOverviewFields(
       { label: "HSN Code", value: String(currentProduct?.hsn_code || "Not Available") },
       { label: "Pack of", value: hasValue(packSize) ? `${packSize} pcs` : "Not Available" },
     ];
-  }
-
-  if (productKind === "tape") {
-    const brandName = "PackPro™";
-    return [
+  } else if (productKind === "tape") {
+    const brandName = getProductBrandName(currentProduct) || "PackPro™";
+    fields = [
       { label: "Brand", value: brandName },
       { label: "Print", value: hasValue(currentProduct?.print) ? String(currentProduct.print) : "Not Available" },
     ].filter((field) => field.value !== "Not Available");
-  }
-
-  if (productKind === "polybag") {
-    const brandName = String((currentProduct?.brand as Record<string, unknown>)?.name || "");
-    return [
+  } else if (productKind === "polybag") {
+    const brandName = getProductBrandName(currentProduct) || "Not Available";
+    fields = [
       { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
       { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
-      { label: "Brand", value: brandName || "Not Available" },
+      { label: "Brand", value: brandName },
     ].filter((field) => field.value !== "Not Available");
+  } else {
+    const commonFields = buildFieldsFromConfig(currentProduct, COMMON_FIELDS, weightValue);
+    const metricFields = buildFieldsFromConfig(currentProduct, getCategoryMetricFields(currentProduct), weightValue);
+    const weightFields = hasValue(weightValue)
+      ? [{ label: "Pack Weight (kg)", value: String(weightValue) }]
+      : [];
+    fields = [...commonFields, ...metricFields, ...weightFields];
   }
 
-  const commonFields = buildFieldsFromConfig(currentProduct, COMMON_FIELDS, weightValue);
-  const metricFields = buildFieldsFromConfig(currentProduct, getCategoryMetricFields(currentProduct), weightValue);
-  const weightFields = hasValue(weightValue)
-    ? [{ label: "Pack Weight (kg)", value: String(weightValue) }]
-    : [];
-
-  return [...commonFields, ...metricFields, ...weightFields];
+  return mergeUniqueFields(fields, taxAndSustainability);
 }
 
 interface OverviewConfigRow {

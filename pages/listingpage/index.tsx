@@ -75,10 +75,10 @@ const Listingpage = ({
 }) => {
   const router = useRouter();
   const initialProducts = useMemo(() => (product ? product : []), [product]);
-  const [width, setWidth] = useState([null, null]);
-  const [breadth, setBreadth] = useState([null, null]);
-  const [height, setHeight] = useState([null, null]);
-  const [checked, setChecked] = useState([]);
+  const [width, setWidth] = useState<any[]>([null, null]);
+  const [breadth, setBreadth] = useState<any[]>([null, null]);
+  const [height, setHeight] = useState<any[]>([null, null]);
+  const [checked, setChecked] = useState<any[]>([]);
   const [unit, setUnit] = useState("inches");
   const [flags, setFlags] = useState({
     size: false,
@@ -86,7 +86,7 @@ const Listingpage = ({
     sort: false,
   });
 
-  const [seelctedCategories, setSelectedCategories] = useState([]);
+  const [seelctedCategories, setSelectedCategories] = useState<any[]>([]);
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
   const baseFilter = useMemo(

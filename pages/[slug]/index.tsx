@@ -47,6 +47,7 @@ import {
   getProductSeo,
   type NormalizedPriceTier,
 } from "../../utils/productCatalog";
+import { trackProductView } from "../../lib/analytics";
 
 const CARRY_BAG_CATEGORY_IDS = [
   "6557df71301ec4f2f4266145",
@@ -58,6 +59,10 @@ const FOOD_WRAPPING_CATEGORY_IDS = [
 ];
 
 export async function getServerSideProps(context) {
+  context.res?.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
   const requestedSlug = Array.isArray(context?.query?.slug)
     ? context.query.slug[0]
     : context?.query?.slug;
@@ -119,6 +124,18 @@ const Productpage = ({ product: rawProduct }) => {
     typeof product?.category === "object" ? product?.category?.name || "" : "";
   const categorySlug =
     typeof product?.category === "object" ? product?.category?.slug || "" : "";
+
+  // Customer-behavior + demand signal: record one product view per product load.
+  useEffect(() => {
+    if (product?._id) {
+      trackProductView({
+        id: product._id,
+        name: product?.name,
+        category: categoryName,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?._id]);
 
   const isCarryBagProduct =
     CARRY_BAG_CATEGORY_IDS.includes(String(categoryId)) ||
@@ -295,7 +312,7 @@ const Productpage = ({ product: rawProduct }) => {
       return;
     }
 
-    setSelectedPackWeight(selectedPriceData.packWeight);
+    setSelectedPackWeight(selectedPriceData.packWeight || 0);
     setSelectedPackSize(selectedNumber);
 
     setPrice(selectedPriceData.sellingPrice);

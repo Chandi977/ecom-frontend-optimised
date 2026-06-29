@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-const CustomDropdown = ({ options = [], placeholder, onChange }) => {
+const CustomDropdown = ({ options = [] as any[], placeholder, onChange }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState<any>(null);
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);

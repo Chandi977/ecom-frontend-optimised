@@ -18,7 +18,7 @@ export const setToken = (token) => {
   }
 };
 
-export const setAuthTokens = (token, refreshToken) => {
+export const setAuthState = (token, refreshToken, user) => {
   if (typeof window !== "undefined") {
     if (token) {
       localStorage.setItem("PIToken", token);
@@ -26,8 +26,15 @@ export const setAuthTokens = (token, refreshToken) => {
     if (refreshToken) {
       localStorage.setItem("PIRefreshToken", refreshToken);
     }
+    if (user) {
+      localStorage.setItem("PIUser", JSON.stringify(user));
+    }
     window.dispatchEvent(new Event(AUTH_STATE_EVENT));
   }
+};
+
+export const setAuthTokens = (token, refreshToken) => {
+  setAuthState(token, refreshToken, null);
 };
 
 export const clearToken = () => {

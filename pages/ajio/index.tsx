@@ -69,7 +69,7 @@ const BoppTape = ({
   const [width, setWidth] = useState([100, 1000]);
   const [breadth, setBreadth] = useState([100, 1000]);
   const [height, setHeight] = useState([100, 1000]);
-  const [checked, setChecked] = useState([]);
+  const [checked, setChecked] = useState<any[]>([]);
   const [unit, setUnit] = useState("inches");
   const [flags, setFlags] = useState({
     size: false,
@@ -77,7 +77,7 @@ const BoppTape = ({
     sort: false,
   });
 
-  const [seelctedCategories, setSelectedCategories] = useState([]);
+  const [seelctedCategories, setSelectedCategories] = useState<any[]>([]);
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
   const CustomSliderStyles = {
     "& .MuiSlider-thumb": {

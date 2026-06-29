@@ -19,21 +19,21 @@ declare global {
 }
 
 const Checkoutpage = () => {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [states, setStates] = useState([]);
+  const [states, setStates] = useState<any[]>([]);
   const [selectedState, setSelectedState] = useState<Record<string, any>>({});
-  const [userAddresss, setUserAddresss] = useState([]);
+  const [userAddresss, setUserAddresss] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
   const [expressShip, setExpressShip] = useState(true);
-  const [cart, setCart] = useState(null);
+  const [cart, setCart] = useState<any>(null);
   const [pincode, setPincode] = useState("");
   const [shippingCost, setShippingCost] = useState(0);
   const [originalShippingCost, setOriginalShippingCost] = useState(0);
   const [totalCartValue, setTotalCartValue] = useState(0);
   const [radiobtn, setRadiobtn] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [address, setAddress] = useState(null);
+  const [address, setAddress] = useState<any>(null);
   const [height, setHeight] = useState("auto");
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double submission
   const [details, setDetails] = useState({
@@ -100,7 +100,7 @@ const Checkoutpage = () => {
   };
 
   const bothTypeDiscountOrderValueBeforeTax =
-    orderValueBeforeTaxBothTypeDiscount();
+    orderValueBeforeTaxBothTypeDiscount() ?? orderValueBeforeTax;
 
   // console.log("105", bothTypeDiscountOrderValueBeforeTax);
 
@@ -218,10 +218,11 @@ const Checkoutpage = () => {
   }, []);
 
   const getUser = async () => {
-    const User = JSON.parse(localStorage.getItem("PIUser"));
+    const User = JSON.parse(localStorage.getItem("PIUser") || "{}");
     const user = await getService(`getuser/${User?._id}`);
     if (user?.data?.success) {
-      setUserAddresss(user?.data?.data?.contact_address);
+      const contactAddress = user?.data?.data?.contact_address;
+      setUserAddresss(Array.isArray(contactAddress) ? contactAddress : []);
     }
   };
 
@@ -261,7 +262,7 @@ const Checkoutpage = () => {
         ) {
           setShippingCost(100);
           setOriginalShippingCost(100);
-          document.getElementById("express").click();
+          document.getElementById("express")?.click();
         } else {
           toast.error("Pincode not availabe for Express Delivery");
           setPincode("");
@@ -585,8 +586,10 @@ const Checkoutpage = () => {
       });
       // Ensure both 'mobile' and 'phone' fields are present and non-empty in the payload
       const selectedAddr = userAddresss[selectedIndex] || {};
-      const phoneValue = selectedAddr.phone || selectedAddr.mobile || "";
-      const mobileValue = selectedAddr.mobile || selectedAddr.phone || "";
+      const phoneValue = String(selectedAddr.phone || selectedAddr.mobile || "");
+      const mobileValue = String(selectedAddr.mobile || selectedAddr.phone || "");
+      const selectedGstin = String(selectedAddr.gstin || "").trim();
+      const selectedAddressPincode = String(selectedAddr.pincode || "").trim();
       const orderEmail = String(selectedAddr.email || "").trim();
       if (!orderEmail) {
         toast.error("Selected address is missing an email address.");
@@ -598,14 +601,14 @@ const Checkoutpage = () => {
         name: selectedAddr.name,
         phone: phoneValue,
         mobile: mobileValue,
-        gstin: selectedAddr.gstin,
+        gstin: selectedGstin,
         address: selectedAddr.address,
-        pincode: selectedAddr.pincode,
+        pincode: selectedAddressPincode,
         landmark: selectedAddr.landmark,
         town: selectedAddr.town,
         email: orderEmail,
         state: selectedAddr.state,
-        user: JSON.parse(localStorage.getItem("PIUser"))?._id,
+        user: JSON.parse(localStorage.getItem("PIUser") || "{}")?._id,
         totalOrderValue: orderValue,
         totalCartValue: cart?.total_amount,
         shippingCost: shippingCost,
@@ -614,13 +617,11 @@ const Checkoutpage = () => {
         utrNumber: "0",
         couponCode: cart?.appliedCouponName,
       };
-      console.log(userAddresss[selectedIndex]?.gstin.length);
-      console.log(totalcartval);
-      if (totalcartval > 1 && userAddresss[selectedIndex]?.gstin.length < 15) {
+      if (selectedGstin.length < 15) {
         toast.error("Please add a GST number for this order.");
         return;
       }
-      if (pincode !== userAddresss[selectedIndex]?.pincode) {
+      if (String(pincode || "").trim() !== selectedAddressPincode) {
         toast.error(
           "Entered pincode does not match your selected address pincode.",
         );
@@ -631,7 +632,7 @@ const Checkoutpage = () => {
 
       try {
         if (cart?.couponUse === "single") {
-          const userId = JSON.parse(localStorage.getItem("PIUser"))?._id;
+          const userId = JSON.parse(localStorage.getItem("PIUser") || "{}")?._id;
           const couponCode = cart?.appliedCouponName;
 
           const couponData = {
@@ -668,6 +669,7 @@ const Checkoutpage = () => {
 
   const handleVisible = () => {
     setVisible(false);
+    setAddress(null);
     getUser();
   };
 
@@ -681,7 +683,7 @@ const Checkoutpage = () => {
     e.stopPropagation();
     const temp = userAddresss;
     temp.splice(index, 1);
-    const User = JSON.parse(localStorage.getItem("PIUser"));
+    const User = JSON.parse(localStorage.getItem("PIUser") || "{}");
     const data = {
       id: User?._id,
       contact_address: temp,
@@ -1011,7 +1013,7 @@ const Checkoutpage = () => {
         ) {
           setShippingCost(100);
           setOriginalShippingCost(100);
-          document.getElementById("express").click();
+          document.getElementById("express")?.click();
           toast.success("Express Delivery Applied!");
         } else {
           toast.error("Pincode not availabe for Express Delivery");
@@ -1084,582 +1086,1766 @@ const Checkoutpage = () => {
           content="Complete your order securely with our simple checkout. Multiple payment options and fast confirmation ensure a smooth shopping experience."
         />
       </Head>
-      {!authChecked || !token ? null : (
-      <div>
-        <div className="row p-0 m-0">
-          <div className="container-fluid tw-ml-0 tw-mb-0 tw-mr-0 tw-px-[120px] tw-bg-white max-[900px]:tw-px-[15px] max-[900px]:tw-bg-[#ededed]">
-            <div className="row bg-white mb-3 mt-3 tw-flex max-[900px]:tw-px-[15px] max-[900px]:tw-rounded-lg max-[900px]:tw-border max-[900px]:tw-border-solid max-[900px]:tw-border-[rgba(0,0,0,0.1)]"> 
-              <div className="col-12 col-md-6">
-                <div className="mt-1">
-                  <span
-                    className="p-0 mx-0"
-                    style={{
-                      color: "#3A5BA2",
-                      fontSize: "30px",
-                      fontStyle: "normal",
-                      fontWeight: "700",
-                      lineHeight: "48px",
-                    }}
-                  >
-                    BILLING DETAILS
-                  </span>
-                </div>
-                {token && (
-                  <div
-                    className="container p-0 m-0 mb-3"
-                    style={{ width: "auto", minHeight: "auto" }}
-                  >
-                    <p
-                      className="p-0"
-                      style={{
-                        color: "var(--heading, #1D1D1D)",
-                        fontSize: "17px",
-                        fontStyle: "normal",
-                        fontWeight: "600",
-                        fontFamily: "Montserrat",
-                      }}
-                    >
-                      Select Address:
-                    </p>
-                    <div className="mt-3 d-flex flex-wrap flex-row justify-content-between align-items-center">
-                      {userAddresss?.map((x, index) => {
-                        return (
-                          <div
-                            className={
-                              "px-3 py-3 mt-3 bg-white d-flex flex-column justify-content-start align-items-start " +
-                              "tw-w-[48%] tw-min-h-[230px] max-[900px]:tw-w-full tw-rounded-xl tw-transition-all tw-duration-200 hover:tw-shadow-md " +
-                              (selectedIndex === index
-                                ? "tw-border-2 tw-border-solid tw-border-[#182c5a] tw-shadow-md"
-                                : "tw-border tw-border-solid tw-border-slate-200 tw-shadow-sm")
-                            }
-                            key={index}
-                            style={{
-                              cursor: "pointer",
-                            }}
-                            onClick={() => setSelectedIndex(index)}
-                          >
-                            <p className="p-0 m-0 tw-text-slate-800" style={{ fontSize: "16px" }}>
-                              <strong>{x?.name}</strong>
-                            </p>
-                            <p
-                              className="p-0 m-0 w-100 mt-2 tw-text-slate-600"
-                              style={{ fontSize: "13px" }}
-                            >
-                              <strong>Street: </strong>
-                              {x?.address}
-                            </p>
-                            {x?.landmark && (
-                              <p
-                                className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                                style={{ fontSize: "13px" }}
-                              >
-                                <strong>Landmark: </strong> {x?.landmark}
-                              </p>
-                            )}
-                            <p
-                              className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                              style={{ fontSize: "13px" }}
-                            >
-                              <strong>City: </strong>
-                              <span style={{ fontWeight: "600" }}>
-                                {x?.town}
-                              </span>
-                            </p>
-                            {x?.state && (
-                              <p
-                                className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                                style={{ fontSize: "13px" }}
-                              >
-                                <strong>State: </strong>
-                                {x?.state}
-                              </p>
-                            )}
-                            {x?.pincode && (
-                              <p
-                                className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                                style={{ fontSize: "13px" }}
-                              >
-                                <strong>Zip code: </strong> {x?.pincode}
-                              </p>
-                            )}
-                            {x?.mobile && (
-                              <p
-                                className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                                style={{ fontSize: "13px" }}
-                              >
-                                <strong>Phone number: </strong> {x?.mobile}
-                              </p>
-                            )}
-                            <p
-                              className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                              style={{ fontSize: "13px" }}
-                            >
-                              <strong>Email: </strong>
-                              {x?.email}
-                            </p>
-                            {x?.gstin && (
-                              <p
-                                className="p-0 m-0 w-100 mt-1 tw-text-slate-600"
-                                style={{ fontSize: "13px" }}
-                              >
-                                <strong>GSTIN: </strong> {x?.gstin}
-                              </p>
-                            )}
 
-                            <div className="mt-auto pt-3 d-flex flex-row justify-content-start align-items-center">
-                              <p
-                                className="p-0 m-0 tw-text-[#182c5a] hover:tw-text-[#e92227] tw-transition-colors"
-                                style={{
-                                  fontSize: "13px",
-                                  fontWeight: "600",
-                                  cursor: "pointer",
-                                }}
-                                onClick={(e) => handleEdit(e, x)}
-                              >
-                                Edit
-                              </p>
-                              <div
-                                className="p-0"
-                                style={{
-                                  textAlign: "center",
-                                  marginLeft: "12px",
-                                  height: "12px",
-                                  borderLeft: "1px solid #D9D9D9",
-                                }}
-                              ></div>
-                              <p
-                                className="p-0 m-0 mx-2 tw-text-slate-500 hover:tw-text-red-500 tw-transition-colors"
-                                style={{
-                                  fontSize: "13px",
-                                  fontWeight: "600",
-                                  cursor: "pointer",
-                                }}
-                                onClick={(e) => handleRemove(e, index)}
-                              >
-                                Remove
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      <div
-                        className={
-                          "mt-3 bg-white d-flex flex-column justify-content-center align-items-center " +
-                          "tw-w-[48%] tw-min-h-[230px] max-[900px]:tw-w-full tw-rounded-xl tw-border-2 tw-border-dashed tw-border-slate-200 hover:tw-border-slate-400 hover:tw-text-[#182c5a] tw-transition-all tw-duration-200"
-                        }
-                        style={{
-                          cursor: "pointer",
+      {!authChecked || !token ? (
+        <div className="co-boot">
+          <div className="co-boot-mark">
+            <img src="/pp_logo_1.png" alt="Prem Packaging" />
+          </div>
+          <span className="co-boot-label">Securing your checkout…</span>
+          <span className="co-boot-bar">
+            <i />
+          </span>
+        </div>
+      ) : (
+        <div className="co-root">
+          {/* ───────── Checkout header ───────── */}
+          <header className="co-head">
+            <div className="co-head-in">
+              <a
+                href="https://prempackaging.com"
+                className="co-brand"
+                aria-label="Prem Packaging home"
+              >
+                <img src="/pp_logo_1.png" alt="Prem Packaging" />
+              </a>
+
+              <ol className="co-steps" aria-label="Checkout progress">
+                <li className="co-step is-done">
+                  <span className="co-step-no">01</span>
+                  <span className="co-step-tx">Cart</span>
+                </li>
+                <li className="co-step is-now" aria-current="step">
+                  <span className="co-step-no">02</span>
+                  <span className="co-step-tx">Shipping</span>
+                </li>
+                <li className="co-step">
+                  <span className="co-step-no">03</span>
+                  <span className="co-step-tx">Payment</span>
+                </li>
+              </ol>
+
+              <div className="co-head-right">
+                <span className="co-secure">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="4" y="10" width="16" height="11" rx="2" />
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  </svg>
+                  Secure
+                </span>
+                <button
+                  type="button"
+                  className="co-back"
+                  onClick={() => router.push("/my-cart")}
+                >
+                  ← Cart
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main className="co-main">
+            <div className="co-grid">
+              {/* ───────── LEFT: destination & delivery ───────── */}
+              <section className="co-left">
+                <div className="co-sec-head">
+                  <h1 className="co-h1">Ship to</h1>
+                  <p className="co-sub">
+                    Choose where this consignment is delivered and how fast it
+                    moves.
+                  </p>
+                </div>
+
+                {token && (
+                  <div className="co-addr-wrap">
+                    <span className="co-field-label">Saved addresses</span>
+                    <div className="co-addr-grid">
+                      {userAddresss?.map((x, index) => (
+                        <div
+                          key={index}
+                          className={
+                            "co-addr" +
+                            (selectedIndex === index ? " is-sel" : "")
+                          }
+                          role="radio"
+                          aria-checked={selectedIndex === index}
+                          tabIndex={0}
+                          onClick={() => setSelectedIndex(index)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedIndex(index);
+                            }
+                          }}
+                        >
+                          <span className="co-addr-top">
+                            <span className="co-addr-tick" aria-hidden="true" />
+                            <span className="co-addr-name">{x?.name}</span>
+                          </span>
+
+                          <span className="co-addr-lines">
+                            <span>{x?.address}</span>
+                            {x?.landmark && (
+                              <span className="co-addr-dim">
+                                Near {x?.landmark}
+                              </span>
+                            )}
+                            <span>
+                              {x?.town}
+                              {x?.state ? `, ${x?.state}` : ""}
+                            </span>
+                          </span>
+
+                          <span className="co-addr-meta">
+                            {x?.pincode && (
+                              <span className="co-chip">
+                                <i>PIN</i>
+                                <b>{x?.pincode}</b>
+                              </span>
+                            )}
+                            {(x?.mobile || x?.phone) && (
+                              <span className="co-chip">
+                                <i>TEL</i>
+                                <b>{x?.mobile || x?.phone}</b>
+                              </span>
+                            )}
+                            {x?.gstin && (
+                              <span className="co-chip co-chip--wide">
+                                <i>GSTIN</i>
+                                <b>{x?.gstin}</b>
+                              </span>
+                            )}
+                          </span>
+
+                          {x?.email && (
+                            <span className="co-addr-email">{x?.email}</span>
+                          )}
+
+                          <span className="co-addr-actions">
+                            <button
+                              type="button"
+                              className="co-link"
+                              onClick={(e) => handleEdit(e, x)}
+                            >
+                              Edit
+                            </button>
+                            <span className="co-sep" aria-hidden="true" />
+                            <button
+                              type="button"
+                              className="co-link co-link--mut"
+                              onClick={(e) => handleRemove(e, index)}
+                            >
+                              Remove
+                            </button>
+                          </span>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        className="co-addr-add"
+                        onClick={() => {
+                          setAddress(null);
+                          setVisible(true);
                         }}
-                        onClick={() => setVisible(true)}
                       >
                         <FontAwesomeIcon
                           icon={faAdd}
-                          style={{
-                            color: "#94a3b8",
-                            width: "32px",
-                            height: "32px",
-                            marginBottom: "8px"
-                          }}
+                          style={{ width: "18px", height: "18px" }}
                         />
-                        <p className="m-0 tw-text-sm tw-text-slate-500">
-                          <strong>Add address</strong>
-                        </p>
-                      </div>
+                        <span>Add a new address</span>
+                      </button>
                     </div>
                   </div>
                 )}
+
                 {!token && (
-                  <form
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      padding: "0px",
-                      margin: "0px",
-                      marginLeft: "0px",
-                      marginTop: "30px",
-                    }}
-                    onSubmit={handleOrder}
-                  >
-                    <>
-                      <label className="p-0 mt-0">Full Name*</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        required
-                        value={details.name}
-                        onChange={(e) =>
-                          setDetails({ ...details, name: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">Mobile Number</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        value={details.mobile}
-                        onChange={(e) =>
-                          setDetails({ ...details, mobile: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">GSTIN</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        value={details.gstin}
-                        onChange={(e) =>
-                          setDetails({ ...details, gstin: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">
-                        Flat, House no., Building, Apartment*
+                  <form className="co-form" onSubmit={handleOrder}>
+                    <div className="co-form-grid">
+                      <label className="co-fld co-fld--full">
+                        <span className="co-fld-l">
+                          Full name <i>*</i>
+                        </span>
+                        <input
+                          className="co-in"
+                          required
+                          value={details.name}
+                          onChange={(e) =>
+                            setDetails({ ...details, name: e.target.value })
+                          }
+                        />
                       </label>
-                      <input
-                        placeholder="House number and street name"
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        required
-                        value={details.address}
-                        onChange={(e) =>
-                          setDetails({ ...details, address: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">Pin Code</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        value={details.pincode}
-                        onChange={(e) =>
-                          setDetails({ ...details, pincode: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">Landmark</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        value={details.landmark}
-                        onChange={(e) =>
-                          setDetails({ ...details, landmark: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">Town/City*</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        required
-                        value={details.town}
-                        onChange={(e) =>
-                          setDetails({ ...details, town: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">Email address*</label>
-                      <input
-                        style={{
-                          width: "100%",
-                          height: "48px",
-                          backgroundColor: "white",
-                          border: "1px solid #EBEBEB",
-                          padding: "10px",
-                        }}
-                        value={details.email}
-                        onChange={(e) =>
-                          setDetails({ ...details, email: e.target.value })
-                        }
-                      />
-                      <label className="p-0 mt-3">State</label>
-                      <Select
-                        options={states}
-                        placeholder="choose a state"
-                        value={selectedState}
-                        onChange={setSelectedState}
-                        instanceId="checkout-state-select"
-                        inputId="checkout-state-select"
-                      ></Select>
-                    </>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">Mobile number</span>
+                        <input
+                          className="co-in"
+                          value={details.mobile}
+                          onChange={(e) =>
+                            setDetails({ ...details, mobile: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">GSTIN</span>
+                        <input
+                          className="co-in co-in--mono"
+                          value={details.gstin}
+                          onChange={(e) =>
+                            setDetails({ ...details, gstin: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld co-fld--full">
+                        <span className="co-fld-l">
+                          Flat, house no., building <i>*</i>
+                        </span>
+                        <input
+                          className="co-in"
+                          placeholder="House number and street name"
+                          required
+                          value={details.address}
+                          onChange={(e) =>
+                            setDetails({ ...details, address: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">Pin code</span>
+                        <input
+                          className="co-in co-in--mono"
+                          value={details.pincode}
+                          onChange={(e) =>
+                            setDetails({ ...details, pincode: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">Landmark</span>
+                        <input
+                          className="co-in"
+                          value={details.landmark}
+                          onChange={(e) =>
+                            setDetails({ ...details, landmark: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">
+                          Town / city <i>*</i>
+                        </span>
+                        <input
+                          className="co-in"
+                          required
+                          value={details.town}
+                          onChange={(e) =>
+                            setDetails({ ...details, town: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld">
+                        <span className="co-fld-l">
+                          Email address <i>*</i>
+                        </span>
+                        <input
+                          className="co-in"
+                          value={details.email}
+                          onChange={(e) =>
+                            setDetails({ ...details, email: e.target.value })
+                          }
+                        />
+                      </label>
+
+                      <label className="co-fld co-fld--full co-fld--select">
+                        <span className="co-fld-l">State</span>
+                        <Select
+                          options={states}
+                          placeholder="Choose a state"
+                          value={selectedState}
+                          onChange={setSelectedState}
+                          instanceId="checkout-state-select"
+                          inputId="checkout-state-select"
+                        ></Select>
+                      </label>
+                    </div>
                   </form>
                 )}
-              </div>
-              <div className="col-12 col-md-6 tw-my-4 tw-px-4 max-[900px]:tw-px-0">
-                <div className="tw-bg-white tw-rounded-2xl tw-shadow-[0_4px_20px_rgba(0,0,0,0.05)] tw-border tw-border-solid tw-border-slate-100 tw-p-6 md:tw-p-8">
-                  <p
-                    className="p-0 tw-text-[#182c5a] tw-text-xl tw-font-bold tw-mb-6 tw-tracking-wide tw-font-sans"
-                  >
-                    YOUR ORDER
-                  </p>
-                  <div className="tw-divide-y tw-divide-slate-100">
-                    {/* Header */}
-                    <div className="tw-flex tw-justify-between tw-pb-3 tw-text-xs tw-font-semibold tw-text-slate-400 tw-uppercase tw-tracking-wider">
-                      <span>Product</span>
-                      <span>Total</span>
-                    </div>
 
-                    {/* Products */}
-                    {cart?.products?.map((x, index) => (
-                      <div className="tw-flex tw-justify-between tw-items-center tw-py-4" key={index}>
-                        <div className="tw-flex tw-items-center tw-gap-4 tw-pr-4">
-                          <img
-                            className="tw-w-14 tw-h-14 tw-object-contain tw-bg-slate-50 tw-rounded-lg tw-border tw-border-solid tw-border-slate-100 tw-p-1"
-                            alt={x?.product?.name || "Cart product"}
-                            src={x?.product?.images?.[0]?.image || "/pp_logo_1.png"}
-                          />
-                          <div>
-                            <p className="tw-text-sm tw-font-medium tw-text-slate-800 tw-capitalize tw-line-clamp-2 max-w-[280px]">
-                              {x?.product?.name} {x?.product?.model}
-                            </p>
-                            <span className="tw-text-xs tw-text-slate-400 tw-mt-0.5 tw-block">
-                              Pack of {x?.packSize} pcs • Qty {x?.quantity}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="tw-text-right tw-font-semibold tw-text-slate-800">
-                          {cart?.appliedCoupon && cart?.couponType === "product" && x?.discountPrice ? (
-                            <div className="tw-flex tw-flex-col">
-                              <span className="tw-text-xs tw-text-slate-400 tw-line-through">₹{Math.round(x?.price * x?.quantity)}</span>
-                              <span className="tw-text-sm tw-text-red-500">₹{Math.round(x?.discountPrice * x?.quantity)}</span>
-                            </div>
-                          ) : (
-                            <span className="tw-text-sm">₹{Math.round(x?.price * x?.quantity)}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                {/* Delivery method */}
+                <div className="co-sec-head co-sec-head--gap">
+                  <span className="co-eyebrow">Dispatch</span>
+                  <h2 className="co-h2">Delivery method</h2>
+                </div>
 
-                    {/* Total Cart Value */}
-                    <div className="tw-flex tw-justify-between tw-items-center tw-py-4">
-                      <span className="tw-text-sm tw-font-medium tw-text-slate-600">Total Cart Value</span>
-                      <span className="tw-text-sm tw-font-semibold tw-text-slate-800">
-                        {cart?.discount_amount === 0 ? (
-                          `₹${Math.round(cart?.total_amount)}`
-                        ) : (
-                          <div className="tw-flex tw-flex-col tw-items-end">
-                            <span className="tw-text-xs tw-text-slate-400 tw-line-through">₹{Math.round(cart?.total_amount)}</span>
-                            <span className="tw-text-sm tw-text-red-500">₹{Math.round(cart?.discount_amount)}</span>
-                          </div>
-                        )}
+                <div className="co-ship">
+                  <label className="co-ship-opt">
+                    <input
+                      type="radio"
+                      id="express"
+                      name="shipping"
+                      value="express"
+                      onChange={(e) => handleShippingChange(e.target.value)}
+                    />
+                    <span className="co-ship-card">
+                      <span className="co-ship-radio" aria-hidden="true" />
+                      <span className="co-ship-main">
+                        <span className="co-ship-name">Express delivery</span>
+                        <span className="co-ship-sub">
+                          2–3 working days · Delhi NCR only
+                        </span>
                       </span>
+                      <span className="co-ship-price">₹100</span>
+                    </span>
+                  </label>
+
+                  <label className="co-ship-opt">
+                    <input
+                      type="radio"
+                      id="standard"
+                      name="shipping"
+                      value="standard"
+                      onChange={(e) => handleShippingChange(e.target.value)}
+                    />
+                    <span className="co-ship-card">
+                      <span className="co-ship-radio" aria-hidden="true" />
+                      <span className="co-ship-main">
+                        <span className="co-ship-name">Standard delivery</span>
+                        <span className="co-ship-sub">
+                          7–10 working days · Pan-India
+                        </span>
+                      </span>
+                      <span className="co-ship-price co-ship-price--free">
+                        Free
+                      </span>
+                    </span>
+                  </label>
+
+                  {radiobtn && (
+                    <div className="co-pin">
+                      <span className="co-pin-l">Confirm delivery pincode</span>
+                      <input
+                        className="co-pin-in"
+                        placeholder="6-digit pincode"
+                        value={pincode}
+                        maxLength={6}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        onChange={(e) => {
+                          const enteredValue = e.target.value.replace(
+                            /\D/g,
+                            "",
+                          );
+                          setPincode(enteredValue);
+                          if (enteredValue.length === 6) {
+                            calculateFinalShipCost(enteredValue);
+                          }
+                        }}
+                      />
                     </div>
+                  )}
+                </div>
+              </section>
 
-                    {/* Delivery Method */}
-                    <div className="tw-py-4">
-                      <p className="tw-text-sm tw-font-semibold tw-text-slate-700 tw-mb-3">Choose Delivery Method</p>
-                      <div className="tw-space-y-3">
-                        {/* Express Delivery */}
-                        <label className="tw-flex tw-items-start tw-gap-3 tw-p-3 tw-rounded-lg tw-border tw-border-solid tw-border-slate-100 hover:tw-bg-slate-50 tw-cursor-pointer tw-transition-colors">
-                          <input
-                            type="radio"
-                            id="express"
-                            name="shipping"
-                            value="express"
-                            className="tw-mt-1"
-                            onChange={(e) => handleShippingChange(e.target.value)}
-                          />
-                          <div className="tw-flex-1">
-                            <div className="tw-flex tw-justify-between tw-items-center">
-                              <span className="tw-text-sm tw-font-medium tw-text-slate-800">Express Delivery (2-3 Working Days)</span>
-                              <span className="tw-text-sm tw-font-semibold tw-text-[#182c5a]">Rs.100</span>
-                            </div>
-                            <span className="tw-text-xs tw-text-slate-400 tw-italic">Applicable for Delhi NCR</span>
-                          </div>
-                        </label>
+              {/* ───────── RIGHT: dispatch manifest ───────── */}
+              <aside className="co-right">
+                <div className="co-manifest">
+                  <div className="co-manifest-tape">
+                    <span className="co-manifest-title">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7">
+                        <path d="M21 8 12 3 3 8l9 5 9-5Z" />
+                        <path d="M3 8v8l9 5 9-5V8" />
+                        <path d="M12 13v8" />
+                      </svg>
+                      Dispatch manifest
+                    </span>
+                    <span className="co-manifest-ref">
+                      {cart?.products?.length || 0}{" "}
+                      {cart?.products?.length === 1 ? "line" : "lines"}
+                    </span>
+                  </div>
 
-                        {/* Standard Delivery */}
-                        <label className="tw-flex tw-items-start tw-gap-3 tw-p-3 tw-rounded-lg tw-border tw-border-solid tw-border-slate-100 hover:tw-bg-slate-50 tw-cursor-pointer tw-transition-colors">
-                          <input
-                            type="radio"
-                            id="standard"
-                            name="shipping"
-                            value="standard"
-                            className="tw-mt-1"
-                            onChange={(e) => handleShippingChange(e.target.value)}
-                          />
-                          <div className="tw-flex-1">
-                            <div className="tw-flex tw-justify-between tw-items-center">
-                              <span className="tw-text-sm tw-font-medium tw-text-slate-800">Standard Delivery (7-10 Working Days)</span>
-                              <span className="tw-text-sm tw-font-semibold tw-text-green-600">Free</span>
-                            </div>
-                            <span className="tw-text-xs tw-text-slate-400 tw-italic">Applicable Pan India</span>
-                          </div>
-                        </label>
+                  <div className="co-manifest-body">
+                    <ul className="co-items">
+                      {cart?.products?.map((x, index) => (
+                        <li className="co-item" key={index}>
+                          <span className="co-item-thumb">
+                            <img
+                              alt={x?.product?.name || "Cart product"}
+                              src={
+                                x?.product?.images?.[0]?.image ||
+                                "/pp_logo_1.png"
+                              }
+                            />
+                          </span>
+                          <span className="co-item-info">
+                            <span className="co-item-name">
+                              {x?.product?.name} {x?.product?.model}
+                            </span>
+                            <span className="co-item-spec">
+                              Pack of {x?.packSize} · Qty {x?.quantity}
+                            </span>
+                          </span>
+                          <span className="co-item-amt">
+                            {cart?.appliedCoupon &&
+                            cart?.couponType === "product" &&
+                            x?.discountPrice ? (
+                              <>
+                                <s>₹{Math.round(x?.price * x?.quantity)}</s>
+                                <b className="is-cut">
+                                  ₹{Math.round(x?.discountPrice * x?.quantity)}
+                                </b>
+                              </>
+                            ) : (
+                              <b>₹{Math.round(x?.price * x?.quantity)}</b>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="co-perf" aria-hidden="true" />
+
+                    <dl className="co-costs">
+                      <div className="co-cost">
+                        <dt>Cart value</dt>
+                        <dd>
+                          {cart?.discount_amount === 0 ? (
+                            <span>₹{Math.round(cart?.total_amount)}</span>
+                          ) : (
+                            <span className="co-cut">
+                              <s>₹{Math.round(cart?.total_amount)}</s>
+                              <b className="is-cut">
+                                ₹{Math.round(cart?.discount_amount)}
+                              </b>
+                            </span>
+                          )}
+                        </dd>
                       </div>
 
-                      {/* Pincode Input */}
-                      {radiobtn && (
-                        <div className="tw-mt-4 tw-flex tw-gap-3">
-                          <input
-                            style={{ paddingLeft: "10px" }}
-                            placeholder="Enter Pincode"
-                            className="tw-flex-1 tw-h-10 tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-text-sm focus:tw-outline-none focus:tw-border-[#182c5a] tw-transition-colors"
-                            value={pincode}
-                            maxLength={6}
-                            pattern="[0-9]*"
-                            onChange={(e) => {
-                              const enteredValue = e.target.value.replace(/\D/g, "");
-                              setPincode(enteredValue);
-                              if (enteredValue.length === 6) {
-                                calculateFinalShipCost(enteredValue);
-                              }
-                            }}
-                          />
+                      <div className="co-cost">
+                        <dt>Delivery</dt>
+                        <dd>
+                          {cart?.appliedCoupon &&
+                          cart?.couponType === "shipping" ? (
+                            <span className="co-cut">
+                              <s>₹{Math.round(originalShippingCost)}</s>
+                              <b className="is-cut">
+                                ₹{Math.round(shippingCost)}
+                              </b>
+                            </span>
+                          ) : (
+                            <span>₹{Math.round(shippingCost)}</span>
+                          )}
+                        </dd>
+                      </div>
+
+                      <div className="co-cost">
+                        <dt>Cart + delivery</dt>
+                        <dd>
+                          {cart?.discount_amount != 0 ? (
+                            <span>
+                              ₹{Math.round(orderValueBeforeTaxAllTypeDiscount)}
+                            </span>
+                          ) : cart?.couponType === "both" ? (
+                            <span className="co-cut">
+                              <s>₹{Math.round(orderValueBeforeTax)}</s>
+                              <b className="is-cut">
+                                ₹
+                                {Math.round(
+                                  bothTypeDiscountOrderValueBeforeTax,
+                                )}
+                              </b>
+                            </span>
+                          ) : (
+                            <span>₹{Math.round(orderValueBeforeTax)}</span>
+                          )}
+                        </dd>
+                      </div>
+
+                      <div className="co-cost">
+                        <dt className="co-gst">
+                          GST
+                          <button
+                            type="button"
+                            className="co-gst-i"
+                            onClick={togglePopup}
+                            aria-label="How GST is calculated"
+                          >
+                            <img
+                              src="/circleinfo.svg"
+                              alt=""
+                              height={14}
+                              width={14}
+                            />
+                          </button>
+                          {showPopup && (
+                            <span className="co-gst-pop" role="tooltip">
+                              GST is applied at the applicable rate for each
+                              product in your cart.
+                            </span>
+                          )}
+                        </dt>
+                        <dd>₹{Math.round(gstTax)}</dd>
+                      </div>
+
+                      {cart?.appliedCoupon && (
+                        <div className="co-cost">
+                          <dt>Coupon · {cart?.appliedCouponName}</dt>
+                          <dd className="co-applied">Applied</dd>
                         </div>
                       )}
-                    </div>
+                    </dl>
 
-                    {/* Delivery Cost Row */}
-                    <div className="tw-flex tw-justify-between tw-items-center tw-py-4">
-                      <span className="tw-text-sm tw-font-medium tw-text-slate-600">Delivery Charges</span>
-                      <span className="tw-text-sm tw-font-semibold tw-text-slate-800">
-                        {cart?.appliedCoupon && cart?.couponType === "shipping" ? (
-                          <div className="tw-flex tw-gap-2">
-                            <s className="tw-text-slate-400">₹{Math.round(originalShippingCost)}</s>
-                            <span className="tw-text-red-500">₹{Math.round(shippingCost)}</span>
-                          </div>
-                        ) : (
-                          <span>₹{Math.round(shippingCost)}</span>
-                        )}
+                    <div className="co-total">
+                      <span className="co-total-label">Total payable</span>
+                      <span className="co-total-amt">
+                        ₹{Math.round(totalOrderValue)}
                       </span>
                     </div>
 
-                    {/* Total Cart Value + Delivery */}
-                    <div className="tw-flex tw-justify-between tw-items-center tw-py-4">
-                      <span className="tw-text-sm tw-font-medium tw-text-slate-600">Total Cart Value + Delivery Charges</span>
-                      <span className="tw-text-sm tw-font-semibold tw-text-slate-800">
-                        {cart?.discount_amount != 0 ? (
-                          <span>₹{Math.round(orderValueBeforeTaxAllTypeDiscount)}</span>
-                        ) : cart?.couponType === "both" ? (
-                          <div className="tw-flex tw-gap-2">
-                            <s className="tw-text-slate-400">₹{Math.round(orderValueBeforeTax)}</s>
-                            <span className="tw-text-red-500">₹{Math.round(bothTypeDiscountOrderValueBeforeTax)}</span>
-                          </div>
-                        ) : (
-                          <span>₹{Math.round(orderValueBeforeTax)}</span>
-                        )}
-                      </span>
-                    </div>
-
-                    {/* GST Row */}
-                    <div className="tw-flex tw-justify-between tw-items-center tw-py-4">
-                      <span className="tw-text-sm tw-font-medium tw-text-slate-600 tw-flex tw-items-center tw-gap-1.5 tw-relative">
-                        GST
-                        <sup onClick={togglePopup} className="tw-cursor-pointer tw-text-[#182c5a] hover:tw-opacity-80">
-                          <img src="/circleinfo.svg" alt="" height={14} width={14} />
-                        </sup>
-                        {showPopup && (
-                          <span className="tw-absolute tw-bg-slate-800 tw-text-white tw-text-[10px] tw-p-2 tw-rounded-lg tw-shadow-lg tw-z-10 tw-mt-8 tw-max-w-[200px]">
-                            GST is calculated from server category and subcategory rates.
-                          </span>
-                        )}
-                      </span>
-                      <span className="tw-text-sm tw-font-semibold tw-text-slate-800">₹{Math.round(gstTax)}</span>
-                    </div>
-
-                    {/* Coupon Row */}
-                    {cart?.appliedCoupon && (
-                      <div className="tw-flex tw-justify-between tw-items-center tw-py-4">
-                        <span className="tw-text-sm tw-font-medium tw-text-slate-600">Coupon Code ({cart?.appliedCouponName})</span>
-                        <span className="tw-text-sm tw-font-semibold tw-text-green-600">Applied</span>
-                      </div>
-                    )}
-
-                    {/* Total Payable Amount */}
-                    <div className="tw-flex tw-justify-between tw-items-center tw-py-5 tw-border-t tw-border-solid tw-border-slate-100">
-                      <span className="tw-text-base tw-font-bold tw-text-[#182c5a]">Total Payable Amount</span>
-                      <span className="tw-text-xl tw-font-extrabold tw-text-[#182c5a]">₹{Math.round(totalOrderValue)}</span>
-                    </div>
-                  </div>
-
-                  {/* Payment Note */}
-                  <div className="tw-mt-6 tw-bg-amber-50/60 tw-border tw-border-solid tw-border-amber-100 tw-rounded-xl tw-p-4 tw-flex tw-gap-3">
-                    <div className="tw-text-amber-800 tw-text-xs max-[900px]:tw-text-xs tw-leading-relaxed">
-                      Only Prepaid Orders accepted. For payment, use this UPI ID: <strong className="tw-text-amber-900 tw-bg-amber-100/50 tw-px-1.5 tw-py-0.5 tw-rounded tw-font-mono tw-text-sm">premindustriesecom@hsbc</strong>. Once we receive your payment, we will update your order status and an Email Confirmation will be sent.
-                    </div>
-                  </div>
-
-                  {/* Button */}
-                  <div className="tw-mt-6 tw-flex tw-justify-center">
-                    {stockCheckResult ? (
-                      <p className="tw-text-sm tw-text-red-500 tw-font-semibold">
-                        Some Items are out of stock. Cannot Place Order!
+                    <div className="co-note">
+                      <span className="co-note-h">Prepaid orders only</span>
+                      <p>
+                        Pay securely online, or to UPI ID{" "}
+                        <strong className="co-upi">
+                          premindustriesecom@hsbc
+                        </strong>
+                        . Once payment is received we update your order status
+                        and email a confirmation.
                       </p>
+                    </div>
+
+                    {stockCheckResult ? (
+                      <div className="co-oos" role="alert">
+                        Some items are out of stock — this order can’t be
+                        placed.
+                      </div>
                     ) : (
                       <button
-                        className="tw-w-full tw-bg-[#182c5a] hover:tw-bg-[#e92227] tw-text-white tw-font-bold tw-text-sm tw-py-3.5 tw-px-8 tw-rounded-xl tw-transition-colors tw-shadow-sm"
-                        style={{
-                          opacity: isSubmitting ? 0.7 : 1,
-                          cursor: isSubmitting ? "not-allowed" : "pointer",
-                        }}
+                        type="button"
+                        className="co-cta"
                         disabled={isSubmitting}
                         onClick={() => handleOrder(cart?.total_amount)}
                       >
-                        {isSubmitting ? "PROCESSING..." : "PLACE ORDER"}
+                        <span>
+                          {isSubmitting ? "Processing…" : "Place order"}
+                        </span>
+                        {!isSubmitting && (
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m13 6 6 6-6 6" />
+                          </svg>
+                        )}
                       </button>
                     )}
+
+                    <div className="co-trust">
+                      <span className="co-trust-i">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="4" y="10" width="16" height="11" rx="2" />
+                          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                        256-bit secured
+                      </span>
+                      <span className="co-trust-dot" aria-hidden="true" />
+                      <span className="co-trust-i">Razorpay · UPI · Cards</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </aside>
             </div>
+          </main>
+
+          {/* ───────── Mobile sticky pay bar ───────── */}
+          <div className="co-paybar">
+            <div className="co-paybar-tot">
+              <span>Total payable</span>
+              <strong>₹{Math.round(totalOrderValue)}</strong>
+            </div>
+            {stockCheckResult ? (
+              <span className="co-paybar-oos">Out of stock</span>
+            ) : (
+              <button
+                type="button"
+                className="co-paybar-btn"
+                disabled={isSubmitting}
+                onClick={() => handleOrder(cart?.total_amount)}
+              >
+                {isSubmitting ? "Processing…" : "Place order"}
+              </button>
+            )}
           </div>
+
+          <AddressModal
+            visible={visible}
+            handleVisible={handleVisible}
+            prev={userAddresss}
+            address={address}
+          ></AddressModal>
         </div>
-        <AddressModal
-          visible={visible}
-          handleVisible={handleVisible}
-          prev={userAddresss}
-          address={address}
-        ></AddressModal>
-      </div>
       )}
+
       <style jsx>{`
-        .deliverycostdiv {
-          height: 222px;
-          border: 1px solid #ebebeb;
-          border-top: none;
-          border-left: none;
+        /* ============ Dispatch-manifest checkout ============ */
+        .co-root,
+        .co-boot {
+          --ink: #14213d;
+          --navy: #182c5a;
+          --navy-2: #26407e;
+          --signal: #e92227;
+          --paper: #ffffff;
+          --canvas: #eceef2;
+          --line: #e4e7ec;
+          --line-2: #eef1f4;
+          --mut: #667085;
+          --mut-2: #98a2b3;
+          --kraft: #efe6d2;
+          --kraft-line: #d8c5a0;
+          --ok: #1f8a55;
+          --disp: "Montserrat", sans-serif;
+          --ui: "Montserrat", sans-serif;
+          --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo,
+            "Roboto Mono", monospace;
+        }
+
+        /* ---- boot / auth-check screen ---- */
+        .co-boot {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+          background: var(--canvas);
+          font-family: var(--ui);
+        }
+        .co-boot-mark img {
+          height: 42px;
+          width: auto;
+          opacity: 0.92;
+        }
+        .co-boot-label {
+          font-size: 13px;
+          letter-spacing: 0.04em;
+          color: var(--mut);
+        }
+        .co-boot-bar {
+          width: 160px;
+          height: 3px;
+          border-radius: 99px;
+          background: #dfe3ea;
+          overflow: hidden;
+        }
+        .co-boot-bar i {
+          display: block;
+          height: 100%;
+          width: 40%;
+          border-radius: 99px;
+          background: var(--navy);
+          animation: co-load 1.1s ease-in-out infinite;
+        }
+        @keyframes co-load {
+          0% {
+            transform: translateX(-120%);
+          }
+          100% {
+            transform: translateX(320%);
+          }
+        }
+
+        /* ---- root canvas ---- */
+        .co-root {
+          min-height: 100vh;
+          font-family: var(--ui);
+          color: var(--ink);
+          background-color: var(--canvas);
+          background-image: radial-gradient(
+            circle,
+            rgba(20, 33, 61, 0.045) 1px,
+            transparent 1px
+          );
+          background-size: 22px 22px;
+          padding-bottom: 28px;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- header ---- */
+        .co-head {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          background: rgba(255, 255, 255, 0.86);
+          backdrop-filter: saturate(1.4) blur(10px);
+          border-bottom: 1px solid var(--line);
+        }
+        .co-head-in {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 0 28px;
+          height: 66px;
           display: flex;
           align-items: center;
+          justify-content: space-between;
+          gap: 20px;
         }
-        @media (max-width: 915px) { .deliverycostdiv { height: 310px; } }
-        @media (max-width: 780px) { .deliverycostdiv { height: 355px; } }
-        @media (max-width: 450px) { .deliverycostdiv { height: 332px; } }
-        @media (max-width: 415px) { .deliverycostdiv { height: 353px; } }
-        @media (max-width: 391px) { .deliverycostdiv { height: 353px; } }
-        @media (max-width: 361px) { .deliverycostdiv { height: 378px; } }
+        .co-brand {
+          display: inline-flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .co-brand img {
+          height: 34px;
+          width: auto;
+        }
+
+        .co-steps {
+          display: flex;
+          align-items: center;
+          gap: 26px;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        .co-step {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          position: relative;
+          color: var(--mut-2);
+        }
+        .co-step + .co-step::before {
+          content: "";
+          position: absolute;
+          left: -18px;
+          top: 50%;
+          width: 10px;
+          height: 1px;
+          background: var(--line);
+        }
+        .co-step-no {
+          font-family: var(--mono);
+          font-size: 11px;
+          font-weight: 600;
+          width: 25px;
+          height: 25px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          border: 1.5px solid var(--line);
+          background: #fff;
+          color: var(--mut-2);
+        }
+        .co-step-tx {
+          font-size: 12.5px;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+        }
+        .co-step.is-done .co-step-no {
+          border-color: var(--navy);
+          color: #fff;
+          background: var(--navy);
+        }
+        .co-step.is-done .co-step-tx {
+          color: var(--ink);
+        }
+        .co-step.is-now .co-step-no {
+          border-color: var(--navy);
+          color: var(--navy);
+          background: #fff;
+          box-shadow: 0 0 0 4px rgba(24, 44, 90, 0.1);
+        }
+        .co-step.is-now .co-step-tx {
+          color: var(--ink);
+        }
+
+        .co-head-right {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex-shrink: 0;
+        }
+        .co-secure {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--ok);
+        }
+        .co-back {
+          font-family: var(--ui);
+          font-size: 12.5px;
+          font-weight: 600;
+          color: var(--ink);
+          background: #fff;
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 7px 13px;
+          cursor: pointer;
+          transition:
+            border-color 0.15s ease,
+            color 0.15s ease;
+        }
+        .co-back:hover {
+          border-color: var(--navy);
+          color: var(--navy);
+        }
+
+        /* ---- layout ---- */
+        .co-main {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 34px 28px 0;
+        }
+        .co-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 396px;
+          gap: 30px;
+          align-items: start;
+        }
+
+        /* ---- section heads ---- */
+        .co-sec-head {
+          animation: co-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        }
+        .co-sec-head--gap {
+          margin-top: 34px;
+        }
+        .co-eyebrow {
+          display: inline-block;
+          font-family: var(--mono);
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--navy-2);
+          margin-bottom: 7px;
+        }
+        .co-h1,
+        .co-h2 {
+          font-family: var(--disp);
+          color: var(--ink);
+          margin: 0;
+          letter-spacing: -0.01em;
+        }
+        .co-h1 {
+          font-size: 30px;
+          font-weight: 800;
+          line-height: 1.05;
+        }
+        .co-h2 {
+          font-size: 20px;
+          font-weight: 700;
+        }
+        .co-sub {
+          margin: 8px 0 0;
+          font-size: 13.5px;
+          color: var(--mut);
+          max-width: 46ch;
+        }
+
+        /* ---- address cards ---- */
+        .co-addr-wrap {
+          margin-top: 22px;
+          animation: co-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.05s both;
+        }
+        .co-field-label {
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          color: var(--mut);
+          margin-bottom: 12px;
+        }
+        .co-addr-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+        .co-addr {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 17px 17px 15px;
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          cursor: pointer;
+          text-align: left;
+          transition:
+            border-color 0.16s ease,
+            box-shadow 0.16s ease,
+            transform 0.16s ease;
+        }
+        .co-addr:hover {
+          border-color: #cdd3de;
+          box-shadow: 0 6px 20px rgba(20, 33, 61, 0.06);
+        }
+        .co-addr:focus-visible {
+          outline: none;
+          border-color: var(--navy);
+          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.16);
+        }
+        .co-addr.is-sel {
+          border-color: var(--navy);
+          box-shadow: 0 8px 24px rgba(24, 44, 90, 0.12);
+        }
+        .co-addr-top {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .co-addr-tick {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          border: 2px solid var(--line);
+          flex-shrink: 0;
+          position: relative;
+          transition:
+            border-color 0.16s ease,
+            background 0.16s ease;
+        }
+        .co-addr.is-sel .co-addr-tick {
+          border-color: var(--navy);
+          background: var(--navy);
+        }
+        .co-addr.is-sel .co-addr-tick::after {
+          content: "";
+          position: absolute;
+          inset: 4px;
+          border-radius: 50%;
+          background: #fff;
+        }
+        .co-addr-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+        .co-addr-lines {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 13px;
+          line-height: 1.45;
+          color: #475067;
+        }
+        .co-addr-dim {
+          color: var(--mut-2);
+        }
+        .co-addr-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 1px;
+        }
+        .co-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 8px 3px 6px;
+          background: #f4f6f9;
+          border: 1px solid var(--line-2);
+          border-radius: 7px;
+          max-width: 100%;
+        }
+        .co-chip i {
+          font-family: var(--mono);
+          font-style: normal;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          color: var(--mut-2);
+        }
+        .co-chip b {
+          font-family: var(--mono);
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--ink);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .co-chip--wide {
+          width: 100%;
+        }
+        .co-addr-email {
+          font-size: 12px;
+          color: var(--mut);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .co-addr-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: auto;
+          padding-top: 4px;
+        }
+        .co-link {
+          font-family: var(--ui);
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--navy);
+          background: none;
+          border: 0;
+          padding: 0;
+          cursor: pointer;
+          transition: color 0.15s ease;
+        }
+        .co-link:hover {
+          color: var(--signal);
+        }
+        .co-link--mut {
+          color: var(--mut);
+        }
+        .co-link--mut:hover {
+          color: var(--signal);
+        }
+        .co-sep {
+          width: 1px;
+          height: 11px;
+          background: var(--line);
+        }
+        .co-addr-add {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          min-height: 150px;
+          background: transparent;
+          border: 1.5px dashed #cbd2de;
+          border-radius: 14px;
+          color: var(--mut);
+          font-family: var(--ui);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition:
+            border-color 0.16s ease,
+            color 0.16s ease,
+            background 0.16s ease;
+        }
+        .co-addr-add:hover {
+          border-color: var(--navy);
+          color: var(--navy);
+          background: rgba(24, 44, 90, 0.03);
+        }
+
+        /* ---- guest form ---- */
+        .co-form {
+          margin-top: 22px;
+        }
+        .co-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+        .co-fld {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+        }
+        .co-fld--full {
+          grid-column: 1 / -1;
+        }
+        .co-fld-l {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--ink);
+          letter-spacing: 0.01em;
+        }
+        .co-fld-l i {
+          color: var(--signal);
+          font-style: normal;
+        }
+        .co-in {
+          height: 46px;
+          padding: 0 14px;
+          font-family: var(--ui);
+          font-size: 14px;
+          color: var(--ink);
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+        }
+        .co-in--mono {
+          font-family: var(--mono);
+          letter-spacing: 0.02em;
+        }
+        .co-in:focus {
+          outline: none;
+          border-color: var(--navy);
+          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.13);
+        }
+        .co-fld--select :global(.css-13cymwt-control),
+        .co-fld--select :global(.css-t3ipsp-control) {
+          min-height: 46px;
+          border-radius: 10px;
+          border-color: var(--line);
+        }
+
+        /* ---- delivery options ---- */
+        .co-ship {
+          margin-top: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .co-ship-opt {
+          display: block;
+          cursor: pointer;
+        }
+        .co-ship-opt input {
+          position: absolute;
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .co-ship-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 15px 17px;
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 13px;
+          transition:
+            border-color 0.16s ease,
+            box-shadow 0.16s ease;
+        }
+        .co-ship-opt:hover .co-ship-card {
+          border-color: #cdd3de;
+        }
+        .co-ship-opt input:focus-visible + .co-ship-card {
+          border-color: var(--navy);
+          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.16);
+        }
+        .co-ship-opt input:checked + .co-ship-card {
+          border-color: var(--navy);
+          box-shadow: 0 8px 22px rgba(24, 44, 90, 0.1);
+        }
+        .co-ship-radio {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 2px solid var(--line);
+          flex-shrink: 0;
+          position: relative;
+          transition:
+            border-color 0.16s ease,
+            background 0.16s ease;
+        }
+        .co-ship-opt input:checked + .co-ship-card .co-ship-radio {
+          border-color: var(--navy);
+          background: var(--navy);
+        }
+        .co-ship-opt input:checked + .co-ship-card .co-ship-radio::after {
+          content: "";
+          position: absolute;
+          inset: 4px;
+          border-radius: 50%;
+          background: #fff;
+        }
+        .co-ship-main {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex: 1;
+        }
+        .co-ship-name {
+          font-size: 14.5px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+        .co-ship-sub {
+          font-size: 12px;
+          color: var(--mut);
+        }
+        .co-ship-price {
+          font-family: var(--mono);
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--navy);
+        }
+        .co-ship-price--free {
+          color: var(--ok);
+        }
+        .co-pin {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          margin-top: 2px;
+          animation: co-rise 0.3s ease both;
+        }
+        .co-pin-l {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--ink);
+        }
+        .co-pin-in {
+          height: 46px;
+          padding: 0 14px;
+          font-family: var(--mono);
+          font-size: 14px;
+          letter-spacing: 0.18em;
+          color: var(--ink);
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          max-width: 220px;
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+        }
+        .co-pin-in:focus {
+          outline: none;
+          border-color: var(--navy);
+          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.13);
+        }
+
+        /* ---- dispatch manifest ---- */
+        .co-right {
+          position: sticky;
+          top: 90px;
+          animation: co-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
+        }
+        .co-manifest {
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 18px 50px rgba(20, 33, 61, 0.08);
+        }
+        .co-manifest-tape {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 13px 20px;
+          background: var(--kraft);
+          border-bottom: 1px dashed var(--kraft-line);
+          background-image: repeating-linear-gradient(
+            -45deg,
+            rgba(216, 197, 160, 0.18) 0,
+            rgba(216, 197, 160, 0.18) 1px,
+            transparent 1px,
+            transparent 9px
+          );
+        }
+        .co-manifest-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-family: var(--disp);
+          font-size: 13.5px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: var(--ink);
+        }
+        .co-manifest-ref {
+          font-family: var(--mono);
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: #8a7a55;
+        }
+        .co-manifest-body {
+          padding: 20px;
+        }
+
+        /* items */
+        .co-items {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          max-height: 290px;
+          overflow-y: auto;
+        }
+        .co-items::-webkit-scrollbar {
+          width: 5px;
+        }
+        .co-items::-webkit-scrollbar-thumb {
+          background: #d7dbe3;
+          border-radius: 99px;
+        }
+        .co-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .co-item-thumb {
+          width: 50px;
+          height: 50px;
+          flex-shrink: 0;
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          background: #f7f8fa;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .co-item-thumb img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+        .co-item-info {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .co-item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink);
+          text-transform: capitalize;
+          line-height: 1.35;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .co-item-spec {
+          font-family: var(--mono);
+          font-size: 11px;
+          color: var(--mut);
+          letter-spacing: 0.01em;
+        }
+        .co-item-amt {
+          flex-shrink: 0;
+          text-align: right;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          font-family: var(--mono);
+        }
+        .co-item-amt b {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+        .co-item-amt s {
+          font-size: 11px;
+          color: var(--mut-2);
+        }
+        .co-item-amt .is-cut {
+          color: var(--signal);
+        }
+
+        /* perforation */
+        .co-perf {
+          position: relative;
+          height: 0;
+          margin: 18px -20px;
+          border-top: 2px dashed var(--line);
+        }
+        .co-perf::before,
+        .co-perf::after {
+          content: "";
+          position: absolute;
+          top: -9px;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--canvas);
+          border: 1px solid var(--line);
+        }
+        .co-perf::before {
+          left: -8px;
+        }
+        .co-perf::after {
+          right: -8px;
+        }
+
+        /* cost rows */
+        .co-costs {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 11px;
+        }
+        .co-cost {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .co-cost dt {
+          font-size: 13px;
+          color: var(--mut);
+          font-weight: 500;
+        }
+        .co-cost dd {
+          margin: 0;
+          font-family: var(--mono);
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+        .co-cut {
+          display: inline-flex;
+          align-items: baseline;
+          gap: 7px;
+        }
+        .co-cut s {
+          font-size: 11.5px;
+          font-weight: 500;
+          color: var(--mut-2);
+        }
+        .co-cut .is-cut {
+          color: var(--signal);
+        }
+        .co-applied {
+          color: var(--ok) !important;
+          font-family: var(--ui) !important;
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .co-gst {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          position: relative;
+        }
+        .co-gst-i {
+          display: inline-flex;
+          background: none;
+          border: 0;
+          padding: 0;
+          cursor: pointer;
+          line-height: 0;
+          opacity: 0.7;
+          transition: opacity 0.15s ease;
+        }
+        .co-gst-i:hover {
+          opacity: 1;
+        }
+        .co-gst-pop {
+          position: absolute;
+          left: 0;
+          top: calc(100% + 8px);
+          width: 210px;
+          padding: 9px 11px;
+          font-size: 11px;
+          line-height: 1.5;
+          color: #fff;
+          background: var(--ink);
+          border-radius: 9px;
+          box-shadow: 0 10px 24px rgba(20, 33, 61, 0.2);
+          z-index: 5;
+        }
+        .co-gst-pop::before {
+          content: "";
+          position: absolute;
+          top: -5px;
+          left: 14px;
+          width: 10px;
+          height: 10px;
+          background: var(--ink);
+          transform: rotate(45deg);
+        }
+
+        /* total stamp */
+        .co-total {
+          margin-top: 18px;
+          padding-top: 17px;
+          border-top: 1px solid var(--line);
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+        }
+        .co-total-label {
+          font-family: var(--disp);
+          font-size: 13px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--ink);
+        }
+        .co-total-amt {
+          position: relative;
+          font-family: var(--disp);
+          font-size: 30px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          color: var(--navy);
+          line-height: 1;
+          padding-bottom: 5px;
+        }
+        .co-total-amt::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 3px;
+          border-radius: 2px;
+          background: var(--signal);
+        }
+
+        /* note */
+        .co-note {
+          margin-top: 18px;
+          padding: 14px 15px;
+          background: #faf6ec;
+          border: 1px solid #efe3c6;
+          border-radius: 12px;
+        }
+        .co-note-h {
+          display: block;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          color: #8a6d1e;
+          margin-bottom: 4px;
+        }
+        .co-note p {
+          margin: 0;
+          font-size: 12px;
+          line-height: 1.55;
+          color: #6f5a1e;
+        }
+        .co-upi {
+          font-family: var(--mono);
+          font-size: 12px;
+          font-weight: 700;
+          color: #5c4912;
+          background: #f1e6c6;
+          padding: 1px 6px;
+          border-radius: 5px;
+          white-space: nowrap;
+        }
+
+        /* CTA */
+        .co-cta {
+          margin-top: 18px;
+          width: 100%;
+          height: 54px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          font-family: var(--disp);
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          color: #fff;
+          background: var(--navy);
+          border: 0;
+          border-radius: 13px;
+          cursor: pointer;
+          box-shadow: 0 12px 26px rgba(24, 44, 90, 0.26);
+          transition:
+            background 0.18s ease,
+            transform 0.12s ease,
+            box-shadow 0.18s ease;
+        }
+        .co-cta svg {
+          transition: transform 0.18s ease;
+        }
+        .co-cta:hover:not(:disabled) {
+          background: var(--signal);
+          box-shadow: 0 14px 30px rgba(233, 34, 39, 0.28);
+        }
+        .co-cta:hover:not(:disabled) svg {
+          transform: translateX(4px);
+        }
+        .co-cta:active:not(:disabled) {
+          transform: scale(0.985);
+        }
+        .co-cta:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+        .co-oos {
+          margin-top: 18px;
+          padding: 14px;
+          text-align: center;
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--signal);
+          background: #fdf0f0;
+          border: 1px solid #f7d4d5;
+          border-radius: 12px;
+        }
+
+        /* trust */
+        .co-trust {
+          margin-top: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        .co-trust-i {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--mut);
+        }
+        .co-trust-dot {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: var(--mut-2);
+        }
+
+        /* ---- mobile pay bar ---- */
+        .co-paybar {
+          display: none;
+        }
+
+        @keyframes co-rise {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* ============ responsive ============ */
+        @media (max-width: 980px) {
+          .co-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+          .co-right {
+            position: static;
+            top: auto;
+          }
+          .co-main {
+            padding: 26px 18px 0;
+          }
+          .co-head-in {
+            padding: 0 18px;
+          }
+          .co-step-tx {
+            display: none;
+          }
+          .co-step + .co-step::before {
+            left: -16px;
+            width: 8px;
+          }
+          .co-steps {
+            gap: 22px;
+          }
+          .co-paybar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: saturate(1.4) blur(10px);
+            border-top: 1px solid var(--line);
+            box-shadow: 0 -8px 24px rgba(20, 33, 61, 0.08);
+          }
+          .co-paybar-tot {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+          }
+          .co-paybar-tot span {
+            font-size: 11px;
+            color: var(--mut);
+          }
+          .co-paybar-tot strong {
+            font-family: var(--disp);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--navy);
+          }
+          .co-paybar-btn {
+            flex: 1;
+            max-width: 220px;
+            height: 48px;
+            font-family: var(--disp);
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--navy);
+            border: 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.18s ease;
+          }
+          .co-paybar-btn:active:not(:disabled) {
+            background: var(--signal);
+          }
+          .co-paybar-btn:disabled {
+            opacity: 0.65;
+          }
+          .co-paybar-oos {
+            flex: 1;
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--signal);
+          }
+          .co-root {
+            padding-bottom: 96px;
+          }
+        }
+
+        @media (max-width: 620px) {
+          .co-addr-grid {
+            grid-template-columns: 1fr;
+          }
+          .co-form-grid {
+            grid-template-columns: 1fr;
+          }
+          .co-h1 {
+            font-size: 26px;
+          }
+          .co-secure {
+            display: none;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .co-root *,
+          .co-boot * {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+          }
+        }
       `}</style>
     </>
   );
 };
 
 export default Checkoutpage;
-
-

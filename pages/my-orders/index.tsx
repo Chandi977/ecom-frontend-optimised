@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Banner from "../../components/orders/OrdersBanner";
 import { getService, putService } from "../../services/service";
 import { format } from "date-fns";
@@ -8,13 +8,41 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+const getOrderCreatedTime = (order) => {
+  const timestamp = new Date(order?.createdAt || 0).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const sortOrdersRecentFirst = (orderList) =>
+  [...orderList].sort(
+    (currentOrder, nextOrder) =>
+      getOrderCreatedTime(nextOrder) - getOrderCreatedTime(currentOrder),
+  );
+
+// The sequential "PI-<n>" number is only minted by the backend once payment is
+// confirmed (asynchronously). Until then an order carries a temporary "TMP-..." id.
+const isFinalOrderId = (value) =>
+  typeof value === "string" && /^PI-\d+$/.test(value);
+
+// An order whose payment is in/through verification but whose PI- number has not
+// been minted yet — poll until it appears instead of showing the temporary id.
+const PAID_STATUSES = ["Payment Processed", "Payment Verified", "Paid"];
+const orderAwaitingNumber = (order) =>
+  !isFinalOrderId(order?.orderId) && PAID_STATUSES.includes(order?.paymentStatus);
+
+const ORDER_ID_POLL_ATTEMPTS = 6;
+const ORDER_ID_POLL_INTERVAL_MS = 1500;
+
 const Checkoutpage = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [selectedOderValue, setSelectedOrderValue] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOderValue, setSelectedOrderValue] = useState<number | null>(null);
   const [utrNumber, setUtrNumber] = useState("");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const pollAttemptsRef = useRef(0);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
 
   const handleModalShow = (orderId, orderValue) => {
@@ -62,13 +90,43 @@ const Checkoutpage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // After a payment is confirmed the PI- number is minted asynchronously, so a
+  // freshly-paid order may still show its temporary id. Re-fetch a few times until
+  // every paid order has its real number.
+  useEffect(() => {
+    if (!userEmail) return undefined;
+
+    const pending = orders.some(orderAwaitingNumber);
+    if (!pending) {
+      pollAttemptsRef.current = 0;
+      return undefined;
+    }
+    if (pollAttemptsRef.current >= ORDER_ID_POLL_ATTEMPTS) return undefined;
+
+    pollAttemptsRef.current += 1;
+    pollTimerRef.current = setTimeout(() => {
+      fetchOrdersByEmail(userEmail);
+    }, ORDER_ID_POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, userEmail]);
+
   const getUser = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem("PIUser"));
+      const userStr = localStorage.getItem("PIUser");
+      if (!userStr) {
+        setLoadingOrders(false);
+        return;
+      }
+      const user = JSON.parse(userStr);
       const userResponse = await getService(`getuser/${user?._id}`);
 
       if (userResponse?.data?.success) {
         const email = userResponse?.data?.data?.email_address;
+        setUserEmail(email);
         // Fetch orders based on the email address
         await fetchOrdersByEmail(email);
       } else {
@@ -89,7 +147,7 @@ const Checkoutpage = () => {
         : Array.isArray(payload)
           ? payload
           : [];
-      setOrders(data);
+      setOrders(sortOrdersRecentFirst(data));
     } catch (error) {
       console.error("Error fetching orders:", error);
       setOrders([]);
@@ -266,6 +324,13 @@ const Checkoutpage = () => {
     return `₹ ${num.toFixed(2)}`;
   };
 
+  // Show the real PI- number when available; never expose the temporary id.
+  const displayOrderId = (order) => {
+    if (isFinalOrderId(order?.orderId)) return order.orderId;
+    if (orderAwaitingNumber(order)) return "Generating…";
+    return "Pending payment";
+  };
+
   return (
     <>
       <Head>
@@ -302,7 +367,6 @@ const Checkoutpage = () => {
                       {orders?.length > 0 ? (
                         orders
                           ?.slice()
-                          ?.reverse()
                           .map((order, index) => {
                             const outOfStock = isOrderOutOfStock(order);
                             const canPay =
@@ -347,7 +411,7 @@ const Checkoutpage = () => {
                                     <div className={"infoGrid"}>
                                       <div className={"kv"}>
                                         <span className={"label_"}>Order ID</span>
-                                        <span className={"value_"}>{order?.orderId}</span>
+                                        <span className={"value_"}>{displayOrderId(order)}</span>
                                       </div>
                                       <div className={"kv"}>
                                         <span className={"label_"}>Total Order Value</span>

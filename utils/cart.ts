@@ -272,7 +272,7 @@ export const addToCart = async (
       return true;
     }
   } else {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     clearGuestCart();
 
     const cartss = {
@@ -305,7 +305,7 @@ export const addToCart = async (
 export const getCart = async () => {
   const token = localStorage.getItem("PIToken");
   if (token) {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     const res = await getService(`cart/${user?._id}`, {}, {
       silent: true,
       suppressAuthRedirect: true,
@@ -325,7 +325,7 @@ export const getCart = async () => {
 export const getCartCount = async () => {
   const token = localStorage.getItem("PIToken");
   if (token) {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     const res = await getService(`cart/count/${user?._id}`, {}, {
       silent: true,
       suppressAuthRedirect: true,
@@ -372,7 +372,7 @@ export const alterQuantity = async (product, quantity, packSize) => {
     notifyCartUpdated();
     return true;
   } else if (token) {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     const data = {
       user: user?._id,
       product,
@@ -418,7 +418,7 @@ export const removeFromCart = async (product) => {
     notifyCartUpdated();
     return true;
   } else if (token) {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     //console.log("177", product);
     const data = {
       user: user?._id,
@@ -439,7 +439,7 @@ export const emptyCart = async () => {
     clearGuestCart();
     notifyCartUpdated();
   } else {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     const data = {
       id: user?._id,
     };
@@ -450,7 +450,7 @@ export const emptyCart = async () => {
 
 export const updateCart = async (updates, couponCode, couponType, couponUse) => {
   const token = localStorage.getItem("PIToken");
-  const user = JSON.parse(localStorage.getItem("PIUser"))?._id;
+  const user = JSON.parse(localStorage.getItem("PIUser") || "null")?._id;
 
   const data = {
     user: user,
@@ -483,7 +483,7 @@ export const updateShippingDiscount = async (
   couponUse
 ) => {
   const token = localStorage.getItem("PIToken");
-  const user = JSON.parse(localStorage.getItem("PIUser"))?._id;
+  const user = JSON.parse(localStorage.getItem("PIUser") || "null")?._id;
 
   //console.log("248" , couponType);
 
@@ -528,7 +528,7 @@ export const updateShippingDiscount = async (
   // console.log("Request Data:", data);
 
   try {
-    const res = await postService("updateShippingCoupon", data, token);
+    const res = await postService("updateShippingCoupon", data);
     return res?.data?.success;
   } catch (error) {
     console.error("Error updating shipping discount:", error);
@@ -545,7 +545,7 @@ export const updateAllDiscount = async (
   couponUse
 ) => {
   const token = localStorage.getItem("PIToken");
-  const user = JSON.parse(localStorage.getItem("PIUser"))?._id;
+  const user = JSON.parse(localStorage.getItem("PIUser") || "null")?._id;
 
   // console.log("Input Values - shippingDiscountPrice:", shippingDiscountPrice, "shippingDiscountPercentage:", shippingDiscountPercentage);
 
@@ -588,7 +588,7 @@ export const updateAllDiscount = async (
   // console.log("Request Data:", data);
 
   try {
-    const res = await postService("updateAllDiscount", data, token);
+    const res = await postService("updateAllDiscount", data);
     return res?.data?.success;
   } catch (error) {
     console.error("Error updating shipping discount:", error);
@@ -601,11 +601,11 @@ export const updateProductTypeAllDiscount = async (
   couponCode,
   couponType,
   couponUse,
+  allDiscountPercentage?,
+  allDiscountPrice?,
 ) => {
   const token = localStorage.getItem("PIToken");
-  const user = JSON.parse(localStorage.getItem("PIUser"))?._id;
-
-  // console.log("Input Values - shippingDiscountPrice:", shippingDiscountPrice, "shippingDiscountPercentage:", shippingDiscountPercentage);
+  const user = JSON.parse(localStorage.getItem("PIUser") || "null")?._id;
 
   const data = {
     user: user,
@@ -614,12 +614,14 @@ export const updateProductTypeAllDiscount = async (
     couponType: couponType,
     discount_amount: totalDiscountPrice,
     couponUse: couponUse,
+    allDiscountPercentage,
+    allDiscountPrice,
   };
 
   // console.log("Request Data:", data);
 
   try {
-    const res = await postService("/update/coupon/all", data, token);
+    const res = await postService("/update/coupon/all", data);
     return res?.data?.success;
   } catch (error) {
     console.error("Error updating shipping discount:", error);
@@ -635,7 +637,7 @@ export const removeCouponCode = async () => {
       setGuestCart(recalculateCart(cart.products));
     }
   } else {
-    const user = JSON.parse(localStorage.getItem("PIUser"));
+    const user = JSON.parse(localStorage.getItem("PIUser") || "null");
     const data = {
 user: user?._id,
     };

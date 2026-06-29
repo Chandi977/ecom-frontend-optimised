@@ -16,7 +16,7 @@ import { getProductDisplayName } from "../listing/productDisplay";
 function LandingBrandCard({ item }) {
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [favourite, setFavourite] = useState([]);
+  const [favourite, setFavourite] = useState<any[]>([]);
   const [final, setFinal] = useState(0);
 
   const getFavourite = async () => {

@@ -1,5 +1,5 @@
 export * from './product'
-export * from './api'
+export { type IApiResponse, type IApiError, type IRequestOptions, type SortOption } from './api'
 export * from './cart'
 export * from './user'
 

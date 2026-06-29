@@ -31,7 +31,7 @@ const VerifyOTP = () => {
       });
 
       // Check if the request was successful
-      if (response.status === 200) {
+      if (response && response.status === 200) {
         toast.success("OTP verified successfully");
 
         router.push({

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { indianStates } from "../../assets/data";
 import Banner from "../../components/landing/Banner";
 import { getService, putService } from "../../services/service";
@@ -8,19 +8,67 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import Head from "next/head";
 
+// The sequential "PI-<n>" number is only minted by the backend once payment is
+// confirmed (asynchronously). Until then an order carries a temporary "TMP-..." id.
+const isFinalOrderId = (value) =>
+  typeof value === "string" && /^PI-\d+$/.test(value);
+
+const PAID_STATUSES = ["Payment Processed", "Payment Verified", "Paid"];
+const orderAwaitingNumber = (order) =>
+  !isFinalOrderId(order?.orderId) && PAID_STATUSES.includes(order?.paymentStatus);
+
+// Show the real PI- number when available; never expose the temporary id.
+const displayOrderId = (order) => {
+  if (isFinalOrderId(order?.orderId)) return order.orderId;
+  if (orderAwaitingNumber(order)) return "Generating…";
+  return "Pending payment";
+};
+
+const ORDER_ID_POLL_ATTEMPTS = 6;
+const ORDER_ID_POLL_INTERVAL_MS = 1500;
+
 const Checkoutpage = () => {
   const [emailAddress, setEmailAddress] = useState("");
-  const [orders, setOrders] = useState(null); // Initialize orders as an object with a data array
+  const [orders, setOrders] = useState<any>(null); // Initialize orders as an object with a data array
   const [loadingOrders, setLoadingOrders] = useState(true);  const [utrNumber, setUtrNumber] = useState("");  const router = useRouter();
+  const pollAttemptsRef = useRef(0);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     getUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // After a payment is confirmed the PI- number is minted asynchronously, so the
+  // latest order may still show its temporary id. Re-fetch a few times until the
+  // real number appears.
+  useEffect(() => {
+    if (!emailAddress) return undefined;
+    if (!orderAwaitingNumber(orders)) {
+      pollAttemptsRef.current = 0;
+      return undefined;
+    }
+    if (pollAttemptsRef.current >= ORDER_ID_POLL_ATTEMPTS) return undefined;
+
+    pollAttemptsRef.current += 1;
+    pollTimerRef.current = setTimeout(() => {
+      fetchOrdersByEmail(emailAddress);
+    }, ORDER_ID_POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, emailAddress]);
+
   const getUser = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem("PIUser"));
+      const userStr = localStorage.getItem("PIUser");
+      if (!userStr) {
+        setLoadingOrders(false);
+        return;
+      }
+      const user = JSON.parse(userStr);
       const userResponse = await getService(`getuser/${user?._id}`);
 
       if (userResponse?.data?.success) {
@@ -151,7 +199,7 @@ const Checkoutpage = () => {
                             cursor: "default",
                           }}
                         >
-                          {orders.orderId}
+                          {displayOrderId(orders)}
                         </div>
                       </div>
 

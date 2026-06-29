@@ -13,7 +13,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { GoogleLogin } from "@react-oauth/google";
 import { syncFavToServer } from "../../utils/favourites";
 import { migrateGuestCartToServer } from "../../utils/cart";
-import { setAuthTokens } from "../../services/token";
+import { setAuthState } from "../../services/token";
 //auth commit 4
 const Signuppage = () => {
   const router = useRouter();
@@ -127,8 +127,11 @@ const Signuppage = () => {
         credential: credentialResponse.credential,
       });
       if (res?.data?.success) {
-        setAuthTokens(res.data.data?.Token, res.data.data?.RefreshToken);
-        localStorage.setItem("PIUser", JSON.stringify(res?.data?.data?.user));
+        setAuthState(
+          res.data.data?.Token,
+          res.data.data?.RefreshToken,
+          res?.data?.data?.user,
+        );
         await migrateGuestCartToServer();
         await syncFavToServer();
         toast.success("Sign up successful!");

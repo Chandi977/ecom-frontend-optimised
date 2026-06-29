@@ -23,6 +23,9 @@ export interface ICategory {
   name: string
   slug: string
   gst?: number
+  hsn_code?: string
+  sac_code?: string
+  tax_category?: string
   overview_fields?: IOverviewFieldConfig[]
   filters?: IFilterMetadata[]
   image?: string
@@ -186,6 +189,8 @@ export interface IProduct {
   product_id?: string
   gst?: number
   hsn_code?: string
+  sac_code?: string
+  tax_category?: string
   meta_title?: string
   meta_description?: string
   top_product?: boolean

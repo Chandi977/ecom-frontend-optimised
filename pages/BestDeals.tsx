@@ -20,9 +20,9 @@ export async function getServerSideProps(context) {
   };
 }
 export default function BestDeals({ brand, product, deal }) {
-  const sliderRef4 = useRef(null);
+  const sliderRef4 = useRef<any>(null);
   const [type, setType] = useState("desktop");
-  const [deals, setDeals] = useState([]);
+  const [deals, setDeals] = useState<any[]>([]);
 
   const settings = {
     dots: false,

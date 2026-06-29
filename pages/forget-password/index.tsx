@@ -30,13 +30,13 @@ const Forgetpage = () => {
       setLoading(true); // Set loading to true when submitting
       const response = await postService("reset/password/otp", { email });
 
-      if (response.status === 200) {
+      if (response && response.status === 200) {
         toast.success("Password change mail has been sent successfully");
         router.push({
           pathname: "/verify-otp",
           query: { email },
         });
-      } else if ((response as any).message === "User not found") {
+      } else if (response && (response as any).message === "User not found") {
         toast.error("Email not registered.");
       } else {
         toast.error("Failed to send password change mail");

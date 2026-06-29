@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 // Lightweight debounce hook for inputs/search
 export const useDebouncedCallback = (callback, delay = 300) => {
-  const timerRef = useRef(null);
+  const timerRef = useRef<any>(null);
 
   const debounced = useMemo(
     () =>

@@ -1,0 +1,9 @@
+[   37387ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom/cjs/react-dom.development.js:29889
+[   37464ms] [LOG] [HMR] connected @ webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:38
+[   38071ms] [WARNING] [HMR] Invalid message: [object Object]
+TypeError: Cannot read properties of undefined (reading 'pathname')
+    at eval (webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/dev/hot-middleware-client.js:21:50)
+    at processMessage (webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:304:21)
+    at eval (webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:67:13)
+    at WebSocket.handleMessage (webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:45:17) @ webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:69
+[   38073ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///./node_modules/.pnpm/next@14.2.35_@babel+core@7._7de7d22fc2eac2adc2e350b20c5ffe20/node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:221

@@ -351,7 +351,7 @@ function BuySection({ product }) {
         getPrimaryPackWeight(item),
         packSize,
         packSize,
-        item?.brand?._id,
+        (item?.brand as any)?._id,
         item?.category,
         getPrimaryStock(item),
       );

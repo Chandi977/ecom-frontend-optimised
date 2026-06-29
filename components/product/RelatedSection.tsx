@@ -9,7 +9,7 @@ import RelatedCard from "./RelatedCard";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 
-const Slider = dynamic(() => import("react-slick"), { ssr: false });
+const Slider = dynamic(() => import("react-slick"), { ssr: false }) as any;
 type RelatedProduct = { _id?: string; slug?: string; [key: string]: unknown };
 type SliderHandle = { slickPrev?: () => void; slickNext?: () => void };
 
@@ -33,7 +33,7 @@ function RelatedSection({ product }) {
       .filter((id) => Boolean(id) && id !== "undefined");
 
     if (productIds?.length > 0) {
-      const related = [];
+      const related: RelatedProduct[] = [];
       for (const productId of productIds) {
         const res = await getService(`product/image/single/${productId}`);
         if (res?.data?.message === "Product found" && res?.data?.data) {

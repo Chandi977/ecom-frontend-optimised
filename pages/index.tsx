@@ -34,15 +34,15 @@ export async function getServerSideProps(context) {
 
 export default function Home({ brand, product, deal }) {
   const router = useRouter();
-  const [amazon, setAmazon] = useState([]);
-  const [flipkart, setFlipkart] = useState([]);
-  const [myntra, setMyntra] = useState([]);
-  const [ajio, setAjio] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [top, setTop] = useState([]);
+  const [amazon, setAmazon] = useState<any[]>([]);
+  const [flipkart, setFlipkart] = useState<any[]>([]);
+  const [myntra, setMyntra] = useState<any[]>([]);
+  const [ajio, setAjio] = useState<any[]>([]);
+  const [deals, setDeals] = useState<any[]>([]);
+  const [top, setTop] = useState<any[]>([]);
   const [type, setType] = useState("desktop");
-  const sliderRef1 = useRef(null);
-  const sliderRef4 = useRef(null);
+  const sliderRef1 = useRef<any>(null);
+  const sliderRef4 = useRef<any>(null);
 
   var settings = {
     dots: false,

@@ -25,14 +25,14 @@ const ReVerifyEmail = () => {
       setLoading(true); // Set loading to true when submitting
       const response = await postService("re/verify/email", { email });
 
-      if (response.status === 200) {
+      if (response && response.status === 200) {
         const email_address = email;
         toast.success("Password change mail has been sent successfully");
         router.push({
           pathname: "/email-verification",
           query: { email_address },
         });
-      } else if ((response as any).message === "User not found") {
+      } else if (response && (response as any).message === "User not found") {
         toast.error("Email not registered.");
       } else {
         toast.error("Failed to send password change mail");

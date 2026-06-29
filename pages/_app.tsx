@@ -1,10 +1,10 @@
 import "../styles/globals.css";
 import "../styles/globals.scss";
 import React from "react";
-import "primereact/resources/themes/saga-blue/theme.css";
-import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
 import "bootstrap/dist/css/bootstrap.css";
 import Navbar from "../components/navbar/Navbar";
 import Footer from "../components/footer/Footer";
@@ -19,13 +19,17 @@ import Script from "next/script";
 import "antd/dist/reset.css";
 import { ConfigProvider } from "antd";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { useRouter } from "next/router";
 
 
 config.autoAddCss = false;
 
 export default function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const isCheckout = router.pathname === "/checkoutpage";
+
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
       {/* Google Fonts are handled in _document.js, remove from here */}
 
       {/* Google Tag Manager Script */}
@@ -44,11 +48,11 @@ export default function MyApp({ Component, pageProps }) {
         style={{ minHeight: "100vh" }}
       >
         <ToastContainer />
-        <Navbar />
+        {!isCheckout && <Navbar />}
         <ConfigProvider>
           <Component {...pageProps} />
         </ConfigProvider>
-        <Footer />
+        {!isCheckout && <Footer />}
       </div>
     </GoogleOAuthProvider>
   );

@@ -3,7 +3,7 @@ import { getPrimaryPriceTier } from "../utils/productCatalog";
 
 export const ITEMS_PER_PAGE = 10;
 
-const sortProductsByPrice = (items, sortBy) => {
+const sortProductsByPrice = (items: any[], sortBy: string) => {
   if (!sortBy) {
     return items;
   }
@@ -29,13 +29,19 @@ const sortProductsByPrice = (items, sortBy) => {
 };
 
 export const usePaginatedProducts = ({
-  initialProducts = [],
-  initialMeta = null,
-  initialFilter = {},
+  initialProducts = [] as any[],
+  initialMeta = null as any,
+  initialFilter = {} as any,
   fetcher,
   itemsPerPage: initialItemsPerPage = ITEMS_PER_PAGE,
+}: {
+  initialProducts?: any[];
+  initialMeta?: any;
+  initialFilter?: any;
+  fetcher: (payload: any) => Promise<any>;
+  itemsPerPage?: number;
 }) => {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<any[]>(initialProducts);
   const [sortBy, setSortBy] = useState("");
   const [totalCount, setTotalCount] = useState(
     typeof initialMeta?.total === "number"
@@ -51,7 +57,7 @@ export const usePaginatedProducts = ({
   const currentPage = Math.floor(skip / itemsPerPage) + 1;
 
   const fetchProducts = useCallback(
-    async (newSkip, filterPayload, overrideLimit = null) => {
+    async (newSkip: number, filterPayload: any, overrideLimit: number | null = null) => {
       const limitToUse = overrideLimit ?? itemsPerPage;
       setIsLoading(true);
       try {
@@ -82,7 +88,7 @@ export const usePaginatedProducts = ({
   );
 
   const applyFilter = useCallback(
-    async (payload) => {
+    async (payload: any) => {
       setCurrentFilter(payload);
       await fetchProducts(0, payload);
     },
@@ -90,7 +96,7 @@ export const usePaginatedProducts = ({
   );
 
   const goToPage = useCallback(
-    (page) => {
+    (page: number) => {
       const newSkip = (page - 1) * itemsPerPage;
       fetchProducts(newSkip, currentFilter);
     },
@@ -110,7 +116,7 @@ export const usePaginatedProducts = ({
   }, [currentPage, goToPage]);
 
   const changeRowsPerPage = useCallback(
-    (newRowsPerPage) => {
+    (newRowsPerPage: number) => {
       setItemsPerPage(newRowsPerPage);
       setSkip(0);
       fetchProducts(0, currentFilter, newRowsPerPage);

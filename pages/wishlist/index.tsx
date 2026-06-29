@@ -10,7 +10,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 const FavoritesPage = () => {
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

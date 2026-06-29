@@ -1,6 +1,6 @@
-﻿"use client"; // This is a client component ðŸ‘ˆðŸ½
+"use client"; // This is a client component ðŸ‘ˆðŸ½
 import React, { useEffect, useRef, useState } from "react";
-import Accordion from "@mui/material/Accordion";
+import MuiAccordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -30,10 +30,11 @@ import {
 import styled from "@emotion/styled";
 import Link from "next/link";
 import { getService, postService } from "../../services/service";
+import { trackSearch } from "../../lib/analytics";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { clearWishlistCache } from "../../utils/favourites";
-import { AUTH_STATE_EVENT } from "../../services/token";
+import { AUTH_STATE_EVENT, clearToken } from "../../services/token";
 
 const marqueeStyle = {
   backgroundColor: "#E92227",
@@ -77,19 +78,23 @@ const Navbar = () => {
       const raw = localStorage.getItem("PIUser");
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (parsed?.first_name) {
-        return `${parsed.first_name} ${parsed.last_name || ""}`.trim();
-      }
-      return null;
+      const firstName = String(parsed?.first_name || parsed?.firstName || "").trim();
+      const lastName = String(parsed?.last_name || parsed?.lastName || "").trim();
+      const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+      return (
+        fullName ||
+        String(parsed?.name || parsed?.full_name || parsed?.fullName || "").trim() ||
+        null
+      );
     } catch {
       return null;
     }
   };
 
-  const [token, setToken] = useState(readStoredToken);
-  const [userName, setUserName] = useState(readStoredUserName);
+  const [token, setToken] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [cart, setCart] = useState(null);
+  const [cart, setCart] = useState<any>(null);
   const [sidebartranslatevalue, Setsidebartranslatevalue] = useState(100);
   const [isPackproDropdownOpen, setPackproDropdownOpen] = useState(false);
   const [isRollabelDropdownOpen, setRollabelDropdownOpen] = useState(false);
@@ -106,20 +111,22 @@ const Navbar = () => {
   const [show, setShow] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchProducts, setSearchProducts] = useState([]);
+  const [searchProducts, setSearchProducts] = useState<any[]>([]);
   const [showDropdownMobile, setShowDropdownMobile] = useState(false);
   const [searchQueryMobile, setSearchQueryMobile] = useState("");
-  const [searchProductsMobile, setSearchProductsMobile] = useState([]);
+  const [searchProductsMobile, setSearchProductsMobile] = useState<any[]>([]);
   const [navbarHeight, setNavbarHeight] = useState(DEFAULT_NAVBAR_HEIGHT);
-  const userMenuTimerRef = useRef(null);
-  const navbarRef = useRef(null);
+  const userMenuTimerRef = useRef<any>(null);
+  const navbarRef = useRef<any>(null);
   const DEBOUNCE_DELAY = 500;
   const MIN_SEARCH_LENGTH = 2;
+  // Avoid re-tracking the same (debounced) query repeatedly for demand signals.
+  const lastTrackedSearchRef = useRef("");
   const phoneNumber = "+918447247227";
-  const dropdownRef = useRef(null);
-  const dropdownRef2 = useRef(null);
-  const packproDropdownRef = useRef(null);
-  const rollabelDropdownRef = useRef(null);
+  const dropdownRef = useRef<any>(null);
+  const dropdownRef2 = useRef<any>(null);
+  const packproDropdownRef = useRef<any>(null);
+  const rollabelDropdownRef = useRef<any>(null);
 
   const handleCart = async () => {
     const c = await getCartCount();
@@ -129,6 +136,8 @@ const Navbar = () => {
   };
 
   useEffect(() => {
+    setToken(readStoredToken());
+    setUserName(readStoredUserName());
     setIsMounted(true);
     handleCart();
     // console.log(PRODUCTION);
@@ -373,8 +382,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     const currentUserId = readStoredUserId();
-    localStorage.removeItem("PIToken");
-    localStorage.removeItem("PIUser");
+    clearToken();
     clearWishlistCache(currentUserId);
     setToken(null);
     setUserName(null);
@@ -383,7 +391,7 @@ const Navbar = () => {
   };
 
   const handleClickMyAccount = () => {
-    if (userName) {
+    if (token) {
       router.push("/my-orders");
     } else {
       router.push("/login");
@@ -442,12 +450,19 @@ const Navbar = () => {
         { silent: true },
       );
 
+      const results = response?.data?.success ? response.data.data || [] : [];
       if (response?.data?.success) {
-        setSearchProducts(response.data.data || []);
+        setSearchProducts(results);
         setShowDropdown(true);
       } else {
         setSearchProducts([]);
         setShowDropdown(false);
+      }
+
+      // Demand signal + Mixpanel (via dataLayer). Dedupe the debounced query.
+      if (trimmedQuery !== lastTrackedSearchRef.current) {
+        lastTrackedSearchRef.current = trimmedQuery;
+        trackSearch(trimmedQuery, results.length);
       }
     } catch (error) {
       console.error("Error searching products:", error);
@@ -472,12 +487,19 @@ const Navbar = () => {
         { silent: true },
       );
 
+      const results = response?.data?.success ? response.data.data || [] : [];
       if (response?.data?.success) {
-        setSearchProductsMobile(response.data.data || []);
+        setSearchProductsMobile(results);
         setShowDropdownMobile(true);
       } else {
         setSearchProductsMobile([]);
         setShowDropdownMobile(false);
+      }
+
+      // Demand signal + Mixpanel (via dataLayer). Dedupe the debounced query.
+      if (trimmedQuery !== lastTrackedSearchRef.current) {
+        lastTrackedSearchRef.current = trimmedQuery;
+        trackSearch(trimmedQuery, results.length);
       }
     } catch (error) {
       console.error("Error searching products:", error);
@@ -549,6 +571,8 @@ const Navbar = () => {
 
   const cartCount = typeof cart === "number" ? cart : cart?.count || 0;
   const isSidebarOpen = sidebartranslatevalue === 0;
+  const isLoggedIn = Boolean(token);
+  const accountLabel = userName || (isLoggedIn ? readStoredUserName() : null) || "My Account";
 
   return (
     <>
@@ -566,6 +590,148 @@ const Navbar = () => {
         <Marquee className="text-white" style={marqueeStyle}>
           {marqueeContent}
         </Marquee>
+        {width > breakpoint && (
+          <div
+            className="topbar w-100"
+            style={{
+              backgroundColor: "#EAEAEA",
+              height: "32px",
+              fontSize: "12px",
+              fontFamily: "Montserrat, sans-serif",
+              fontWeight: "500",
+              color: "#333333",
+              borderBottom: "1px solid #dcdcdc"
+            }}
+          >
+            <div className="d-flex align-items-center justify-content-end h-100 w-100" style={{ gap: "12px", paddingRight: "75px" }}>
+              {/* Account Dropdown */}
+              <div style={{ position: "relative" }}>
+                {isMounted && isLoggedIn ? (
+                  <div
+                    onMouseEnter={openUserMenu}
+                    onMouseLeave={closeUserMenu}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      style={{
+                        color: "#E92227",
+                        width: "12px",
+                        height: "12px",
+                      }}
+                    />
+                    <span>{accountLabel}</span>
+                    <ArrowDropDownIcon sx={{ color: "#333333", fontSize: "14px", marginLeft: "-4px" }} />
+                    
+                    {isOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: "0",
+                          backgroundColor: "white",
+                          border: "1px solid #ccc",
+                          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                          zIndex: 1000,
+                          minWidth: "120px",
+                          borderRadius: "4px",
+                          marginTop: "4px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #eee",
+                            fontSize: "12px",
+                            color: "#333333",
+                            fontWeight: "500",
+                          }}
+                          onClick={handleClickMyAccount}
+                        >
+                          My Orders
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "12px",
+                            color: "#E92227",
+                            fontWeight: "500",
+                          }}
+                          onClick={handleLogout}
+                        >
+                          Logout
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
+                    onClick={handleClickSignIn}
+                  >
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      style={{
+                        color: "#E92227",
+                        width: "12px",
+                        height: "12px",
+                      }}
+                    />
+                    <span>Sign Up / Sign In</span>
+                  </div>
+                )}
+              </div>
+
+              <span style={{ color: "#ccc" }}>|</span>
+
+              {/* Cart */}
+              <Link
+                href="/my-cart"
+                style={{
+                  textDecoration: "none",
+                  color: "#333333",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faCartShopping}
+                  style={{
+                    color: "#E92227",
+                    width: "12px",
+                    height: "12px",
+                  }}
+                />
+                <span>Cart ({cartCount})</span>
+              </Link>
+
+              <span style={{ color: "#ccc" }}>|</span>
+
+              {/* Wishlist */}
+              <Link
+                href="/wishlist"
+                style={{
+                  textDecoration: "none",
+                  color: "#333333",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faHeart}
+                  style={{
+                    color: "#E92227",
+                    width: "12px",
+                    height: "12px",
+                  }}
+                />
+                <span>Wishlist</span>
+              </Link>
+            </div>
+          </div>
+        )}
         {isSidebarOpen && (
           <button
             type="button"
@@ -640,7 +806,7 @@ const Navbar = () => {
                   onClick={toggleDropdown}
                 >
                   <span suppressHydrationWarning>
-                    {isMounted && token && userName ? userName : "Sign Up / Sign In"}
+                    {isMounted && isLoggedIn ? accountLabel : "Sign Up / Sign In"}
                   </span>
                 </p>
               </div>
@@ -1189,6 +1355,7 @@ const Navbar = () => {
                   </div>
                 </div>
               </div>
+
 
               <div className="col-2 p-0 mx-0">
                 <div className="row h-100 m-0">

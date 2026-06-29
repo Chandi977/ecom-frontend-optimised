@@ -1,6 +1,6 @@
 import axios from "axios";
 import { DEV } from "./constants";
-import { clearToken, getRefreshToken, getToken, setAuthTokens } from "./token";
+import { clearToken, getRefreshToken, getToken, setAuthState } from "./token";
 
 export const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
@@ -15,13 +15,14 @@ export const refreshAccessToken = async () => {
     const data = res?.data?.data || {};
     const token = data.token || data.Token;
     const nextRefreshToken = data.refreshToken || data.RefreshToken;
+    const user = data.user;
 
     if (!token || !nextRefreshToken) {
       clearToken();
       return null;
     }
 
-    setAuthTokens(token, nextRefreshToken);
+    setAuthState(token, nextRefreshToken, user);
     return token;
   } catch {
     clearToken();
