@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Skeleton from "@mui/material/Skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -9,7 +8,9 @@ import {
   removeFromFav,
   WISHLIST_UPDATED_EVENT,
 } from "../../utils/favourites";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import { getProductDisplayName } from "./productDisplay";
+import { useBrands } from "../../context/BrandContext";
 import {
   formatCurrency,
   getProductImageSrc,
@@ -19,6 +20,7 @@ import {
 type WishlistEntry = { product?: { _id?: string } };
 
 function ListingCard({ item }: { item?: any }) {
+  const { brandNameById } = useBrands();
   const [favourite, setFavourite] = useState<WishlistEntry[]>([]);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -82,68 +84,7 @@ function ListingCard({ item }: { item?: any }) {
   };
 
   if (!item) {
-    return (
-      <div className="tw-flex tw-flex-col tw-w-full tw-min-h-[288px] tw-bg-[#f9f9f9]">
-        <div className="tw-relative tw-flex tw-justify-center tw-items-center tw-w-full tw-bg-[#f9f9f9] tw-overflow-hidden" style={{ height: '150px' }}>
-          <Skeleton variant="rectangular" width={110} height={103} />
-        </div>
-        <div className="tw-flex tw-flex-col tw-w-full tw-bg-[#f9f9f9] tw-flex-1" style={{ justifyContent: 'space-between', gap: '10px', padding: '14px 12px 10px' }}>
-          <Skeleton variant="text" width="80%" />
-          <Skeleton variant="text" width="60%" />
-        </div>
-        <Skeleton
-          variant="rectangular"
-          height={38}
-          className="tw-rounded-none"
-          style={{ width: "100%" }}
-        />
-        <style jsx>{`
-          .listing-title {
-            display: -webkit-box;
-            margin: 0;
-            overflow: hidden;
-            color: #1f2937;
-            font-family: "Montserrat", sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 1.2;
-            text-align: center;
-            text-transform: capitalize;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 3;
-            cursor: pointer;
-          }
-          .listing-price {
-            margin: 0;
-            color: #249b3e;
-            font-family: "Montserrat", sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1;
-            text-align: center;
-          }
-          .listing-view-btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            min-height: 38px;
-            border: 0;
-            padding: 10px 12px;
-            background: #182c5a;
-            color: #fff;
-            font-family: "Montserrat", sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            line-height: 1;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            white-space: nowrap;
-            cursor: pointer;
-          }
-        `}</style>
-      </div>
-    );
+    return <ProductCardSkeleton variant="mobile" />;
   }
 
   return (
@@ -180,7 +121,7 @@ function ListingCard({ item }: { item?: any }) {
       <div className="tw-flex tw-flex-col tw-w-full tw-bg-[#f9f9f9] tw-flex-1" style={{ justifyContent: 'space-between', gap: '10px', padding: '14px 12px 10px' }}>
         <div style={{ minHeight: '72px' }}>
           <p className="listing-title" onClick={handleViewProduct}>
-            {getProductDisplayName(item)}
+            {getProductDisplayName(item, { brandNameById })}
           </p>
         </div>
         <div className="tw-flex tw-justify-center tw-items-center" style={{ minHeight: '28px' }}>
@@ -209,7 +150,7 @@ function ListingCard({ item }: { item?: any }) {
         }
         .listing-price {
           margin: 0;
-          color: #249b3e;
+          color: #e92227;
           font-family: "Montserrat", sans-serif;
           font-size: 14px;
           font-weight: 600;

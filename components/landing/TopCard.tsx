@@ -3,8 +3,10 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "../listing/productDisplay";
+import { useBrands } from "../../context/BrandContext";
 
 function TopCard({ item }) {
+  const { brandNameById } = useBrands();
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
 
@@ -62,7 +64,7 @@ function TopCard({ item }) {
       </div>
       <div className="mt-4 d-flex justify-content-center align-items-center">
         <p className="landing-toptext" style={{ textTransform: "capitalize" }}>
-          {getProductDisplayName(item)}
+          {getProductDisplayName(item, { brandNameById })}
         </p>
       </div>
     </div>

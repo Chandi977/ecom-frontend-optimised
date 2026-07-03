@@ -21,23 +21,23 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { findBrandIdByName, findBrandIdBySlug } from "../../utils/brands";
 
-// Keep this in sync with /brand/all
-const FLIPKART_BRAND_ID = "6926d6bad53f3a772c6e978c";
+// Route slug for this brand landing page; the id is resolved from /brand/all.
+const BRAND_SLUG = "flipkart";
 
 export async function getServerSideProps(context) {
   const query = context.query;
   const [categoryRes, brandRes, subcategoryRes] = await Promise.all([
     getService("category/all"),
-    query?.brand ? getService("brand/all") : Promise.resolve(null),
+    getService("brand/all"),
     query?.subcategory ? getService("subcategory/all") : Promise.resolve(null),
   ]);
 
-  let brandId = FLIPKART_BRAND_ID;
+  const brands = brandRes?.data?.data ?? [];
+  let brandId = findBrandIdBySlug(brands, BRAND_SLUG) ?? null;
   if (query?.brand) {
-    const brands = brandRes?.data?.data ?? [];
-    const brand = brands.find((item) => item.name === query?.brand);
-    brandId = brand?._id ?? FLIPKART_BRAND_ID;
+    brandId = findBrandIdByName(brands, query.brand) ?? brandId;
   }
 
   let subCategoryId = null;
@@ -48,7 +48,7 @@ export async function getServerSideProps(context) {
   }
 
   const filterPayload = {
-    brand: brandId,
+    ...(brandId && { brand: brandId }),
     ...(subCategoryId !== null && { subcategory: subCategoryId }),
     ...(query?.q && { q: query.q }),
     skip: 0,

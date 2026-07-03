@@ -84,6 +84,22 @@ export async function getServerSideProps(context) {
   };
 }
 
+const renderMultilineText = (text?: string) => {
+  if (!text) return null;
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length > 1) {
+    return (
+      <ul style={{ listStyleType: "disc", paddingLeft: "20px", margin: "8px 0" }}>
+        {lines.map((line, idx) => {
+          const cleanedLine = line.replace(/^[-*•]\s*/, "");
+          return <li key={idx} style={{ marginBottom: "6px" }}>{cleanedLine}</li>;
+        })}
+      </ul>
+    );
+  }
+  return <p style={{ whiteSpace: "pre-line", margin: 0 }}>{text}</p>;
+};
+
 const Productpage = ({ product: rawProduct }) => {
   const product = React.useMemo(() => {
     if (!rawProduct) return rawProduct;
@@ -115,6 +131,8 @@ const Productpage = ({ product: rawProduct }) => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userMobileNo, setUserMobileNo] = useState<string | null>(null);  const [showPopup, setShowPopup] = useState(false);
+  const [isAboutExpanded, setIsAboutExpanded] = useState(true);
+  const [isDescExpanded, setIsDescExpanded] = useState(true);
   const seo = getProductSeo(product);
   const categoryId =
     typeof product?.category === "object"
@@ -190,6 +208,34 @@ const Productpage = ({ product: rawProduct }) => {
   const showBadgeSecureTransaction = isFieldVisible(product, FIELD_VISIBILITY_KEYS.badgeSecureTransaction);
   const showBadgeNoReturns = isFieldVisible(product, FIELD_VISIBILITY_KEYS.badgeNoReturns);
   const showBadgeRecyclable = isFieldVisible(product, FIELD_VISIBILITY_KEYS.badgeRecyclable);
+
+  const aboutItemText = React.useMemo(() => {
+    if (product?.aboutItem && String(product.aboutItem).trim() !== "" && String(product.aboutItem).trim().toLowerCase() !== "text pending") {
+      return product.aboutItem;
+    }
+    if (isPaperBagProduct) {
+      return `- Made from high-quality kraft paper for durability.
+- Eco-friendly, recyclable, and biodegradable.
+- Strong handles for comfortable carrying.
+- Available in multiple sizes, colors, and GSM options.
+- Suitable for retail, gifting, grocery, and takeaway packaging.
+- Can be customized with brand logo and printing.`;
+    }
+    return "";
+  }, [product?.aboutItem, isPaperBagProduct]);
+
+  const usageText = React.useMemo(() => {
+    if (product?.usage && String(product.usage).trim() !== "" && String(product.usage).trim().toLowerCase() !== "text pending") {
+      return product.usage;
+    }
+    if (isPaperBagProduct) {
+      return `- Keep away from direct water contact or excessive moisture.
+- Store in a cool, dry place.
+- Do not exceed the recommended load capacity.
+- Reusable multiple times under normal handling.`;
+    }
+    return "";
+  }, [product?.usage, isPaperBagProduct]);
 
   const safePrice = Number.isFinite(Number(price)) ? Number(price) : 0;
   const safeMRP = Number.isFinite(Number(MRP)) ? Number(MRP) : 0;
@@ -442,17 +488,89 @@ const Productpage = ({ product: rawProduct }) => {
           <div className="container-fluid tw-m-0 tw-mt-[27px] tw-px-[110px] tw-bg-white max-[900px]:tw-mt-0 max-[900px]:tw-px-[10px] max-[900px]:tw-bg-[#f5f5f5]">
             <div className="row tw-m-0 tw-mt-[28px] tw-flex tw-flex-row max-[900px]:tw-flex-col">
               <div className="col-12 col-md-6 detail-card-left tw-flex tw-flex-col tw-justify-start tw-items-start">
-                <p className="tw-hidden max-[900px]:tw-block max-[900px]:tw-mt-[10px] max-[900px]:tw-px-[14px] max-[900px]:tw-text-black max-[900px]:tw-font-sans max-[900px]:tw-text-[17px] max-[900px]:tw-capitalize max-[900px]:tw-font-semibold max-[900px]:tw-leading-[29px] max-[900px]:tw-tracking-[0.51px]">
-                  {product?.brand?.name} {product?.name} {product?.model}
+                <p className="tw-hidden max-[900px]:tw-flex max-[900px]:tw-items-center max-[900px]:tw-gap-2 max-[900px]:tw-mt-[10px] max-[900px]:tw-px-[14px] max-[900px]:tw-text-black max-[900px]:tw-font-sans max-[900px]:tw-text-[17px] max-[900px]:tw-capitalize max-[900px]:tw-font-semibold max-[900px]:tw-leading-[29px] max-[900px]:tw-tracking-[0.51px] tw-flex-wrap">
+                  <span>{product?.brand?.name} {product?.name}</span>
+                  {product?.model && (
+                    <span className="tw-text-[11px] tw-font-medium tw-text-gray-500 tw-bg-gray-100 tw-px-2 tw-py-0.5 tw-rounded tw-normal-case tw-border tw-border-solid tw-border-gray-200 tw-ml-1">
+                      {product.model}
+                    </span>
+                  )}
                 </p>
 
-                <div className="tw-mt-5 max-[900px]:tw-mt-[12px] tw-w-full">
+                <div className="tw-mt-5 max-[900px]:tw-mt-[12px] tw-w-full tw-relative">
+                  {/* Out of Stock Badge */}
+                  {(stock <= 0 || isNaN(stock)) && (
+                    <div className="tw-absolute tw-top-4 tw-left-4 tw-z-10 tw-bg-[#fee2e2] tw-text-[#e92227] tw-px-3 tw-py-1.5 tw-text-xs tw-font-bold tw-rounded-md">
+                      Out of Stock
+                    </div>
+                  )}
+
+                  {/* Wishlist Button */}
+                  <button
+                    onClick={(e) => handleFavourite(e, product)}
+                    className="tw-absolute tw-top-4 tw-right-4 tw-z-10 tw-w-10 tw-h-10 tw-flex tw-items-center tw-justify-center tw-bg-white tw-border tw-border-solid tw-border-gray-200 tw-rounded-full tw-shadow-sm tw-cursor-pointer hover:tw-scale-105 active:tw-scale-95 tw-transition-all"
+                    style={{ border: "1px solid #ebebeb" }}
+                    aria-label={checkFav(product?._id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    {checkFav(product?._id) ? (
+                      <FontAwesomeIcon
+                        icon={faHeart}
+                        style={{
+                          color: "red",
+                          fontSize: "18px",
+                        }}
+                      />
+                    ) : (
+                      <svg className="tw-w-5 tw-h-5 tw-text-gray-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                      </svg>
+                    )}
+                  </button>
+
                   <ProductGallery product={product} />
                 </div>
+
+                {/* Footer Badges Row */}
+                <div className="tw-w-full tw-mt-6 tw-mb-4">
+                  <div className="tw-grid tw-grid-cols-4 tw-gap-2 max-[767px]:tw-gap-1 tw-border tw-border-solid tw-border-gray-200 tw-rounded-xl tw-p-4 max-[767px]:tw-p-2 tw-bg-white" style={{ border: "1px solid #ebebeb" }}>
+                    <div className="tw-flex tw-flex-col tw-items-center tw-text-center">
+                      <svg className="tw-w-7 tw-h-7 tw-text-[#182c5a] tw-mb-1.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.75a1.125 1.125 0 0 1-1.125-1.125V4.625c0-.621.504-1.125 1.125-1.125H16.5a1.125 1.125 0 0 1 1.125 1.125v13a1.125 1.125 0 0 1-1.125 1.125m-3.75 0h4.875c.621 0 1.125-.504 1.125-1.125v-5.25c0-.411-.223-.79-.586-.975l-3.375-1.713a1.125 1.125 0 0 0-.97-.02L12 9.75M8.25 21h6.75" />
+                      </svg>
+                      <span className="tw-text-gray-800 tw-font-bold tw-text-[12px] max-[767px]:tw-text-[10px] tw-leading-tight">Free Delivery</span>
+                      <span className="tw-text-gray-500 tw-text-[10px] max-[767px]:tw-text-[8px] tw-mt-0.5">Pan India</span>
+                    </div>
+
+                    <div className="tw-flex tw-flex-col tw-items-center tw-text-center">
+                      <svg className="tw-w-7 tw-h-7 tw-text-[#182c5a] tw-mb-1.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                      </svg>
+                      <span className="tw-text-gray-800 tw-font-bold tw-text-[12px] max-[767px]:tw-text-[10px] tw-leading-tight">Secure Packaging</span>
+                      <span className="tw-text-gray-500 tw-text-[10px] max-[767px]:tw-text-[8px] tw-mt-0.5">100% Safe</span>
+                    </div>
+
+                    <div className="tw-flex tw-flex-col tw-items-center tw-text-center">
+                      <svg className="tw-w-7 tw-h-7 tw-text-[#182c5a] tw-mb-1.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                      </svg>
+                      <span className="tw-text-gray-800 tw-font-bold tw-text-[12px] max-[767px]:tw-text-[10px] tw-leading-tight">Bulk Order</span>
+                      <span className="tw-text-gray-500 tw-text-[10px] max-[767px]:tw-text-[8px] tw-mt-0.5">Best Discounts</span>
+                    </div>
+
+                    <div className="tw-flex tw-flex-col tw-items-center tw-text-center">
+                      <svg className="tw-w-7 tw-h-7 tw-text-[#182c5a] tw-mb-1.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                      <span className="tw-text-gray-800 tw-font-bold tw-text-[12px] max-[767px]:tw-text-[10px] tw-leading-tight">Eco Friendly</span>
+                      <span className="tw-text-gray-500 tw-text-[10px] max-[767px]:tw-text-[8px] tw-mt-0.5">100% Recyclable</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="tw-w-full tw-hidden max-[900px]:tw-block tw-bg-[#EBEBEB] tw-h-[1px] tw-mt-[20px]"></div>
               </div>
               <div className="col-12 col-md-6 detail-card-right">
-                <div className="row p-0 m-0">
+                <div className="tw-flex tw-flex-col tw-w-full">
                   <div
                     className="p-0 m-0"
                     style={{
@@ -462,8 +580,13 @@ const Productpage = ({ product: rawProduct }) => {
                       alignItems: "center",
                     }}
                   >
-                    <div className="tw-text-black tw-p-0 tw-text-[32px] tw-font-semibold tw-leading-[35px] tw-tracking-[0.72px] tw-capitalize max-[900px]:tw-hidden">
-                      {product?.brand?.name} {product?.name} {product?.model}
+                    <div className="tw-text-black tw-p-0 tw-text-[32px] tw-font-semibold tw-leading-[35px] tw-tracking-[0.72px] tw-capitalize max-[900px]:tw-hidden tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
+                      <span>{product?.brand?.name} {product?.name}</span>
+                      {product?.model && (
+                        <span className="tw-text-[16px] tw-font-medium tw-text-gray-500 tw-bg-gray-100 tw-px-3 tw-py-1 tw-rounded-md tw-normal-case tw-border tw-border-solid tw-border-gray-200">
+                          {product.model}
+                        </span>
+                      )}
                     </div>
                     <div onClick={handleShare} className="tw-cursor-pointer">
                       <AiOutlineShareAlt
@@ -473,33 +596,11 @@ const Productpage = ({ product: rawProduct }) => {
                   </div>
 
                   <div className="p-0 d-flex flex-row justify-content-between">
-                    <div className="tw-flex tw-flex-col tw-justify-start">
+                    <div className="tw-flex tw-flex-col tw-justify-start tw-w-full">
                       <p className="tw-m-0 tw-hidden max-[900px]:tw-block max-[900px]:tw-text-[#828282] max-[900px]:tw-font-sans max-[900px]:tw-text-[14.9px] max-[900px]:tw-font-semibold max-[900px]:tw-leading-[22.528px] max-[900px]:tw-tracking-[0.298px]">Price</p>
                       <p className="tw-m-0 tw-hidden max-[900px]:tw-block max-[900px]:tw-text-[#828282] max-[900px]:tw-font-sans max-[900px]:tw-text-[14.9px] max-[900px]:tw-font-semibold max-[900px]:tw-leading-[22.528px] max-[900px]:tw-tracking-[0.298px]"> </p>
-                      <div
-                        style={{
-                          display: "none",
-                          gap: "20px",
-                          alignItems: "center",
-                        }}
-                      >
-                        {/* MRP display */}
-                        <p className="tw-text-black tw-text-[16px] tw-font-normal tw-leading-[24px] tw-tracking-[0.72px] tw-mt-[18px] max-[900px]:tw-text-[24px] max-[900px]:tw-my-[9px]">
-                          MRP : <s>₹{safeMRP}</s>
-                        </p>
-
-                        {/* SP display */}
-                        <p className="tw-text-black tw-text-[28px] tw-font-medium tw-leading-[24px] tw-tracking-[0.72px] tw-mt-[18px] max-[900px]:tw-text-[37px] max-[900px]:tw-my-[9px]">
-                          ₹{Math.round(safePrice)}
-                        </p>
-
-                        {/* discount % display */}
-                        <p className="tw-text-[#ff0000] tw-text-[20px] tw-font-light tw-leading-[32px] tw-mt-[18px]">
-                          {discountPercent}% Off
-                        </p>
-                      </div>
-
-                      <div className="mt-2">
+                      
+                      <div className="mt-2 tw-w-full">
                         <ProductPricing
                           product={product}
                           selectedNumber={selectedNumber}
@@ -511,282 +612,192 @@ const Productpage = ({ product: rawProduct }) => {
                     </div>
                   </div>
 
-                  {/* Dynamic Overview Fields (matches Info.tsx Quick Overview) */}
+                  {/* Specifications Table Layout */}
                   {product && showQuickOverview && (
-                    <div className="p-0 mt-3">
+                    <div className="tw-w-full tw-mt-4 tw-mb-4">
                       {getOverviewFields(
                         product,
                         selectedNumber,
                         selectedPackWeight,
-                      ).map((field) => (
-                        <div
-                          key={field.label}
-                          style={{
-                            display: "flex",
-                            justifyContent: "start",
-                            alignItems: "center",
-                            marginTop: "0px",
-                            gap: "5px",
-                          }}
-                        >
-                          <p style={{ fontWeight: "600", fontSize: "16px" }}>
-                            {field.label} -{" "}
-                          </p>
-                          <p
-                            style={{
-                              fontWeight: "400",
-                              fontSize: "16px",
-                              textTransform: "capitalize",
-                            }}
-                          >
-                            {field.value}
-                          </p>
-                        </div>
-                      ))}
+                      ).map((field) => {
+                        let icon = (
+                          <svg className="tw-w-5 tw-h-5 tw-text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        );
+                        const labelLower = field.label.toLowerCase();
+                        if (labelLower.includes("dimension")) {
+                          icon = (
+                            <svg className="tw-w-5 tw-h-5 tw-text-gray-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.25v11.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.75V6.25A2.25 2.25 0 0 1 4.5 4h15a2.25 2.25 0 0 1 2.25 2.25Z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7 4v4m3-4v3m3-4v4m3-4v3m3-4v4" />
+                            </svg>
+                          );
+                        } else if (labelLower.includes("brand")) {
+                          icon = (
+                            <svg className="tw-w-5 tw-h-5 tw-text-gray-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                            </svg>
+                          );
+                        } else if (labelLower.includes("hsn") || labelLower.includes("sac")) {
+                          icon = (
+                            <svg className="tw-w-5 tw-h-5 tw-text-gray-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h2v15H3zM7 4.5h1v15H7zM10 4.5h3v15h-3zM15 4.5h1v15h-1zM18 4.5h3v15h-3z" />
+                            </svg>
+                          );
+                        } else if (labelLower.includes("gst")) {
+                          icon = (
+                            <svg className="tw-w-5 tw-h-5 tw-text-gray-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M10 6a2 2 0 11-4 0 2 2 0 014 0zm8 12a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          );
+                        }
+
+                        let displayLabel = field.label;
+                        if (displayLabel === "Dimension (inch)") displayLabel = "Dimensions (inches)";
+                        if (displayLabel === "Dimension (mm)") displayLabel = "Dimensions (mm)";
+
+                        return (
+                          <div key={field.label} className="tw-flex tw-flex-row tw-justify-between tw-items-center tw-py-3.5 max-[767px]:tw-py-2.5" style={{ borderBottom: "1px solid #ebebeb" }}>
+                            <div className="tw-flex tw-flex-row tw-items-center tw-gap-3 max-[767px]:tw-gap-2">
+                              {icon}
+                              <span className="tw-text-gray-600 tw-text-[15px] max-[767px]:tw-text-[13px] tw-font-medium">{displayLabel}</span>
+                            </div>
+                            <span className="tw-text-gray-800 tw-text-[15px] max-[767px]:tw-text-[13px] tw-font-semibold tw-whitespace-nowrap">{field.value}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-                    {/* Common Field: About Item */}
-                    {product && showAboutItem && (
-                      <>
-                        <p>
-                          <span style={{ fontWeight: "600", fontSize: "16px" }}>
-                            About the Item -{" "}
-                          </span>
-                          <span style={{ fontWeight: "400", fontSize: "16px" }}>
-                            {!product?.aboutItem || String(product?.aboutItem).trim() === ""
-                              ? (isTapeProduct || isPolyBagProduct || isCorrugatedProduct || isPaperBagProduct || isLabelProduct ? "text pending" : "Not Available")
-                              : product?.aboutItem}
-                          </span>
-                        </p>
-                      </>
-                    )}
-                    <ProductInventory product={product} />
 
-                  <div className="row p-0 m-0 mt-2">
-                    <div className="col tw-px-0 tw-flex tw-flex-row tw-justify-between max-[900px]:tw-flex-col">
-                      {stock <= 0 || isNaN(stock) ? (
-                        <div className="tw-p-0 tw-m-0 tw-flex tw-flex-row tw-bg-[#f8f9fa] tw-w-[200px] tw-h-[44px] tw-opacity-50">
-                          <div className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[50px] tw-border tw-border-solid tw-border-[rgba(0,0,0,0.5)] tw-cursor-not-allowed">
-                            <img
-                              src="/icon-minus.png"
-                              alt="Decrease quantity"
-                              width="24"
-                              height="24"
-                            />
-                          </div>
-                          <div className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[100px] tw-border-y tw-border-solid tw-border-[rgba(0,0,0,0.5)]">
-                            <p className="tw-text-black tw-p-0 tw-m-0 tw-text-[20px] tw-font-medium tw-leading-[28px]">{quantity}</p>
-                          </div>
-                          <div className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[50px] tw-border tw-border-solid tw-border-[rgba(0,0,0,0.5)] tw-cursor-not-allowed tw-bg-[#182C5A]">
-                            <img
-                              src="/icon-plus.png"
-                              alt="Increase quantity"
-                              width="24"
-                              height="24"
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="tw-p-0 tw-m-0 tw-flex tw-flex-row tw-bg-[#f8f9fa] tw-w-[200px] tw-h-[44px]">
-                          <div
-                            className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[50px] tw-border tw-border-solid tw-border-[rgba(0,0,0,0.5)] tw-cursor-pointer"
-                            onClick={handleMinus}
-                          >
-                            <img
-                              src="/icon-minus.png"
-                              alt="Decrease quantity"
-                              width="24"
-                              height="24"
-                            />
-                          </div>
-                          <div className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[100px] tw-border-y tw-border-solid tw-border-[rgba(0,0,0,0.5)]">
-                            <p className="tw-text-black tw-p-0 tw-m-0 tw-text-[20px] tw-font-medium tw-leading-[28px]">{quantity}</p>
-                          </div>
-                          <div
-                            className="tw-h-full tw-flex tw-flex-row tw-justify-center tw-items-center tw-w-[50px] tw-border tw-border-solid tw-border-[rgba(0,0,0,0.5)] tw-cursor-pointer tw-bg-[#182C5A]"
-                            onClick={handlePlus}
-                          >
-                            <img
-                              src="/icon-plus.png"
-                              alt="Increase quantity"
-                              width="24"
-                              height="24"
-                            />
-                          </div>
-                        </div>
-                      )}
-                      <div className="tw-flex tw-flex-row tw-items-center max-[900px]:tw-pt-[10px]">
-                        {stock <= 0 || isNaN(stock) ? (
-                          <motion.button
-                            className="tw-border-0 tw-text-white tw-text-center tw-text-[16px] tw-font-medium tw-leading-[24px] tw-flex tw-w-[213px] tw-h-[44px] tw-items-center tw-justify-center tw-gap-[10px] tw-flex-shrink-0 tw-bg-[#182c5a] tw-rounded"
-                            whileHover={{ scale: 1.05, backgroundColor: "#e92227" }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            onClick={handleNotifyMe}
-                          >
-                            Notify Me
-                          </motion.button>
-                        ) : (
-                          <motion.button
-                            className="tw-border-0 tw-text-white tw-text-center tw-text-[16px] tw-font-medium tw-leading-[24px] tw-flex tw-w-[213px] tw-h-[44px] tw-items-center tw-justify-center tw-gap-[10px] tw-flex-shrink-0 tw-bg-[#182c5a] tw-rounded"
-                            whileHover={{ scale: 1.05, backgroundColor: "#e92227" }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            onClick={handleCart}
-                          >
-                            Add To Cart
-                          </motion.button>
-                        )}
-                        <motion.div
-                          className="tw-flex tw-justify-center tw-items-center tw-ml-[14px] tw-w-[40px] tw-h-[40px] tw-border tw-border-solid tw-border-[rgba(0,0,0,0.50)] tw-cursor-pointer"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => handleFavourite(e, product)}
-                        >
-                          {checkFav(product?._id) ? (
-                            <FontAwesomeIcon
-                              icon={faHeart}
-                              style={{
-                                color: "red",
-                              }}
-                            />
+                  {/* Common Field: About Item */}
+                  {product && showAboutItem && (
+                    <div className="tw-mt-3">
+                      <span style={{ fontWeight: "600", fontSize: "16px", display: "block", marginBottom: "4px" }}>
+                        About the Item / Highlights
+                      </span>
+                      <div style={{ fontWeight: "400", fontSize: "16px", color: "#828282" }}>
+                        {!aboutItemText ? (
+                          isTapeProduct || isPolyBagProduct || isCorrugatedProduct || isPaperBagProduct || isLabelProduct ? (
+                            <span style={{ color: "#7f7f7f" }}>text pending</span>
                           ) : (
-                            <FontAwesomeIcon
-                              icon={faHeart}
-                              style={{
-                                color: "grey",
-                              }}
-                            />
-                          )}
-                        </motion.div>
+                            "Not Available"
+                          )
+                        ) : (
+                          renderMultilineText(aboutItemText)
+                        )}
                       </div>
+                    </div>
+                  )}
+
+
+                  <div className="qty-action-container tw-flex tw-flex-row tw-items-center tw-justify-start tw-gap-6 tw-mt-4 tw-mb-5 max-[767px]:tw-gap-4 max-[767px]:tw-w-full">
+                    {/* Quantity Selector on Left */}
+                    <div className="tw-flex tw-flex-row tw-items-center tw-gap-4 max-[767px]:tw-gap-3">
+                      <span className="tw-text-gray-800 tw-font-bold tw-text-[16px] max-[767px]:tw-hidden">Quantity</span>
+                      <div className="tw-flex tw-flex-row tw-items-center tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg tw-overflow-hidden tw-h-[44px]" style={{ border: "1px solid #d1d5db" }}>
+                        <button
+                          onClick={handleMinus}
+                          disabled={stock <= 0 || isNaN(stock)}
+                          className="tw-w-[44px] tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-gray-50 tw-border-0 tw-text-gray-600 tw-font-bold tw-text-lg hover:tw-bg-gray-100 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+                        >
+                          -
+                        </button>
+                        <div className="tw-w-[50px] tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-white tw-border-x tw-border-solid tw-border-gray-200" style={{ borderInline: "1px solid #d1d5db" }}>
+                          <span className="tw-text-gray-800 tw-font-semibold tw-text-base">{quantity}</span>
+                        </div>
+                        <button
+                          onClick={handlePlus}
+                          disabled={stock <= 0 || isNaN(stock) || quantity >= stock}
+                          className="tw-w-[44px] tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-gray-50 tw-border-0 tw-text-gray-600 tw-font-bold tw-text-lg hover:tw-bg-gray-100 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Action Button on Right */}
+                    <div className="tw-flex tw-justify-start tw-flex-1">
+                      {stock <= 0 || isNaN(stock) ? (
+                        <motion.button
+                          className="tw-border-0 tw-text-white tw-text-center tw-text-[16px] tw-font-semibold tw-flex tw-w-[213px] max-[767px]:tw-w-full tw-h-[44px] tw-items-center tw-justify-center tw-gap-[8px] tw-bg-[#182c5a] tw-rounded-lg"
+                          whileHover={{ scale: 1.02, backgroundColor: "#e92227" }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={handleNotifyMe}
+                        >
+                          <svg className="tw-w-5 tw-h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a9.04 9.04 0 0 1-5.714 0M3.167 12.75c0-4.107 3.327-7.433 7.433-7.433 4.106 0 7.433 3.326 7.433 7.433a3 3 0 0 0 3 3h-20.866a3 3 0 0 0 3-3ZM14.857 17.082a9.04 9.04 0 0 1-5.714 0" />
+                          </svg>
+                          Notify Me
+                        </motion.button>
+                      ) : (
+                        <motion.button
+                          className="tw-border-0 tw-text-white tw-text-center tw-text-[16px] tw-font-semibold tw-flex tw-w-[213px] max-[767px]:tw-w-full tw-h-[44px] tw-items-center tw-justify-center tw-gap-[8px] tw-bg-[#182c5a] tw-rounded-lg"
+                          whileHover={{ scale: 1.02, backgroundColor: "#e92227" }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={handleCart}
+                        >
+                          Add To Cart
+                        </motion.button>
+                      )}
+                    </div>
+
+                    {/* Mobile-only footer notes inside sticky bar */}
+                    <div className="tw-hidden max-[767px]:tw-flex tw-flex-row tw-justify-center tw-w-full tw-text-gray-500 tw-text-[12px] tw-mt-2 tw-gap-1.5 tw-font-medium">
+                      <span>Price is excluding GST</span>
+                      <span>&bull;</span>
+                      <span>Delivery within 7-10 working days</span>
                     </div>
                   </div>
-                  <div className="row p-0 m-0 mt-3 g-0">
+
+                  {/* Bottom Notes Row */}
+                  <div className="tw-flex tw-flex-row tw-w-full tw-gap-3 tw-mt-3 max-[767px]:tw-hidden">
                     {showGstNote && (
-                    <div className="col-12 col-md-6">
-                      <div
-                        className="w-100 h-100 d-flex flex-row align-items-center"
-                        style={{
-                          border: "1px solid #808080",
-                          minHeight: "58px",
-                        }}
-                      >
-                        <p
-                          style={{
-                            marginLeft: "15px",
-                            marginBottom: "0px",
-                            color: "#000",
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontStyle: "normal",
-                            fontWeight: "500",
-                          }}
-                          className="pt-3 pb-3"
+                      <div className="tw-flex-1">
+                        <div
+                          className="tw-w-full tw-h-full tw-flex tw-flex-row tw-items-center tw-justify-center tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg tw-py-2 tw-px-1.5 tw-bg-white"
+                          style={{ minHeight: "44px", border: "1px solid #ebebeb" }}
                         >
-                          Price is excluding GST
-                        </p>
+                          <p className="tw-text-gray-800 tw-m-0 tw-text-[13px] max-[767px]:tw-text-[11px] tw-font-semibold tw-text-center">
+                            Price is excluding GST
+                          </p>
+                        </div>
                       </div>
-                    </div>
                     )}
                     {showDeliveryNote && (
-                    <div className="col-12 col-md-6">
-                      <div
-                        className="w-100 h-100 d-flex flex-row align-items-center"
-                        style={{
-                          border: "1px solid #808080",
-                          minHeight: "58px",
-                        }}
-                      >
-                        <img
-                          src="/deliverytruck-img.png"
-                          alt="Delivery truck"
-                          width="40px"
-                          style={{ marginLeft: "16px" }}
-                        />
-                        <p
-                          style={{
-                            marginLeft: "15px",
-                            marginBottom: "0px",
-                            color: "#000",
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontStyle: "normal",
-                            fontWeight: "500",
-                            lineHeight: "24px",
-                          }}
-                          className="pt-3 pb-3"
+                      <div className="tw-flex-1">
+                        <div
+                          className="tw-w-full tw-h-full tw-flex tw-flex-row tw-items-center tw-justify-center tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg tw-py-2 tw-px-1.5 tw-bg-white"
+                          style={{ minHeight: "44px", border: "1px solid #ebebeb" }}
                         >
-                          Delivery within 7-10 working days
-                        </p>
+                          <svg className="tw-w-4 tw-h-4 tw-text-gray-800 tw-mr-1.5 tw-flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.75a1.125 1.125 0 0 1-1.125-1.125V4.625c0-.621.504-1.125 1.125-1.125H16.5a1.125 1.125 0 0 1 1.125 1.125v13a1.125 1.125 0 0 1-1.125 1.125m-3.75 0h4.875c.621 0 1.125-.504 1.125-1.125v-5.25c0-.411-.223-.79-.586-.975l-3.375-1.713a1.125 1.125 0 0 0-.97-.02L12 9.75M8.25 21h6.75" />
+                          </svg>
+                          <p className="tw-text-gray-800 tw-m-0 tw-text-[13px] max-[767px]:tw-text-[11px] tw-font-semibold tw-text-center">
+                            Delivery within 7-10 working days
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    )}
-                  </div>
-                  <div className="row p-0 m-0">
-                    {showBadgeFreeDelivery && (
-                    <div className="col-6 col-md-3 text-center mt-3">
-                      <Image
-                        src="/icons/free-delivery.png"
-                        height={50}
-                        width={50}
-                        alt="Free Delivery"
-                      />
-                      <br />
-                      <span>Free Delivery</span>
-                    </div>
-                    )}
-                    {showBadgeSecureTransaction && (
-                    <div className="col-6 col-md-3 text-center mt-3">
-                      <Image
-                        src="/icons/secure-transaction.png"
-                        height={50}
-                        width={50}
-                        alt="Secure Transaction"
-                      />
-                      <br />
-                      <span>Secure Transaction</span>
-                    </div>
-                    )}
-                    {showBadgeNoReturns && (
-                    <div className="col-6 col-md-3 text-center mt-3">
-                      <Image
-                        src="/icons/no-return.png"
-                        height={50}
-                        width={50}
-                        alt=" No Returns"
-                      />
-                      <br />
-                      <span>No Returns</span>
-                    </div>
-                    )}
-                    {showBadgeRecyclable && (
-                    <div className="col-6 col-md-3 text-center mt-3">
-                      <Image
-                        src="/icons/recyclable.png"
-                        height={50}
-                        width={50}
-                        alt="100% Recyclable"
-                      />
-                      <br />
-                      <span>100% Recyclable</span>
-                    </div>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="row mt-5 m-0">
-              <Info
-                product={product}
-                weight={selectedPackWeight}
-                packSize={selectedNumber}
-                mrp={MRP}
-                sp={price}
-                stock={stock}
-              />
-            </div>
+            {/* Product Description Full-Width Container */}
+            {product?.description && (
+              <div className="tw-w-full tw-border tw-border-solid tw-border-gray-200 tw-rounded-xl tw-p-6 tw-bg-white tw-mt-8 tw-mb-6" style={{ border: "1px solid #ebebeb" }}>
+                <h3 className="tw-text-gray-900 tw-text-[18px] tw-font-bold tw-mb-3">
+                  Product Description
+                </h3>
+                <div
+                  className="tw-text-gray-600 tw-text-[15px] tw-leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              </div>
+            )}
 
             <BuySection product={product} />
             <RelatedSection product={product} />
@@ -796,9 +807,6 @@ const Productpage = ({ product: rawProduct }) => {
       <Global styles={css`
         .detail-card-left, .detail-card-right {
           background-color: #fff;
-          border-radius: 12px;
-          border: 1px solid #ebebeb;
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
           padding: 36px 32px !important;
           margin-bottom: 24px;
         }
@@ -814,12 +822,39 @@ const Productpage = ({ product: rawProduct }) => {
             margin-right: 40px !important;
           }
         }
-        @media (max-width: 900px) {
+        @media (max-width: 900px) and (min-width: 768px) {
           .detail-card-left, .detail-card-right {
             padding: 24px 20px !important;
             margin-left: 40px !important;
             margin-right: 40px !important;
             width: calc(100% - 80px) !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .detail-card-left, .detail-card-right {
+            padding: 16px 12px !important;
+            margin-left: 12px !important;
+            margin-right: 12px !important;
+            width: calc(100% - 24px) !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .qty-action-container {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background-color: #fff !important;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+            padding: 12px 16px 16px 16px !important;
+            margin: 0 !important;
+            z-index: 9999 !important;
+            width: 100% !important;
+            border-top: 1px solid #ebebeb !important;
+            flex-wrap: wrap !important;
+          }
+          body {
+            padding-bottom: 110px !important;
           }
         }
       `} />

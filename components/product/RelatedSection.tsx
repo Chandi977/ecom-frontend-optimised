@@ -8,6 +8,7 @@ import { postService, getService } from "../../services/service";
 import RelatedCard from "./RelatedCard";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import { toBrandRouteSlug } from "../../utils/brands";
 
 const Slider = dynamic(() => import("react-slick"), { ssr: false }) as any;
 type RelatedProduct = { _id?: string; slug?: string; [key: string]: unknown };
@@ -26,6 +27,39 @@ function RelatedSection({ product }) {
   const [type, setType] = useState("desktop");
   const router = useRouter();
   const sliderRef1 = useRef<SliderHandle | null>(null);
+
+  const handleViewAll = async () => {
+    const brand = product?.brand;
+    if (!brand) {
+      router.push("/BestDeals");
+      return;
+    }
+
+    // Prefer the slug already populated on the brand object (brand routes are
+    // named after `slugify(brand.name)`, e.g. "flipkart", "pack-secure").
+    let brandSlug =
+      typeof brand === "object" ? toBrandRouteSlug(brand as any) : undefined;
+
+    // Fall back to resolving the slug from the brand id via the API when the
+    // brand arrives as a bare id (e.g. from the category/brand fallback list).
+    if (!brandSlug) {
+      const brandId = normalizeId(brand);
+      if (brandId) {
+        try {
+          const res = await getService("brand/all");
+          const brands = res?.data?.data || [];
+          const found = brands.find(
+            (b) => normalizeId(b?._id) === brandId
+          );
+          brandSlug = found ? toBrandRouteSlug(found) : undefined;
+        } catch {
+          brandSlug = undefined;
+        }
+      }
+    }
+
+    router.push(brandSlug ? `/${brandSlug}` : "/BestDeals");
+  };
 
   const getData = async () => {
     const productIds = (product?.relatedProducts || [])
@@ -110,63 +144,34 @@ function RelatedSection({ product }) {
     <>
       <div className="row mt-5 m-0" style={{ position: "relative" }}>
         <div className="col mb-4">
-          <div className="d-flex flex-row align-items-center justify-content-between">
-            <p
-              style={{
-                color: "#3A5BA2",
-                fontSize: "24px",
-                fontStyle: "normal",
-                fontWeight: "700",
-                lineHeight: "30px",
-                textTransform: "uppercase",
-              }}
-            >
-              RELATED PRODUCTS
-            </p>
+          <div className="tw-pb-2.5 tw-w-full tw-mb-4">
+            <h2 className="tw-text-[#182c5a] tw-text-[24px] tw-font-bold tw-uppercase tw-m-0">
+              Related Products
+            </h2>
           </div>
-
-          <div
-            style={{
-              backgroundColor: "#3A5BA2",
-              height: "3px",
-              width: "265px",
-            }}
-          ></div>
-          <div
-            className="row m-0 mb-3"
-            style={{ height: "1px", backgroundColor: "#EDEDED" }}
-          ></div>
 
           {products.length > 0 ? (
             <div style={{ position: "relative", padding: "0 10px" }}>
               {products.length > 4 && (
                 <>
-                  <div
+                  <button
                     className="tw-prod-arrow-prev"
                     onClick={() => sliderRef1.current?.slickPrev?.()}
+                    aria-label="Previous slide"
                   >
-                    <Image
-                      src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                      alt="Previous slide"
-                      className="tw-prod-imageee"
-                      width={20}
-                      height={20}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div
+                    <svg className="tw-w-5 tw-h-5 tw-text-gray-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                  </button>
+                  <button
                     className="tw-prod-arrow-next"
                     onClick={() => sliderRef1.current?.slickNext?.()}
+                    aria-label="Next slide"
                   >
-                    <Image
-                      src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                      alt="Next slide"
-                      className="tw-prod-imageee"
-                      width={20}
-                      height={20}
-                      loading="lazy"
-                    />
-                  </div>
+                    <svg className="tw-w-5 tw-h-5 tw-text-gray-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12 8.25 19.5" />
+                    </svg>
+                  </button>
                 </>
               )}
 
@@ -174,11 +179,14 @@ function RelatedSection({ product }) {
                 {products.map((x, i) => (
                   <div key={i} className="px-2">
                     <div
-                      className="d-flex flex-column justify-content-start align-items-center"
+                      className="related-card-wrapper d-flex flex-column justify-content-start align-items-center"
                       style={{
                         width: "100%",
-                        height: "367px",
-                        border: "1px solid #EDEDED",
+                        height: "420px",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        backgroundColor: "#fff",
                         cursor: "pointer",
                         marginTop: "10px",
                       }}
@@ -189,6 +197,20 @@ function RelatedSection({ product }) {
                   </div>
                 ))}
               </Slider>
+
+              {/* Explore All Products Centered Button */}
+              <div className="tw-w-full tw-flex tw-justify-center tw-mt-8 tw-mb-4">
+                <button
+                  onClick={handleViewAll}
+                  className="tw-border tw-border-solid tw-border-[#182c5a] tw-text-[#182c5a] tw-bg-white hover:tw-bg-[#182c5a] hover:tw-text-white tw-transition-colors tw-rounded-lg tw-px-6 tw-py-2.5 tw-text-[14px] tw-font-bold tw-flex tw-items-center tw-gap-2 tw-cursor-pointer"
+                  style={{ border: "1px solid #182c5a" }}
+                >
+                  Explore All Products
+                  <svg className="tw-w-4 tw-h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </div>
             </div>
           ) : (
             <div>No products found</div>
@@ -196,52 +218,61 @@ function RelatedSection({ product }) {
         </div>
       </div>
       <style jsx>{`
-        .tw-prod-arrow-prev {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 2;
-          left: -50px;
-          background-color: #f5f5f5;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          border-radius: 50%;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-          transition: background-color 0.2s, transform 0.2s;
+        .related-card-wrapper {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .tw-prod-arrow-prev:hover {
-          background-color: #e0e0e0;
-          transform: translateY(-50%) scale(1.05);
+        .related-card-wrapper:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
         }
+         .tw-prod-arrow-prev {
+           position: absolute;
+           top: 50%;
+           transform: translateY(-50%);
+           z-index: 2;
+           left: -20px;
+           background-color: #ffffff;
+           width: 40px;
+           height: 40px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           border-radius: 50%;
+           border: 1px solid #e5e7eb;
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           transition: background-color 0.2s, transform 0.2s;
+         }
+         .tw-prod-arrow-prev:hover {
+           background-color: #f9fafb;
+           transform: translateY(-50%) scale(1.05);
+         }
+         .tw-prod-arrow-next {
+           position: absolute;
+           top: 50%;
+           transform: translateY(-50%);
+           z-index: 2;
+           right: -20px;
+           background-color: #ffffff;
+           width: 40px;
+           height: 40px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           border-radius: 50%;
+           border: 1px solid #e5e7eb;
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           transition: background-color 0.2s, transform 0.2s;
+         }
+         .tw-prod-arrow-next:hover {
+           background-color: #f9fafb;
+           transform: translateY(-50%) scale(1.05);
+         }
         .tw-prod-imageee {
           width: 20px;
           height: 20px;
           object-fit: contain;
-        }
-        .tw-prod-arrow-next {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 2;
-          right: -50px;
-          background-color: #f5f5f5;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          border-radius: 50%;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-          transition: background-color 0.2s, transform 0.2s;
-        }
-        .tw-prod-arrow-next:hover {
-          background-color: #e0e0e0;
-          transform: translateY(-50%) scale(1.05);
         }
         .tw-prod-related-grid {
           margin-bottom: 140px;

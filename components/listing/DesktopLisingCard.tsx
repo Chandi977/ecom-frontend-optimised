@@ -1,6 +1,5 @@
 import React from "react";
 import Image from "next/image";
-import Skeleton from "@mui/material/Skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
@@ -13,7 +12,9 @@ import {
 } from "../../utils/favourites";
 import { addToCart } from "../../utils/cart";
 import { useRouter } from "next/router";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import { getProductDisplayName } from "./productDisplay";
+import { useBrands } from "../../context/BrandContext";
 import {
   formatCurrency,
   getDiscountPercent,
@@ -24,6 +25,7 @@ import {
 type WishlistEntry = { product?: { _id?: string } };
 
 function DesktopListingCard({ item }: { item?: any }) {
+  const { brandNameById } = useBrands();
   const [favourite, setFavourite] = useState<WishlistEntry[]>([]);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -97,27 +99,7 @@ function DesktopListingCard({ item }: { item?: any }) {
     ? getDiscountPercent(tier.sellingPrice, tier.mrp)
     : 0;
   if (!item) {
-    return (
-      <>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            className="d-flex justify-content-center align-items-center bg-light "
-            style={{ position: "relative", height: "200px", width: "300px" }}
-          >
-            <Skeleton variant="rectangular" width={250} height={150} />
-          </div>
-          <div
-            className="d-flex flex-column justify-content-evenly align-items-center bg-light"
-            style={{ height: "120px", width: "300px", paddingTop: "20px" }}
-          >
-            <Skeleton variant="text" width="80%" />
-            <Skeleton variant="text" width="60%" />
-            <Skeleton variant="text" width="40%" />
-          </div>
-          <Skeleton variant="rectangular" height={50} width={300} />
-        </div>
-      </>
-    );
+    return <ProductCardSkeleton variant="grid" />;
   }
   return (
     <>
@@ -243,7 +225,7 @@ function DesktopListingCard({ item }: { item?: any }) {
               }}
               onClick={handleViewProduct}
             >
-              {getProductDisplayName(item, { includePack: true })}
+              {getProductDisplayName(item, { includePack: true, brandNameById })}
             </p>
           </div>
           <div
@@ -295,7 +277,7 @@ function DesktopListingCard({ item }: { item?: any }) {
             line-height: 12px;
           }
           .desk-pricetext1 {
-            color: #249b3e;
+            color: #e92227;
             font-size: 18px;
             font-style: normal;
             font-weight: 600;
@@ -305,7 +287,7 @@ function DesktopListingCard({ item }: { item?: any }) {
             .desk-pricetext1 { font-size: 9px; line-height: 10px; }
           }
           .desk-pricetext {
-            color: #249b3e;
+            color: #e92227;
             font-size: 27.119px;
             font-style: normal;
             font-weight: 600;

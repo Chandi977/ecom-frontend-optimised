@@ -1,11 +1,16 @@
-export const BRAND_LABELS = {
-  "6926d6bad53f3a772c6e978c": "flipkart",
-  "6557dbcc301ec4f2f426610b": "myntra",
-  "69268af9d53f3a772c6bccc2": "amazon",
-  "6582c8580ab82549a084894f": "ajio",
-  "6557dbf9301ec4f2f426611e": "rollabel",
-  "6557dc10301ec4f2f4266122": "pack-secure",
-  "6582c8750ab82549a0848953": "PackPro",
+import { getPrimaryPriceTier } from "../../utils/productCatalog";
+
+// Cosmetic display overrides for trademark styling, keyed by normalized brand
+// name/slug (NOT by ObjectId). Purely presentational — brand identity/name
+// comes dynamically from /brand/all.
+const BRAND_DISPLAY_OVERRIDES: Record<string, string> = {
+  rollabel: "Rollabel™",
+  packpro: "PackPro™",
+};
+
+const applyBrandDisplay = (name: string): string => {
+  const key = name.trim().toLowerCase().replace(/\s+/g, "-");
+  return BRAND_DISPLAY_OVERRIDES[key] || name;
 };
 
 export const stripObjectId = (value) => {
@@ -19,30 +24,44 @@ export const stripObjectId = (value) => {
     .trim();
 };
 
-export const getBrandLabel = (brand) => {
+// `brandNameById` is a dynamic id->name map (from useBrands()). It is only
+// needed when `brand` is a bare ObjectId (list/search payloads are not
+// populated); a populated brand object already carries `name`.
+export const getBrandLabel = (
+  brand,
+  brandNameById: Record<string, string> = {},
+) => {
   if (!brand) {
     return "";
   }
 
-  if (typeof brand === "object") {
-    return stripObjectId(
-      BRAND_LABELS[brand?._id] || brand?.name || brand?._id || "",
-    );
-  }
+  const name =
+    typeof brand === "object"
+      ? brand?.name || brandNameById[brand?._id] || ""
+      : brandNameById[brand] || "";
 
-  return stripObjectId(BRAND_LABELS[brand] || brand);
+  const cleaned = stripObjectId(name);
+  return cleaned ? applyBrandDisplay(cleaned) : "";
 };
 
 export const getProductDisplayName = (
   item,
-  { includeBrand = true, includePack = false } = {},
+  {
+    includeBrand = true,
+    includePack = false,
+    brandNameById = {},
+  }: {
+    includeBrand?: boolean;
+    includePack?: boolean;
+    brandNameById?: Record<string, string>;
+  } = {},
 ) => {
   if (!item) {
     return "";
   }
 
   const title = [
-    includeBrand ? getBrandLabel(item?.brand) : "",
+    includeBrand ? getBrandLabel(item?.brand, brandNameById) : "",
     stripObjectId(item?.name),
     stripObjectId(item?.model),
   ]
@@ -56,4 +75,3 @@ export const getProductDisplayName = (
 
   return title;
 };
-import { getPrimaryPriceTier } from "../../utils/productCatalog";

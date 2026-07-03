@@ -21,6 +21,7 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { useBrands } from "../../context/BrandContext";
 
 const DIRECT_THERMAL_SUBCATEGORY_ID = "6557e1cb301ec4f2f426614c";
 
@@ -217,7 +218,10 @@ const BoppTape = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, initialProducts.length]);
 
+  const { resolveId } = useBrands();
+
   const handlecat = async (id) => {
+    if (!id) return;
     filterBrandProducts(id);
   };
 
@@ -240,7 +244,7 @@ const BoppTape = ({
       return;
     }
     setSortBy(type);
-  };
+  };
 
   return (
     <>
@@ -535,7 +539,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("69268af9d53f3a772c6bccc2")
+                                handlecat(resolveId("amazon"))
                               }
                               sx={{
                                 padding: "0px",
@@ -564,7 +568,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6926d6bad53f3a772c6e978c")
+                                handlecat(resolveId("flipkart"))
                               }
                               sx={{
                                 padding: "0px",
@@ -594,7 +598,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6557dbcc301ec4f2f426610b")
+                                handlecat(resolveId("myntra"))
                               }
                               sx={{
                                 padding: "0px",
@@ -624,7 +628,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6582c8580ab82549a084894f")
+                                handlecat(resolveId("ajio"))
                               }
                               sx={{
                                 padding: "0px",

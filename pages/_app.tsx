@@ -20,6 +20,7 @@ import "antd/dist/reset.css";
 import { ConfigProvider } from "antd";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useRouter } from "next/router";
+import { BrandProvider } from "../context/BrandContext";
 
 
 config.autoAddCss = false;
@@ -43,17 +44,19 @@ export default function MyApp({ Component, pageProps }) {
         `}
       </Script>
 
-      <div
-        className="container-fluid d-flex flex-column justify-content-between p-0"
-        style={{ minHeight: "100vh" }}
-      >
-        <ToastContainer />
-        {!isCheckout && <Navbar />}
-        <ConfigProvider>
-          <Component {...pageProps} />
-        </ConfigProvider>
-        {!isCheckout && <Footer />}
-      </div>
+      <BrandProvider>
+        <div
+          className="container-fluid d-flex flex-column justify-content-between p-0"
+          style={{ minHeight: "100vh" }}
+        >
+          <ToastContainer />
+          {!isCheckout && <Navbar />}
+          <ConfigProvider>
+            <Component {...pageProps} />
+          </ConfigProvider>
+          {!isCheckout && <Footer />}
+        </div>
+      </BrandProvider>
     </GoogleOAuthProvider>
   );
 }

@@ -30,6 +30,7 @@ import {
 import styled from "@emotion/styled";
 import Link from "next/link";
 import { getService, postService } from "../../services/service";
+import { useBrands } from "../../context/BrandContext";
 import { trackSearch } from "../../lib/analytics";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
@@ -64,6 +65,7 @@ const Marquee = dynamic(() => import("react-fast-marquee"), {
 
 const Navbar = () => {
   const router = useRouter();
+  const { brandNameById } = useBrands();
   const breakpoint = 700;
   const DEFAULT_NAVBAR_HEIGHT = 167;
   // Helpers to safely read auth state from localStorage
@@ -1018,23 +1020,7 @@ const Navbar = () => {
                           setShowDropdown(false);
                         }}
                       >
-                        {product?.brand === "6926d6bad53f3a772c6e978c"
-                          ? "flipkart"
-                          : product?.brand === "6557dbcc301ec4f2f426610b"
-                            ? "myntra"
-                            : product?.brand === "69268af9d53f3a772c6bccc2"
-                              ? "amazon"
-                              : product?.brand === "6582c8580ab82549a084894f"
-                                ? "ajio"
-                                : product?.brand === "6557dbf9301ec4f2f426611e"
-                                  ? "rollabel"
-                                  : product?.brand ===
-                                      "6557dc10301ec4f2f4266122"
-                                    ? "pack-secure"
-                                    : product?.brand ===
-                                        "6582c8750ab82549a0848953"
-                                      ? "PackPro"
-                                      : product?.brand}{" "}
+                        {brandNameById[product?.brand] || product?.brand}{" "}
                         {product.name} {product.model}
                       </div>
                     ))}
@@ -1516,23 +1502,7 @@ const Navbar = () => {
                             setShowDropdownMobile(false);
                           }}
                         >
-                          {product?.brand === "6926d6bad53f3a772c6e978c"
-                            ? "flipkart"
-                            : product?.brand === "6557dbcc301ec4f2f426610b"
-                              ? "myntra"
-                              : product?.brand === "69268af9d53f3a772c6bccc2"
-                                ? "amazon"
-                                : product?.brand === "6582c8580ab82549a084894f"
-                                  ? "ajio"
-                                  : product?.brand === "6557dbf9301ec4f2f426611e"
-                                    ? "rollabel"
-                                    : product?.brand ===
-                                        "6557dc10301ec4f2f4266122"
-                                      ? "pack-secure"
-                                      : product?.brand ===
-                                          "6582c8750ab82549a0848953"
-                                        ? "PackPro"
-                                        : product?.brand}{" "}
+                          {brandNameById[product?.brand] || product?.brand}{" "}
                           {product.name} {product.model}
                         </div>
                       ))}

@@ -206,6 +206,16 @@ const PackproTapeCatalogPage = ({
                     <DesktopListingCard item={item} />
                   </div>
                 ))
+              ) : isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    className="row w-40"
+                    style={{ height: "400px" }}
+                    key={`skeleton-${index}`}
+                  >
+                    <DesktopListingCard />
+                  </div>
+                ))
               ) : (
                 <div style={{ position: "absolute", top: "10%", left: "50%" }}>
                   <p className="pc-noProducts">No products found.</p>
@@ -222,6 +232,16 @@ const PackproTapeCatalogPage = ({
                     key={item?._id || index}
                   >
                     <ListingCard item={item} />
+                  </div>
+                ))
+              ) : isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    className="mt-4 d-flex flex-column justify-content-start align-items-center"
+                    style={{ width: "180px", height: "212px" }}
+                    key={`skeleton-mobile-${index}`}
+                  >
+                    <ListingCard />
                   </div>
                 ))
               ) : (

@@ -14,13 +14,15 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { useBrands } from "../../context/BrandContext";
 
 
+// Curated label/order; the brand id is resolved dynamically from /brand/all.
 const BRAND_OPTIONS = [
-  { id: "69268af9d53f3a772c6bccc2", label: "Amazon" },
-  { id: "6926d6bad53f3a772c6e978c", label: "Flipkart" },
-  { id: "6557dbcc301ec4f2f426610b", label: "Myntra" },
-  { id: "6582c8580ab82549a084894f", label: "Ajio" },
+  { slug: "amazon", label: "Amazon" },
+  { slug: "flipkart", label: "Flipkart" },
+  { slug: "myntra", label: "Myntra" },
+  { slug: "ajio", label: "Ajio" },
 ];
 
 export async function getServerSideProps(context) {
@@ -113,6 +115,7 @@ const BoppTape = ({
   corrugatedCategoryId,
 }) => {
   const router = useRouter();
+  const { resolveId } = useBrands();
   const initialProducts = useMemo(() => (product ? product : []), [product]);
   const categoryId = corrugatedCategoryId;
   const [length, setLength] = useState([0, 300]);
@@ -307,6 +310,7 @@ const BoppTape = ({
   }, [q, initialProducts.length]);
 
   const handlecat = async (id) => {
+    if (!id) return;
     try {
       await filterBrandProducts(id);
     } catch (error) {
@@ -516,12 +520,14 @@ const BoppTape = ({
       minHeight: "230px",
       children: (
         <div className="mt-4 d-flex flex-column align-items-start gap-3">
-          {BRAND_OPTIONS.map((brandOption) => (
-            <div className="d-flex" key={brandOption.id}>
+          {BRAND_OPTIONS.map((brandOption) => {
+            const brandId = resolveId(brandOption.slug);
+            return (
+            <div className="d-flex" key={brandOption.slug}>
               <Checkbox
                 {...label}
-                onChange={() => handlecat(brandOption.id)}
-                checked={seelctedBrand.includes(brandOption.id)}
+                onChange={() => handlecat(brandId)}
+                checked={!!brandId && seelctedBrand.includes(brandId)}
                 sx={{
                   padding: "0px",
                   color: "gray",
@@ -545,7 +551,8 @@ const BoppTape = ({
                 {brandOption.label}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
       ),
     });

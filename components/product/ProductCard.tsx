@@ -29,7 +29,9 @@ interface ProductCardProps {
 }
 
 const getName = (product?: IProduct): string =>
-  [product?.brand?.name, product?.name, product?.model].filter(Boolean).join(" ");
+  [product?.brand?.name, product?.name, product?.model]
+    .filter(Boolean)
+    .join(" ");
 
 export function ProductCard({
   product,
@@ -87,15 +89,39 @@ export function ProductCard({
             .filter(Boolean)
             .join(" / ")}
         </p>
-        <button type="button" className="title" onClick={() => onView?.(product)}>
-          {getName(product)}
+        <button
+          type="button"
+          className="title"
+          onClick={() => onView?.(product)}
+        >
+          {product?.brand?.name} {product?.name}
+          {product?.model && (
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: "normal",
+                color: "#6b7280",
+                background: "#f3f4f6",
+                padding: "1px 5px",
+                borderRadius: "3px",
+                marginLeft: "5px",
+                border: "1px solid #e5e7eb",
+                display: "inline-block",
+                textTransform: "none",
+              }}
+            >
+              {product.model}
+            </span>
+          )}
         </button>
         <div className="price-row">
           {tier.mrp > tier.sellingPrice && (
             <span className="mrp">{formatCurrency(tier.mrp)}</span>
           )}
           <strong>{formatCurrency(tier.sellingPrice)}</strong>
-          {discountPercent > 0 && <span className="off">{discountPercent}% off</span>}
+          {discountPercent > 0 && (
+            <span className="off">{discountPercent}% off</span>
+          )}
         </div>
         <p className={stock > 0 ? "stock in-stock" : "stock out-stock"}>
           {stock > 0 ? `${stock} available` : "Out of stock"}
@@ -103,7 +129,11 @@ export function ProductCard({
       </div>
 
       <div className="actions">
-        <button type="button" onClick={() => onQuickView?.(product)} aria-label="Quick view">
+        <button
+          type="button"
+          onClick={() => onQuickView?.(product)}
+          aria-label="Quick view"
+        >
           <FontAwesomeIcon icon={faEye} />
         </button>
         <button
@@ -114,10 +144,18 @@ export function ProductCard({
         >
           <FontAwesomeIcon icon={faHeart} />
         </button>
-        <button type="button" onClick={() => onCompare?.(product)} aria-label="Compare">
+        <button
+          type="button"
+          onClick={() => onCompare?.(product)}
+          aria-label="Compare"
+        >
           <FontAwesomeIcon icon={faScaleBalanced} />
         </button>
-        <button type="button" onClick={() => onAddToCart?.(product)} aria-label="Add to cart">
+        <button
+          type="button"
+          onClick={() => onAddToCart?.(product)}
+          aria-label="Add to cart"
+        >
           <FontAwesomeIcon icon={faCartPlus} />
         </button>
       </div>
@@ -218,7 +256,7 @@ export function ProductCard({
           text-decoration: line-through;
         }
         strong {
-          color: #249b3e;
+          color: #e92227;
           font-size: 17px;
         }
         .off {

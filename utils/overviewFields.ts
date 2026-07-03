@@ -23,7 +23,6 @@ const formatBoolean = (value: unknown): string => {
 const TAX_AND_SUSTAINABILITY_CONFIG = [
   { label: "HSN Code", keys: ["hsn_code"] },
   { label: "SAC Code", keys: ["sac_code"] },
-  { label: "Tax Category", keys: ["tax_category"] },
   { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
   { label: "Recyclable", keys: ["recyclable"], format: formatBoolean },
   { label: "Biodegradable", keys: ["biodegradable"], format: formatBoolean },
@@ -51,7 +50,6 @@ const COMMON_FIELDS = [
   { label: "Colour", keys: ["color"] },
   { label: "HSN Code", keys: ["hsn_code"] },
   { label: "SAC Code", keys: ["sac_code"] },
-  { label: "Tax Category", keys: ["tax_category"] },
   { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
   { label: "Type", keys: ["name"] },
   { label: "Labels per Roll", keys: ["label_in_roll"] },

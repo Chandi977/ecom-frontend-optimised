@@ -219,14 +219,27 @@ export const getInventoryStatus = (
 };
 
 const normalizeImage = (image: unknown): IMediaImage | null => {
+  const resolveUrl = (url: string): string => {
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+    if (
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("/")
+    ) {
+      return trimmed;
+    }
+    return `https://d3dcdu6oc5g6yg.cloudfront.net/${trimmed}`;
+  };
+
   if (typeof image === "string" && image.trim()) {
-    return { image };
+    return { image: resolveUrl(image) };
   }
   if (isRecord(image)) {
     const src = stringOrEmpty(image.image || image.url || image.src);
     if (src) {
       return {
-        image: src,
+        image: resolveUrl(src),
         alt: stringOrEmpty(image.alt),
         order: numberOrUndefined(image.order),
       };
