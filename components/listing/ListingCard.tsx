@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -16,6 +15,7 @@ import {
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
+import ProductImage from "../product/ProductImage";
 
 type WishlistEntry = { product?: { _id?: string } };
 
@@ -91,7 +91,7 @@ function ListingCard({ item }: { item?: any }) {
     <div className="tw-flex tw-flex-col tw-w-full tw-min-h-[288px] tw-bg-[#f9f9f9]">
       <div className="tw-relative tw-flex tw-justify-center tw-items-center tw-w-full tw-bg-[#f9f9f9] tw-overflow-hidden" style={{ height: '150px' }}>
         <div style={{ paddingTop: '16px' }}>
-          <Image
+          <ProductImage
             src={getProductImageSrc(item)}
             alt={item?.name || "Product image"}
             className="tw-object-contain tw-cursor-pointer"

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
 import type { IProduct } from "../../types/product";
 import { getProductMedia } from "../../utils/productCatalog";
+import ProductImage from "./ProductImage";
 
 export function ProductGallery({ product }: { product?: IProduct }) {
   const media = useMemo(() => getProductMedia(product), [product]);
@@ -17,7 +17,7 @@ export function ProductGallery({ product }: { product?: IProduct }) {
         onClick={() => setLightboxOpen(true)}
         aria-label="Open product image fullscreen"
       >
-        <Image
+        <ProductImage
           src={selectedImage?.image || media.thumbnail}
           alt={selectedImage?.alt || product?.name || "Product image"}
           fill
@@ -36,7 +36,7 @@ export function ProductGallery({ product }: { product?: IProduct }) {
             onClick={() => setSelectedIndex(index)}
             aria-label={`Show product image ${index + 1}`}
           >
-            <Image
+            <ProductImage
               src={image.image}
               alt={image.alt || `${product?.name || "Product"} ${index + 1}`}
               width={96}
@@ -64,7 +64,7 @@ export function ProductGallery({ product }: { product?: IProduct }) {
             x
           </button>
           <div className="lightbox-image">
-            <Image
+            <ProductImage
               src={selectedImage?.image || media.thumbnail}
               alt={selectedImage?.alt || product?.name || "Product image"}
               fill

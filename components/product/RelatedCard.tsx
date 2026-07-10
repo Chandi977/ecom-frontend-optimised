@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
@@ -16,6 +15,7 @@ import {
   getPrimaryPriceTier,
   getAvailableStock,
 } from "../../utils/productCatalog";
+import ProductImage from "./ProductImage";
 
 type WishlistEntry = { product?: { _id?: string } };
 
@@ -112,7 +112,7 @@ function RelatedCard({ product }) {
         className="tw-flex tw-justify-center tw-items-center tw-bg-white tw-w-full tw-p-1 tw-overflow-hidden"
         style={{ height: "300px" }}
       >
-        <Image
+        <ProductImage
           src={getProductImageSrc(product)}
           alt={product?.name || "Product image"}
           width={300}

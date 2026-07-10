@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
@@ -13,6 +12,7 @@ import {
   getPrimaryPriceTier,
   getProductSubCategory,
 } from "../../utils/productCatalog";
+import ProductImage from "./ProductImage";
 
 const BUNDLE_LIMIT = 3;
 type CatalogProduct = Record<string, unknown> & {
@@ -439,10 +439,11 @@ function BuySection({ product }) {
                       )}
 
                       <div className="buy-card-img-wrapper d-flex justify-content-center align-items-center bg-light">
-                        <Image
+                        <ProductImage
                           src={getProductImageSrc(item)}
                           alt={item?.name || "Product image"}
                           fill
+                          sizes="180px"
                           loading="lazy"
                           style={{ objectFit: "contain", padding: "2px" }}
                         />

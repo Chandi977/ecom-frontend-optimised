@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCartPlus,
@@ -16,6 +15,7 @@ import {
   getProductImageSrc,
   getProductSubCategory,
 } from "../../utils/productCatalog";
+import ProductImage from "./ProductImage";
 
 interface ProductCardProps {
   product?: IProduct;
@@ -65,7 +65,7 @@ export function ProductCard({
         onClick={() => onView?.(product)}
         aria-label={`View ${product.name}`}
       >
-        <Image
+        <ProductImage
           src={getProductImageSrc(product)}
           alt={product.name || "Product image"}
           width={compact ? 150 : 230}

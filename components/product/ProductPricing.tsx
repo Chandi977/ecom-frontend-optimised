@@ -165,7 +165,7 @@ export function ProductPricing({
           text-decoration: line-through;
         }
         .price {
-          color: #182c5a;
+          color: #e92227;
           font-size: 28px;
           line-height: 1;
           font-weight: 700;

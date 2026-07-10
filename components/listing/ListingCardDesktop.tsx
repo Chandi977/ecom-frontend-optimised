@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
@@ -20,6 +19,7 @@ import {
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
+import ProductImage from "../product/ProductImage";
 
 type WishlistEntry = { product?: { _id?: string } };
 
@@ -107,7 +107,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
         onClick={handleViewProduct}
       >
         <div className="p-0 d-flex flex-column align-items-start justify-content-start">
-          <Image
+          <ProductImage
             src={getProductImageSrc(item)}
             alt={item?.name || "Product image"}
             width={180}

@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
@@ -21,6 +20,7 @@ import {
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
+import ProductImage from "../product/ProductImage";
 
 type WishlistEntry = { product?: { _id?: string } };
 
@@ -115,7 +115,7 @@ function DesktopListingCard({ item }: { item?: any }) {
           // onClick={() => window.open(`/product?id=${item?._id}`, '_blank')}
         >
           <div className="d-flex align-items-center justify-content-center" style={{ height: "100%", width: "100%", padding: "10px" }}>
-            <Image
+            <ProductImage
               src={getProductImageSrc(item)}
               alt={item?.name || "Product image"}
               width={250}

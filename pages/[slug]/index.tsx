@@ -19,7 +19,6 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { getService } from "../../services/service";
 import Head from "next/head";
-import Info from "../../components/product/Info";
 import BuySection from "../../components/product/BuySection";
 import RelatedSection from "../../components/product/RelatedSection";
 import { addToCart } from "../../utils/cart";
@@ -36,11 +35,11 @@ import { toast } from "react-toastify";
 import { DEV } from "../../services/constants";
 import { getOverviewFields } from "../../utils/overviewFields";
 import { isFieldVisible, FIELD_VISIBILITY_KEYS } from "../../utils/fieldVisibility";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import ProductGallery from "../../components/product/ProductGallery";
 import ProductInventory from "../../components/product/ProductInventory";
 import ProductPricing from "../../components/product/ProductPricing";
+import ProductSpecifications from "../../components/product/ProductSpecifications";
 import {
   getLegacyCompatibleProduct,
   getPriceTiers,
@@ -201,6 +200,8 @@ const Productpage = ({ product: rawProduct }) => {
     /carry.*handle.*tape/i.test(categorySlug);
   // Admin-controlled storefront visibility for the fixed top-card elements.
   const showQuickOverview = isFieldVisible(product, FIELD_VISIBILITY_KEYS.sectionQuickOverview);
+  const showSpecifications = isFieldVisible(product, FIELD_VISIBILITY_KEYS.sectionSpecifications);
+  const showProductDetails = isFieldVisible(product, FIELD_VISIBILITY_KEYS.sectionProductDetails);
   const showAboutItem = isFieldVisible(product, FIELD_VISIBILITY_KEYS.aboutItem);
   const showGstNote = isFieldVisible(product, FIELD_VISIBILITY_KEYS.noteGst);
   const showDeliveryNote = isFieldVisible(product, FIELD_VISIBILITY_KEYS.noteDelivery);
@@ -236,6 +237,15 @@ const Productpage = ({ product: rawProduct }) => {
     }
     return "";
   }, [product?.usage, isPaperBagProduct]);
+  const descriptionText = product?.description
+    ? product.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+    : "";
+  const hasDescription = Boolean(descriptionText);
+  const hasUsage = Boolean(usageText);
+  const showDescriptionDetails = showProductDetails && hasDescription;
+  const showUsageDetails = showProductDetails && hasUsage;
+  const showExpandedProductDetails =
+    showDescriptionDetails || showSpecifications || showUsageDetails;
 
   const safePrice = Number.isFinite(Number(price)) ? Number(price) : 0;
   const safeMRP = Number.isFinite(Number(MRP)) ? Number(MRP) : 0;
@@ -673,7 +683,7 @@ const Productpage = ({ product: rawProduct }) => {
                   {/* Common Field: About Item */}
                   {product && showAboutItem && (
                     <div className="tw-mt-3">
-                      <span style={{ fontWeight: "600", fontSize: "16px", display: "block", marginBottom: "4px" }}>
+                      <span className="tw-text-[#182c5a] tw-text-[16px] tw-font-bold tw-block tw-mb-2">
                         About the Item / Highlights
                       </span>
                       <div style={{ fontWeight: "400", fontSize: "16px", color: "#828282" }}>
@@ -786,16 +796,42 @@ const Productpage = ({ product: rawProduct }) => {
               </div>
             </div>
 
-            {/* Product Description Full-Width Container */}
-            {product?.description && (
+            {/* Product Details Full-Width Container */}
+            {showExpandedProductDetails && (
               <div className="tw-w-full tw-border tw-border-solid tw-border-gray-200 tw-rounded-xl tw-p-6 tw-bg-white tw-mt-8 tw-mb-6" style={{ border: "1px solid #ebebeb" }}>
-                <h3 className="tw-text-gray-900 tw-text-[18px] tw-font-bold tw-mb-3">
-                  Product Description
-                </h3>
-                <div
-                  className="tw-text-gray-600 tw-text-[15px] tw-leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
+                <div className="tw-grid tw-grid-cols-1 tw-gap-8">
+                  {showDescriptionDetails && (
+                    <section>
+                      <h3 className="tw-text-[#182c5a] tw-text-[20px] tw-font-bold tw-mb-3">
+                        Product Description
+                      </h3>
+                      <div
+                        className="tw-text-gray-600 tw-text-[15px] tw-leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                      />
+                    </section>
+                  )}
+
+                  {showSpecifications && (
+                    <section>
+                      <h3 className="tw-text-[#182c5a] tw-text-[20px] tw-font-bold tw-mb-3">
+                        Specifications
+                      </h3>
+                      <ProductSpecifications product={product} />
+                    </section>
+                  )}
+
+                  {showUsageDetails && (
+                    <section>
+                      <h3 className="tw-text-[#182c5a] tw-text-[20px] tw-font-bold tw-mb-3">
+                        Usage & Care Instructions
+                      </h3>
+                      <div className="tw-text-gray-600 tw-text-[15px] tw-leading-relaxed">
+                        {renderMultilineText(usageText)}
+                      </div>
+                    </section>
+                  )}
+                </div>
               </div>
             )}
 
