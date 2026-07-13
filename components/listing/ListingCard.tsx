@@ -150,7 +150,7 @@ function ListingCard({ item }: { item?: any }) {
         }
         .listing-price {
           margin: 0;
-          color: #e92227;
+          color: #17803d;
           font-family: "Montserrat", sans-serif;
           font-size: 14px;
           font-weight: 600;

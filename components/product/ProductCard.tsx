@@ -252,11 +252,11 @@ export function ProductCard({
           min-height: 24px;
         }
         .mrp {
-          color: #6b7280;
+          color: #000000;
           text-decoration: line-through;
         }
         strong {
-          color: #e92227;
+          color: #17803d;
           font-size: 17px;
         }
         .off {

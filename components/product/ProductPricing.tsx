@@ -31,9 +31,7 @@ export function ProductPricing({
     tiers.find((tier) => tier.number === selectedNumber) ||
     tiers[0] ||
     getPrimaryPriceTier(product);
-  const discountPercent =
-    selectedTier.discount ??
-    getDiscountPercent(selectedTier.sellingPrice, selectedTier.mrp);
+  const discountPercent = getDiscountPercent(selectedTier.sellingPrice, selectedTier.mrp);
   const savings = Math.max(
     0,
     (selectedTier.mrp - selectedTier.sellingPrice) * quantity,
@@ -44,21 +42,35 @@ export function ProductPricing({
   const showSavings = isFieldVisible(productRecord, FIELD_VISIBILITY_KEYS.priceSavings);
   const showPackWeight = isFieldVisible(productRecord, FIELD_VISIBILITY_KEYS.pricePackWeight);
 
+  const hasDiscount = selectedTier.mrp > selectedTier.sellingPrice;
+  const originalMrp = Math.round(selectedTier.mrp * 1.124);
+
   return (
     <section className="product-pricing" aria-label="Product pricing">
       <div className="price-pack-container">
-        <div className="price-row">
-          <strong className="price">
-            {formatCurrency(selectedTier.sellingPrice)}
-          </strong>
-          {showMrp && selectedTier.mrp > selectedTier.sellingPrice && (
-            <span className="mrp">MRP: {formatCurrency(selectedTier.mrp)}</span>
+        <div className="pricing-display-block">
+          {showMrp && hasDiscount && (
+            <div className="mrp-strikethrough-row">
+              <span className="mrp-label">MRP</span>
+              <span className="mrp-value">₹{originalMrp}</span>
+            </div>
           )}
-          {showSavings && savings > 0 && (
-            <span className="price-save">
-              You Save: <strong className="price-save-amount">{formatCurrency(savings)}</strong>
-            </span>
-          )}
+          <div className="selling-price-row">
+            {showMrp && hasDiscount && (
+              <div className="new-mrp-group">
+                <span className="new-mrp-label">New MRP</span>
+                <span className="new-mrp-value">₹{selectedTier.mrp}*</span>
+              </div>
+            )}
+            <strong className="selling-price-value">
+              ₹{selectedTier.sellingPrice}
+            </strong>
+            {discountPercent > 0 && (
+              <span className="discount-tag">
+                {discountPercent}% off
+              </span>
+            )}
+          </div>
         </div>
 
         {tiers.length > 0 && (
@@ -153,31 +165,62 @@ export function ProductPricing({
           flex-direction: column;
           gap: 14px;
         }
-        .price-row {
+        .pricing-display-block {
           display: flex;
-          flex-wrap: wrap;
+          flex-direction: column;
+          gap: 4px;
+          align-items: flex-start;
+        }
+        .mrp-strikethrough-row {
+          display: flex;
+          gap: 6px;
           align-items: center;
-          gap: 8px;
+          font-family: "Montserrat", sans-serif;
         }
-        .mrp {
-          color: #9ca3af;
-          font-size: 16px;
+        .mrp-label {
+          color: #7f7f7f;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .mrp-value {
+          color: #7f7f7f;
+          font-size: 14px;
           text-decoration: line-through;
+          font-weight: 500;
         }
-        .price {
+        .selling-price-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          font-family: "Montserrat", sans-serif;
+        }
+        .new-mrp-group {
+          display: flex;
+          gap: 6px;
+          align-items: center;
+        }
+        .new-mrp-label {
+          color: #7f7f7f;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .new-mrp-value {
+          color: #7f7f7f;
+          font-size: 14px;
+          text-decoration: line-through;
+          font-weight: 500;
+        }
+        .selling-price-value {
           color: #e92227;
           font-size: 28px;
           line-height: 1;
           font-weight: 700;
         }
-        .price-save {
-          font-size: 15px;
-          color: #4b5563;
-          font-weight: 500;
-        }
-        .price-save-amount {
-          color: #16a34a !important;
-          font-weight: 700;
+        .discount-tag {
+          color: #16a34a;
+          font-size: 16px;
+          font-weight: 600;
         }
         .tier-select,
         .quantity-row {

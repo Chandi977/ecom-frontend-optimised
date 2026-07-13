@@ -158,7 +158,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
         </button>
         <style jsx>{`
           .listing-desk-pricetext {
-            color: #e92227;
+            color: #17803d;
             font-size: 27.119px;
             font-style: normal;
             font-weight: 600;

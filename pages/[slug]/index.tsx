@@ -99,6 +99,61 @@ const renderMultilineText = (text?: string) => {
   return <p style={{ whiteSpace: "pre-line", margin: 0 }}>{text}</p>;
 };
 
+const parseHtmlDescription = (html?: string) => {
+  if (!html) return { about: null, details: null };
+
+  const aboutMatch = html.match(/About\s+the\s+(?:item|product)/i) || html.match(/About\s+(?:item|product)/i);
+  const detailsMatch = html.match(/Product\s+(?:Details|Description|Specifications)/i);
+
+  if (!aboutMatch || !detailsMatch) {
+    return { about: null, details: html };
+  }
+
+  const aboutTxtIdx = aboutMatch.index!;
+  const detailsTxtIdx = detailsMatch.index!;
+
+  if (aboutTxtIdx >= detailsTxtIdx) {
+    return { about: null, details: html };
+  }
+
+  let aboutTagIdx = html.lastIndexOf('<p', aboutTxtIdx);
+  if (aboutTagIdx === -1) aboutTagIdx = html.lastIndexOf('<div', aboutTxtIdx);
+  if (aboutTagIdx === -1) aboutTagIdx = aboutTxtIdx;
+
+  let aboutEndTagIdx = html.indexOf('</p>', aboutTxtIdx);
+  if (aboutEndTagIdx === -1) aboutEndTagIdx = html.indexOf('</div>', aboutTxtIdx);
+  if (aboutEndTagIdx !== -1) {
+    aboutEndTagIdx += aboutEndTagIdx === html.indexOf('</p>', aboutTxtIdx) ? 4 : 6;
+  } else {
+    aboutEndTagIdx = aboutTxtIdx + aboutMatch[0].length;
+  }
+
+  let detailsTagIdx = html.lastIndexOf('<p', detailsTxtIdx);
+  if (detailsTagIdx === -1) detailsTagIdx = html.lastIndexOf('<div', detailsTxtIdx);
+  if (detailsTagIdx === -1) detailsTagIdx = detailsTxtIdx;
+
+  let detailsEndTagIdx = html.indexOf('</p>', detailsTxtIdx);
+  if (detailsEndTagIdx === -1) detailsEndTagIdx = html.indexOf('</div>', detailsTxtIdx);
+  if (detailsEndTagIdx !== -1) {
+    detailsEndTagIdx += detailsEndTagIdx === html.indexOf('</p>', detailsTxtIdx) ? 4 : 6;
+  } else {
+    detailsEndTagIdx = detailsTxtIdx + detailsMatch[0].length;
+  }
+
+  const aboutHtml = html.substring(aboutEndTagIdx, detailsTagIdx);
+  const aboutText = aboutHtml.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+  let detailsHtml = html.substring(detailsEndTagIdx).trim();
+  if (detailsHtml.endsWith('</div>') && !detailsHtml.startsWith('<div')) {
+    detailsHtml = detailsHtml.slice(0, -6).trim();
+  }
+
+  return {
+    about: aboutText || null,
+    details: detailsHtml || null
+  };
+};
+
 const Productpage = ({ product: rawProduct }) => {
   const product = React.useMemo(() => {
     if (!rawProduct) return rawProduct;
@@ -210,10 +265,11 @@ const Productpage = ({ product: rawProduct }) => {
   const showBadgeNoReturns = isFieldVisible(product, FIELD_VISIBILITY_KEYS.badgeNoReturns);
   const showBadgeRecyclable = isFieldVisible(product, FIELD_VISIBILITY_KEYS.badgeRecyclable);
 
-  const aboutItemText = React.useMemo(() => {
-    if (product?.aboutItem && String(product.aboutItem).trim() !== "" && String(product.aboutItem).trim().toLowerCase() !== "text pending") {
-      return product.aboutItem;
-    }
+  const parsedDesc = React.useMemo(() => {
+    return parseHtmlDescription(product?.description);
+  }, [product?.description]);
+
+  const categoryDefaultAbout = React.useMemo(() => {
     if (isPaperBagProduct) {
       return `- Made from high-quality kraft paper for durability.
 - Eco-friendly, recyclable, and biodegradable.
@@ -222,24 +278,144 @@ const Productpage = ({ product: rawProduct }) => {
 - Suitable for retail, gifting, grocery, and takeaway packaging.
 - Can be customized with brand logo and printing.`;
     }
-    return "";
-  }, [product?.aboutItem, isPaperBagProduct]);
-
-  const usageText = React.useMemo(() => {
-    if (product?.usage && String(product.usage).trim() !== "" && String(product.usage).trim().toLowerCase() !== "text pending") {
-      return product.usage;
+    if (isCorrugatedProduct) {
+      return `- Made from durable, eco-friendly, and recyclable corrugated board.
+- High-quality construction ensures protection during transit.
+- Lightweight and easy to assemble.
+- Ideal for e-commerce, retail, shipping, and logistics.
+- Available in multiple sizes and packs.`;
     }
+    if (isPolyBagProduct) {
+      return `- Crafted from durable materials to protect products during transit.
+- Features self-adhesive tape for quick and secure sealing.
+- Tamper-proof design ensures security of contents.
+- Waterproof and dustproof protection.
+- Ideal for e-commerce courier shipments.`;
+    }
+    if (isTapeProduct || isCarryHandleTapeProduct) {
+      return `- High-quality adhesive tape ensures strong hold on various surfaces.
+- Perfect for sealing corrugated boxes, cartons, and mailers.
+- Durable and resistant to moisture and temperature variations.
+- Easy to unwind and apply manually or with a tape dispenser.
+- Strong tensile strength prevents tearing.`;
+    }
+    if (isLabelProduct) {
+      return `- High-quality label rolls with strong adhesive backing.
+- Compatible with standard thermal and barcode printers.
+- Provides clear, sharp, and smudge-free printing.
+- Easy peel-and-apply design for efficient labeling.
+- Ideal for shipping labels, barcodes, and product identification.`;
+    }
+    if (isFoodWrappingProduct) {
+      return `- Premium-quality food wrapping to keep food fresh and hygienic.
+- Safe for direct food contact and keeps moisture locked in.
+- Heat resistant and ideal for packing hot or cold meals.
+- Eco-friendly and easily disposable options.
+- Suitable for home use, restaurants, catering, and lunch boxes.`;
+    }
+    if (isCarryBagProduct) {
+      return `- Made from durable and high-strength materials for safe carrying.
+- Reusable, recyclable, and eco-friendly packaging option.
+- Ergonomic handles for comfortable carrying.
+- Available in various designs, sizes, and colors.
+- Perfect for retail, shopping, promotional events, and gifting.`;
+    }
+    return `- High-quality product designed for utility and durability.
+- Made from premium materials for consistent performance.
+- Lightweight, easy to use, and highly versatile.
+- Suitable for a wide range of packaging and storage needs.
+- Eco-friendly and recyclable properties where applicable.`;
+  }, [
+    isPaperBagProduct,
+    isCorrugatedProduct,
+    isPolyBagProduct,
+    isTapeProduct,
+    isCarryHandleTapeProduct,
+    isLabelProduct,
+    isFoodWrappingProduct,
+    isCarryBagProduct,
+  ]);
+
+  const categoryDefaultUsage = React.useMemo(() => {
     if (isPaperBagProduct) {
       return `- Keep away from direct water contact or excessive moisture.
 - Store in a cool, dry place.
 - Do not exceed the recommended load capacity.
 - Reusable multiple times under normal handling.`;
     }
-    return "";
-  }, [product?.usage, isPaperBagProduct]);
-  const descriptionText = product?.description
-    ? product.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-    : "";
+    if (isCorrugatedProduct) {
+      return `- Use for packing and shipping products securely.
+- Assemble properly and seal with packaging tape before dispatch.
+- Store in a cool, dry place away from moisture and direct sunlight.
+- Avoid overloading beyond the recommended capacity.`;
+    }
+    if (isPolyBagProduct) {
+      return `- Place products inside and pull off the adhesive release liner to seal.
+- Press the seal firmly to ensure secure closure.
+- Store in a dry place away from heat and direct sunlight.
+- Do not overfill to prevent tearing.`;
+    }
+    if (isTapeProduct || isCarryHandleTapeProduct) {
+      return `- Apply to clean, dry, and dust-free surfaces for best adhesion.
+- Press firmly along the length of the tape to secure the seal.
+- Store in a cool, dry place away from direct sunlight.
+- Cut using a dispenser or scissors for clean edges.`;
+    }
+    if (isLabelProduct) {
+      return `- Keep label rolls away from moisture, heat, and direct sunlight.
+- Store in original packaging until ready to use.
+- Ensure printer heads are clean for optimal print quality.
+- Apply labels to clean, dry surfaces.`;
+    }
+    if (isFoodWrappingProduct) {
+      return `- Wrap food tightly to maintain freshness and temperature.
+- Store in a cool, dry place away from open flames.
+- Do not use metal foil in microwave ovens.
+- Dispose of responsibly after single use.`;
+    }
+    if (isCarryBagProduct) {
+      return `- Store in a clean and dry place.
+- Do not exceed the maximum weight capacity of the bag.
+- Avoid carrying sharp items that could puncture the material.
+- Reuse as many times as possible to minimize environmental impact.`;
+    }
+    return `- Use according to standard packaging guidelines.
+- Store in a clean, dry environment.
+- Keep away from extreme temperatures and moisture unless specified.
+- Check dimensions to ensure compatibility with your requirements.`;
+  }, [
+    isPaperBagProduct,
+    isCorrugatedProduct,
+    isPolyBagProduct,
+    isTapeProduct,
+    isCarryHandleTapeProduct,
+    isLabelProduct,
+    isFoodWrappingProduct,
+    isCarryBagProduct,
+  ]);
+
+  const aboutItemText = React.useMemo(() => {
+    if (product?.aboutItem && String(product.aboutItem).trim() !== "" && String(product.aboutItem).trim().toLowerCase() !== "text pending") {
+      return product.aboutItem;
+    }
+    if (parsedDesc.about) {
+      return parsedDesc.about;
+    }
+    return categoryDefaultAbout;
+  }, [product?.aboutItem, parsedDesc.about, categoryDefaultAbout]);
+
+  const usageText = React.useMemo(() => {
+    if (product?.usage && String(product.usage).trim() !== "" && String(product.usage).trim().toLowerCase() !== "text pending") {
+      return product.usage;
+    }
+    return categoryDefaultUsage;
+  }, [product?.usage, categoryDefaultUsage]);
+
+  const descriptionText = React.useMemo(() => {
+    const rawDesc = parsedDesc.details || product?.description || "";
+    return rawDesc.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  }, [parsedDesc.details, product?.description]);
+
   const hasDescription = Boolean(descriptionText);
   const hasUsage = Boolean(usageText);
   const showDescriptionDetails = showProductDetails && hasDescription;
@@ -681,7 +857,7 @@ const Productpage = ({ product: rawProduct }) => {
                   )}
 
                   {/* Common Field: About Item */}
-                  {product && showAboutItem && (
+                  {product && showAboutItem && aboutItemText && (
                     <div className="tw-mt-3">
                       <span className="tw-text-[#182c5a] tw-text-[16px] tw-font-bold tw-block tw-mb-2">
                         About the Item / Highlights
@@ -807,7 +983,7 @@ const Productpage = ({ product: rawProduct }) => {
                       </h3>
                       <div
                         className="tw-text-gray-600 tw-text-[15px] tw-leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
+                        dangerouslySetInnerHTML={{ __html: parsedDesc.details || product.description }}
                       />
                     </section>
                   )}

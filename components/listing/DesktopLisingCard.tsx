@@ -277,7 +277,7 @@ function DesktopListingCard({ item }: { item?: any }) {
             line-height: 12px;
           }
           .desk-pricetext1 {
-            color: #e92227;
+            color: #000000;
             font-size: 18px;
             font-style: normal;
             font-weight: 600;
@@ -287,7 +287,7 @@ function DesktopListingCard({ item }: { item?: any }) {
             .desk-pricetext1 { font-size: 9px; line-height: 10px; }
           }
           .desk-pricetext {
-            color: #e92227;
+            color: #17803d;
             font-size: 27.119px;
             font-style: normal;
             font-weight: 600;

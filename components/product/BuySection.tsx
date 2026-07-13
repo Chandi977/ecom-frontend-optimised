@@ -486,7 +486,7 @@ function BuySection({ product }) {
             >
               <div className="tw-flex tw-flex-row tw-justify-between tw-items-center tw-mb-2">
                 <span className="tw-text-gray-700 tw-text-[15px] tw-font-semibold">Total Price:</span>
-                <span className="tw-text-[#e92227] tw-text-[20px] tw-font-bold">
+                <span className="tw-text-[#17803d] tw-text-[20px] tw-font-bold">
                   {formatCurrency(totalSellingPrice)}
                 </span>
               </div>
@@ -644,13 +644,13 @@ function BuySection({ product }) {
         }
         .buy-card-mrp {
           font-size: 13px;
-          color: #9ca3af;
+          color: #000000;
           text-decoration: line-through;
         }
         .buy-card-price {
           font-size: 16px;
           font-weight: 700;
-          color: #e92227;
+          color: #17803d;
         }
         @media (max-width: 1130px) { .tw-prod-plussign { display: none; } }
         @media (max-width: 767px) {

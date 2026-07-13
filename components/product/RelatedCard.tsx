@@ -134,10 +134,10 @@ function RelatedCard({ product }) {
             </span>
           )}
           <div className="tw-flex tw-flex-row tw-items-center tw-gap-3 tw-mb-0">
-            <span className="tw-text-gray-400 tw-text-[13px] tw-line-through">
+            <span className="tw-text-black tw-text-[13px] tw-line-through">
               {formatCurrency(getPrimaryPriceTier(product).mrp)}
             </span>
-            <span className="tw-text-[#e92227] tw-text-[16px] tw-font-bold">
+            <span className="tw-text-[#17803d] tw-text-[16px] tw-font-bold">
               {formatCurrency(total)}
             </span>
           </div>
