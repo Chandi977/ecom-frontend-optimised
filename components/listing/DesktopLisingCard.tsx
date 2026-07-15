@@ -1,325 +1,277 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
-import { useEffect } from "react";
-import {
-  addToFav,
-  getFav,
-  removeFromFav,
-  WISHLIST_UPDATED_EVENT,
-} from "../../utils/favourites";
 import { addToCart } from "../../utils/cart";
-import { useRouter } from "next/router";
-import ProductCardSkeleton from "./ProductCardSkeleton";
-import { getProductDisplayName } from "./productDisplay";
-import { useBrands } from "../../context/BrandContext";
 import {
-  formatCurrency,
-  getDiscountPercent,
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
 import ProductImage from "../product/ProductImage";
-
-type WishlistEntry = { product?: { _id?: string } };
+import ProductCardSkeleton from "./ProductCardSkeleton";
+import {
+  formatProductCardPrice,
+  getProductCardDiscountLabel,
+  getProductCardBadge,
+  getProductCardSummary,
+  getProductDisplayName,
+} from "./productDisplay";
+import { useBrands } from "../../context/BrandContext";
 
 function DesktopListingCard({ item }: { item?: any }) {
   const { brandNameById } = useBrands();
-  const [favourite, setFavourite] = useState<WishlistEntry[]>([]);
-  const [price, setPrice] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [final, setFinal] = useState(0);
-  const checkFav = (id) => {
-    const temp = favourite?.map((x) => x?.product?._id).indexOf(id);
-    if (temp === -1 || temp === undefined || temp === null) {
-      return false;
-    } else {
-      return true;
-    }
-  };
 
-  const getFavourite = async () => {
-    const result = await getFav();
-    setFavourite(Array.isArray(result) ? result : []);
-  };
+  if (!item) {
+    return <ProductCardSkeleton variant="grid" />;
+  }
 
-  useEffect(() => {
-    getFavourite();
-    if (item) {
-      const tier = getPrimaryPriceTier(item);
-      const priceForOne = tier.sellingPrice / Math.max(1, tier.number);
-      setPrice(priceForOne);
-      setQuantity(tier.number);
-      setFinal(tier.sellingPrice);
-    }
-  }, [item]);
-
-  useEffect(() => {
-    const handleWishlistUpdate = () => {
-      getFavourite();
-    };
-
-    window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-    return () => {
-      window.removeEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-    };
-  }, []);
-
-  const handleFavourite = async (e, product) => {
-    e.stopPropagation();
-    const temp = favourite?.map((x) => x?.product?._id).indexOf(product?._id);
-    if (temp === -1 || temp === undefined || temp === null) {
-      await addToFav(product);
-      getFavourite();
-    } else {
-      await removeFromFav(product?._id);
-      getFavourite();
-    }
-  };
+  const tier = getPrimaryPriceTier(item);
+  const quantity = Math.max(1, tier.number);
+  const priceForOne = tier.sellingPrice / quantity;
+  // Collapsed label listing: several labels-per-roll products shown as one card.
+  // Title uses the base model (display-only clone — the item itself keeps its
+  // real model for cart payloads) and the quantities render as a variants line.
+  const labelVariants =
+    Array.isArray(item?.label_variants) && item.label_variants.length > 1
+      ? item.label_variants
+      : null;
+  const title = getProductDisplayName(
+    labelVariants && item?.label_base_model
+      ? { ...item, model: item.label_base_model }
+      : item,
+    {
+      includePack: true,
+      brandNameById,
+    },
+  );
+  const summary = getProductCardSummary(item);
+  const badge = getProductCardBadge(item);
+  const showMrp = tier.mrp > tier.sellingPrice;
+  const discountLabel = getProductCardDiscountLabel(tier);
 
   const handleViewProduct = () => {
     const productId = item?.slug;
-    const url = `/${productId}`;
-    const newTab = window.open(url, "_blank");
+    if (!productId) return;
 
-    // Focus on the new tab if it was successfully opened
+    const newTab = window.open(`/${productId}`, "_blank");
     if (newTab) {
       newTab.focus();
     }
   };
 
-  const handleCart = async (e) => {
-    e.stopPropagation();
-    const result = await addToCart(item, quantity, price);
+  const handleCart = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    await addToCart(item, quantity, priceForOne);
   };
-  const router = useRouter();
-  const tier = item ? getPrimaryPriceTier(item) : null;
-  const discountPercent = tier
-    ? getDiscountPercent(tier.sellingPrice, tier.mrp)
-    : 0;
-  if (!item) {
-    return <ProductCardSkeleton variant="grid" />;
-  }
+
   return (
-    <>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div
-          className="d-flex justify-content-center align-items-center bg-light tw-overflow-hidden"
-          style={{
-            position: "relative",
-            height: "200px",
-            width: "300px",
-            cursor: "pointer",
-          }}
-          // onClick={() => window.open(`/product?id=${item?._id}`, '_blank')}
-        >
-          <div className="d-flex align-items-center justify-content-center" style={{ height: "100%", width: "100%", padding: "10px" }}>
-            <ProductImage
-              src={getProductImageSrc(item)}
-              alt={item?.name || "Product image"}
-              width={250}
-              height={180}
-              loading="lazy"
-              decoding="async"
-              onClick={handleViewProduct}
-              style={{ objectFit: "contain", maxHeight: "180px" }}
-            />
-          </div>
-          <div
-            className="d-flex flex-column justify-content-center align-items-center"
-            style={{
-              position: "absolute",
-              left: "5%",
-              top: "5%",
-              borderRadius: "25px",
-              width: "24px",
-              height: "24px",
-              backgroundColor: "white",
-            }}
-          >
-            <div
-              className="d-flex flex-column justify-content-center align-items-center"
-              style={{
-                width: "19px",
-                height: "19px",
-                borderRadius: "25px",
-              }}
-            >
-              {checkFav(item?._id) ? (
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  style={{
-                    color: "red",
-                    width: "15px",
-                    height: "15px",
-                    paddingRight: "15px",
-                    cursor: "pointer",
-                  }}
-                  onClick={(e) => handleFavourite(e, item)}
-                />
-              ) : (
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  style={{
-                    color: "grey",
-                    width: "15px",
-                    height: "15px",
-                    paddingRight: "15px",
-                    cursor: "pointer",
-                  }}
-                  onClick={(e) => handleFavourite(e, item)}
-                />
-              )}
-            </div>
-          </div>
+    <article className="listing-product-card">
+      {badge && <span className={`card-badge ${badge.toLowerCase()}`}>{badge}</span>}
 
-          {tier && tier.mrp > tier.sellingPrice && (
-            <div
-              className="d-flex flex-column justify-content-center align-items-center"
-              style={{
-                backgroundColor: "#E92227",
-                position: "absolute",
-                right: "0px",
-                top: "0%",
-                width: "41px",
-                height: "43px",
-                borderBottomLeftRadius: "9px",
-              }}
-            >
-              {/* Discount Tag */}
-              <div
-                className="d-flex flex-column "
-                style={{ width: "25px", height: "24px", textAlign: "center" }}
-              >
-                <p className="desk-offtext">
-                  {discountPercent}
-                  %
-                  <br />
-                  OFF
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+      <button
+        type="button"
+        className="image-button"
+        onClick={handleViewProduct}
+        aria-label={`View ${title}`}
+      >
+        <ProductImage
+          src={getProductImageSrc(item)}
+          alt={item?.name || "Product image"}
+          width={280}
+          height={210}
+          loading="lazy"
+          decoding="async"
+          style={{ objectFit: "contain", maxHeight: "210px" }}
+        />
+      </button>
 
-        <div
-          className="d-flex flex-column justify-content-evenly align-items-center bg-light"
-          style={{
-            height: "120px",
-            width: "300px",
-            cursor: "pointer",
-            paddingTop: "20px",
-            paddingBottom: "20px",
-          }}
-        >
-          <div className="row p-0 m-0" style={{ height: "70px" }}>
-            <p
-              className="px-3"
-              style={{
-                fontSize: "16px",
-                fontWeight: 500,
-                lineHeight: "25px",
-                textTransform: "capitalize",
-                textAlign: "center",
-              }}
-              onClick={handleViewProduct}
-            >
-              {getProductDisplayName(item, { includePack: true, brandNameById })}
-            </p>
-          </div>
-          <div
-            className="px-3 mb-3 d-flex flex-column align-items-start justify-content-center"
-            style={{ height: "40px" }}
-          >
-            {/* <p className={styles.pricetext}>₹{final}</p> */}
-            <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
-              <div className=" m-0 d-flex flex-row align-items-center justify-content-start">
-                <s>
-                  <p className="desk-pricetext1">
-                    {formatCurrency(tier?.mrp)}
-                  </p>
-                </s>
-              </div>
-
-              <div className=" m-0 d-flex flex-row align-items-center justify-content-start">
-                <p className="desk-pricetext" style={{ fontWeight: "600" }}>
-                  {formatCurrency(final)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button
-          className="desk-packagebtn"
-          style={{
-            fontSize: "14px",
-            height: "50px",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-            width: "300px",
-          }}
-          onClick={handleViewProduct}
-        >
-          View Product
+      <div className="card-body">
+        <button type="button" className="product-title" onClick={handleViewProduct}>
+          {title}
         </button>
-        <style jsx>{`
-          .desk-offtext {
-            color: var(--white, #FFF);
-            padding: 0px;
-            margin: 0px;
-            text-align: center;
-            font-family: Montserrat;
-            font-size: 10px;
-            font-style: normal;
-            font-weight: 600;
-            line-height: 12px;
-          }
-          .desk-pricetext1 {
-            color: #000000;
-            font-size: 18px;
-            font-style: normal;
-            font-weight: 600;
-            line-height: 30.508px;
-          }
-          @media (max-width: 900px) {
-            .desk-pricetext1 { font-size: 9px; line-height: 10px; }
-          }
-          .desk-pricetext {
-            color: #17803d;
-            font-size: 27.119px;
-            font-style: normal;
-            font-weight: 600;
-            line-height: 30.508px;
-          }
-          @media (max-width: 900px) {
-            .desk-pricetext { font-size: 11px; line-height: 10px; }
-          }
-          .desk-packagebtn {
-            border: 0;
-            color: #fff;
-            text-align: center;
-            font-family: Montserrat;
-            font-size: 13px;
-            font-style: normal;
-            font-weight: 400;
-            line-height: 20px;
-            text-transform: uppercase;
-            display: flex;
-            width: 110px;
-            height: 33px;
-            padding: 14px 36px;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-shrink: 0;
-            background-color: #182c5a;
-          }
-          .desk-packagebtn:hover { background-color: #E92227; }
-        `}</style>
+        <p className="product-summary">{summary}</p>
+        {labelVariants && (
+          <p className="variant-line">
+            Labels/Roll: {labelVariants.map((variant) => variant.labelQty).join(" / ")}
+          </p>
+        )}
+
+        <div className="card-footer">
+          <div className="price-stack" aria-label="Product price">
+            <strong>{formatProductCardPrice(tier.sellingPrice)}</strong>
+            {showMrp && <s>{formatProductCardPrice(tier.mrp)}</s>}
+            {discountLabel && <span>{discountLabel}</span>}
+          </div>
+          <button type="button" className="add-cart-button" onClick={handleCart}>
+            ADD TO CART
+          </button>
+        </div>
       </div>
-    </>
+
+      <style jsx>{`
+        .listing-product-card {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          width: min(100%, 300px);
+          min-height: 380px;
+          background: #fff;
+          border: 1px solid #d9dde6;
+          box-shadow: none;
+          overflow: hidden;
+        }
+        .card-badge {
+          position: absolute;
+          top: 20px;
+          left: 24px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          min-height: 26px;
+          padding: 0 10px;
+          background: #02051f;
+          color: #fff;
+          font-family: "Montserrat", sans-serif;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1;
+          text-transform: uppercase;
+        }
+        .card-badge.sale {
+          background: #cf1717;
+        }
+        .image-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 250px;
+          border: 0;
+          padding: 30px 12px 12px;
+          background: #fff;
+          cursor: pointer;
+        }
+        .card-body {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          padding: 0 18px 16px;
+        }
+        .product-title {
+          display: -webkit-box;
+          min-height: 42px;
+          border: 0;
+          padding: 0;
+          margin: 0;
+          overflow: hidden;
+          background: transparent;
+          color: #4a5160;
+          font-family: "Montserrat", sans-serif;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.35;
+          text-align: left;
+          text-transform: capitalize;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          cursor: pointer;
+        }
+        .product-title:hover {
+          color: #02051f;
+        }
+        .product-summary {
+          display: -webkit-box;
+          min-height: 19px;
+          margin: 4px 0 14px;
+          overflow: hidden;
+          color: #596172;
+          font-family: "Montserrat", sans-serif;
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1.35;
+          text-transform: none;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+        }
+        .variant-line {
+          margin: -8px 0 12px;
+          color: #182c5a;
+          font-family: "Montserrat", sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1.35;
+        }
+        .card-footer {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: auto;
+        }
+        .price-stack {
+          display: flex;
+          min-width: 0;
+          align-items: baseline;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          gap: 5px;
+        }
+        .price-stack strong {
+          color: #02051f;
+          font-family: "Montserrat", sans-serif;
+          font-size: 18px;
+          font-weight: 800;
+          line-height: 1;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+        .price-stack s {
+          color: #666c78;
+          font-family: "Montserrat", sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+        .price-stack span {
+          color: #17803d;
+          font-family: "Montserrat", sans-serif;
+          font-size: 11px;
+          font-weight: 800;
+          line-height: 1;
+          white-space: nowrap;
+        }
+        .add-cart-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 110px;
+          height: 38px;
+          border: 0;
+          padding: 0 15px;
+          background: #02051f;
+          color: #fff;
+          font-family: "Montserrat", sans-serif;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1;
+          text-transform: uppercase;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: background-color 180ms ease, transform 180ms ease;
+        }
+        .add-cart-button:hover {
+          background: #cf1717;
+        }
+        .add-cart-button:active {
+          transform: translateY(1px);
+        }
+        .image-button:focus-visible,
+        .product-title:focus-visible,
+        .add-cart-button:focus-visible {
+          outline: 2px solid #cf1717;
+          outline-offset: 3px;
+        }
+      `}</style>
+    </article>
   );
 }
 

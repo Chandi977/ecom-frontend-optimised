@@ -17,7 +17,8 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { getService } from "../../services/service";
+import { getService, postService } from "../../services/service";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import BuySection from "../../components/product/BuySection";
 import RelatedSection from "../../components/product/RelatedSection";
@@ -33,7 +34,12 @@ import { SP } from "next/dist/shared/lib/utils";
 import ShareModal from "../../components/product/ShareModal";
 import { toast } from "react-toastify";
 import { DEV } from "../../services/constants";
-import { getOverviewFields } from "../../utils/overviewFields";
+import { getOverviewFields, getProductKind } from "../../utils/overviewFields";
+import {
+  findLabelVariants,
+  parseLabelModel,
+  type LabelVariantOption,
+} from "../../utils/labelVariants";
 import { isFieldVisible, FIELD_VISIBILITY_KEYS } from "../../utils/fieldVisibility";
 import { motion } from "framer-motion";
 import ProductGallery from "../../components/product/ProductGallery";
@@ -155,18 +161,21 @@ const parseHtmlDescription = (html?: string) => {
 };
 
 const Productpage = ({ product: rawProduct }) => {
+  const router = useRouter();
+  const [activeLabelProduct, setActiveLabelProduct] = useState<Record<string, any> | null>(null);
+  const activeRawProduct = activeLabelProduct || rawProduct;
   const product = React.useMemo(() => {
-    if (!rawProduct) return rawProduct;
-    const updated = { ...getLegacyCompatibleProduct(rawProduct) };
-    if (rawProduct.slug === "amazon-paper-bag-pm1" || rawProduct._id === "655b45fe0ebe678ef4df6849") {
+    if (!activeRawProduct) return activeRawProduct;
+    const updated = { ...getLegacyCompatibleProduct(activeRawProduct) };
+    if (activeRawProduct.slug === "amazon-paper-bag-pm1" || activeRawProduct._id === "655b45fe0ebe678ef4df6849") {
       if (!updated.adhesive) updated.adhesive = "Self-Adhesive";
       if (!updated.color) updated.color = "Brown";
     }
-    if (rawProduct.slug === "amazon-polybag-nmt1-52.5-micron" || rawProduct._id === "655bddfc74aaa9c6f3318d8e") {
+    if (activeRawProduct.slug === "amazon-polybag-nmt1-52.5-micron" || activeRawProduct._id === "655bddfc74aaa9c6f3318d8e") {
       if (!updated.adhesive) updated.adhesive = "Self-Adhesive";
     }
     return updated;
-  }, [rawProduct]);
+  }, [activeRawProduct]);
   //console.log(product);
   const [visible, setVisible] = useState(false);
   const [priceList, setPriceList] = useState<NormalizedPriceTier[]>([]);
@@ -187,6 +196,11 @@ const Productpage = ({ product: rawProduct }) => {
   const [userMobileNo, setUserMobileNo] = useState<string | null>(null);  const [showPopup, setShowPopup] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(true);
   const [isDescExpanded, setIsDescExpanded] = useState(true);
+
+  useEffect(() => {
+    setActiveLabelProduct(null);
+  }, [rawProduct?._id]);
+
   const seo = getProductSeo(product);
   const categoryId =
     typeof product?.category === "object"
@@ -206,6 +220,42 @@ const Productpage = ({ product: rawProduct }) => {
         category: categoryName,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?._id]);
+
+  // Labels are stored one DB product per labels-per-roll quantity (model
+  // "CL_65x70_250" = base "CL_65x70" + 250/roll). Fetch the sub-category's
+  // products and match siblings by base model client-side so the page offers a
+  // quantity selector instead of leaving the variants as unrelated listings.
+  const [labelVariants, setLabelVariants] = useState<LabelVariantOption[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    setLabelVariants([]);
+    const subCategoryId =
+      typeof product?.sub_category === "object"
+        ? product?.sub_category?._id
+        : product?.sub_category;
+    if (
+      !subCategoryId ||
+      !parseLabelModel(product?.model) ||
+      getProductKind(product) !== "label"
+    ) {
+      return undefined;
+    }
+    postService("label/filter", {
+      subcategory: String(subCategoryId),
+      limit: 200,
+    })
+      .then((response) => {
+        if (cancelled) return;
+        setLabelVariants(findLabelVariants(product, response?.data?.data ?? []));
+      })
+      .catch(() => {
+        /* selector simply doesn't render when siblings can't be fetched */
+      });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?._id]);
 
@@ -449,6 +499,7 @@ const Productpage = ({ product: rawProduct }) => {
         setMRP(tier.mrp);
         setQuantity(1);
         setSelectedNumber(tier.number);
+        setSelectedPackSize(tier.number);
         setSelectedPackWeight(tier.packWeight || 0);
         setStock(tier.stockQuantity || 0);
       } else {
@@ -545,21 +596,39 @@ const Productpage = ({ product: rawProduct }) => {
     }
 
     setSelectedPackWeight(selectedPriceData.packWeight || 0);
-    setSelectedPackSize(selectedNumber);
+    setSelectedPackSize(newNumber);
 
     setPrice(selectedPriceData.sellingPrice);
     setMRP(selectedPriceData.mrp);
     setStock(selectedPriceData.stockQuantity || 0);
   };
 
-  const handleTierChange = (tier: NormalizedPriceTier) => {
+  const handleTierChange = React.useCallback((tier: NormalizedPriceTier) => {
     setSelectedNumber(tier.number);
     setSelectedPackWeight(tier.packWeight || 0);
     setSelectedPackSize(tier.number);
     setPrice(tier.sellingPrice);
     setMRP(tier.mrp);
     setStock(tier.stockQuantity || 0);
-  };
+  }, []);
+
+  const handleLabelVariantChange = React.useCallback(
+    (variant: LabelVariantOption) => {
+      if (!variant?.product) return;
+
+      const nextSlug = variant.slug || variant.product.slug;
+      if (String(variant.product._id) === String(product?._id)) return;
+
+      setActiveLabelProduct(variant.product);
+
+      if (nextSlug && nextSlug !== product?.slug) {
+        router.replace(`/${nextSlug}`, undefined, { shallow: true, scroll: false }).catch(() => {
+          /* URL sync is non-critical; local variant state already updated. */
+        });
+      }
+    },
+    [product?._id, product?.slug, router],
+  );
 
   const handleImageClick = (index) => {
     setSelectedImageIndex(index);
@@ -793,6 +862,8 @@ const Productpage = ({ product: rawProduct }) => {
                           quantity={quantity}
                           showQuantity={false}
                           onTierChange={handleTierChange}
+                          labelVariants={labelVariants}
+                          onLabelVariantChange={handleLabelVariantChange}
                         />
                       </div>
                     </div>

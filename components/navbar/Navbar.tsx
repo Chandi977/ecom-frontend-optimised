@@ -36,6 +36,7 @@ import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { clearWishlistCache } from "../../utils/favourites";
 import { AUTH_STATE_EVENT, clearToken } from "../../services/token";
+import { getProductDisplayName } from "../listing/productDisplay";
 
 const marqueeStyle = {
   backgroundColor: "#E92227",
@@ -129,6 +130,26 @@ const Navbar = () => {
   const dropdownRef2 = useRef<any>(null);
   const packproDropdownRef = useRef<any>(null);
   const rollabelDropdownRef = useRef<any>(null);
+
+  const getSearchResults = (value: any): any[] => {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value?.data)) return value.data;
+    if (Array.isArray(value?.products)) return value.products;
+    return [];
+  };
+
+  const getSearchResultLabel = (product: any) =>
+    getProductDisplayName(product, { brandNameById }) ||
+    [product?.name, product?.model].filter(Boolean).join(" ");
+
+  const openSearchResult = (
+    product: any,
+    closeDropdown: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    if (!product?.slug) return;
+    router.push(`/${product.slug}`);
+    closeDropdown(false);
+  };
 
   const handleCart = async () => {
     const c = await getCartCount();
@@ -452,7 +473,9 @@ const Navbar = () => {
         { silent: true },
       );
 
-      const results = response?.data?.success ? response.data.data || [] : [];
+      const results = response?.data?.success
+        ? getSearchResults(response.data.data)
+        : [];
       if (response?.data?.success) {
         setSearchProducts(results);
         setShowDropdown(true);
@@ -468,6 +491,8 @@ const Navbar = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
+      setSearchProducts([]);
+      setShowDropdown(false);
     }
   };
 
@@ -489,7 +514,9 @@ const Navbar = () => {
         { silent: true },
       );
 
-      const results = response?.data?.success ? response.data.data || [] : [];
+      const results = response?.data?.success
+        ? getSearchResults(response.data.data)
+        : [];
       if (response?.data?.success) {
         setSearchProductsMobile(results);
         setShowDropdownMobile(true);
@@ -505,6 +532,8 @@ const Navbar = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
+      setSearchProductsMobile([]);
+      setShowDropdownMobile(false);
     }
   };
 
@@ -1003,7 +1032,7 @@ const Navbar = () => {
                   >
                     {searchProducts.map((product, index) => (
                       <div
-                        key={index}
+                        key={product?._id || product?.slug || index}
                         style={{
                           padding: "8px",
                           textTransform: "capitalize",
@@ -1015,13 +1044,10 @@ const Navbar = () => {
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          router.push(`/${product?.slug}`);
-                          // Close the dropdown when a product is clicked
-                          setShowDropdown(false);
+                          openSearchResult(product, setShowDropdown);
                         }}
                       >
-                        {brandNameById[product?.brand] || product?.brand}{" "}
-                        {product.name} {product.model}
+                        {getSearchResultLabel(product)}
                       </div>
                     ))}
                   </div>
@@ -1489,7 +1515,7 @@ const Navbar = () => {
                     >
                       {searchProductsMobile.map((product, index) => (
                         <div
-                          key={index}
+                          key={product?._id || product?.slug || index}
                           className={"mobileSearchDropdownItem"}
                           style={{
                             borderBottom:
@@ -1498,12 +1524,10 @@ const Navbar = () => {
                                 : "none",
                           }}
                           onClick={() => {
-                            router.push(`/${product?.slug}`);
-                            setShowDropdownMobile(false);
+                            openSearchResult(product, setShowDropdownMobile);
                           }}
                         >
-                          {brandNameById[product?.brand] || product?.brand}{" "}
-                          {product.name} {product.model}
+                          {getSearchResultLabel(product)}
                         </div>
                       ))}
                     </div>

@@ -8,6 +8,7 @@ import {
   type NormalizedPriceTier,
 } from "../../utils/productCatalog";
 import { isFieldVisible, FIELD_VISIBILITY_KEYS } from "../../utils/fieldVisibility";
+import type { LabelVariantOption } from "../../utils/labelVariants";
 
 interface ProductPricingProps {
   product?: IProduct;
@@ -16,6 +17,11 @@ interface ProductPricingProps {
   showQuantity?: boolean;
   onTierChange?: (tier: NormalizedPriceTier) => void;
   onQuantityChange?: (quantity: number) => void;
+  // Labels-per-roll variants (sibling products, e.g. CL_65x70_250/400/500).
+  // When 2+ exist, a selector styled like Select Pack Size renders beside it;
+  // picking one hands the variant back so the page can swap to that product.
+  labelVariants?: LabelVariantOption[];
+  onLabelVariantChange?: (variant: LabelVariantOption) => void;
 }
 
 export function ProductPricing({
@@ -25,6 +31,8 @@ export function ProductPricing({
   showQuantity = true,
   onTierChange,
   onQuantityChange,
+  labelVariants,
+  onLabelVariantChange,
 }: ProductPricingProps) {
   const tiers = getPriceTiers(product);
   const selectedTier =
@@ -88,6 +96,27 @@ export function ProductPricing({
               {tiers.map((tier) => (
                 <option key={tier.number} value={tier.number}>
                   {tier.number}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {Array.isArray(labelVariants) && labelVariants.length > 1 && (
+          <label className="tier-select">
+            <span>Labels per Roll</span>
+            <select
+              value={String((productRecord as { slug?: unknown } | undefined)?.slug ?? "")}
+              onChange={(event) => {
+                const variant = labelVariants.find(
+                  (item) => String(item.slug) === event.target.value,
+                );
+                if (variant && onLabelVariantChange) onLabelVariantChange(variant);
+              }}
+            >
+              {labelVariants.map((variant) => (
+                <option key={`${variant.labelQty}-${variant.slug}`} value={String(variant.slug)}>
+                  {variant.labelQty}
                 </option>
               ))}
             </select>
@@ -385,4 +414,4 @@ export function ProductPricing({
   );
 }
 
-export default ProductPricing;
+export default React.memo(ProductPricing);

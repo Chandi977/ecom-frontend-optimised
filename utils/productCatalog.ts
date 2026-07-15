@@ -74,6 +74,9 @@ const numberOrUndefined = (value: unknown): number | undefined => {
 const stringOrEmpty = (value: unknown): string =>
   hasValue(value) ? String(value) : "";
 
+const nonEmptyArray = (value: unknown): unknown[] | null =>
+  Array.isArray(value) && value.length > 0 ? value : null;
+
 export const getObjectId = (value: unknown): string => {
   if (!value) return "";
   if (isRecord(value)) return stringOrEmpty(value._id || value.id);
@@ -131,11 +134,8 @@ export const getPriceTiers = (
 ): NormalizedPriceTier[] => {
   const source = (product || {}) as UnknownRecord;
   const pricing = isRecord(source.pricing) ? source.pricing : {};
-  const rawTiers = Array.isArray(pricing.priceList)
-    ? pricing.priceList
-    : Array.isArray(source.priceList)
-      ? source.priceList
-      : [];
+  const rawTiers =
+    nonEmptyArray(pricing.priceList) ?? nonEmptyArray(source.priceList) ?? [];
 
   return rawTiers
     .map((tier) => {
@@ -253,17 +253,15 @@ export const getProductMedia = (
 ): NormalizedProductMedia => {
   const source = (product || {}) as UnknownRecord;
   const media = isRecord(source.media) ? source.media : {};
-  const rawImages = Array.isArray(media.images)
-    ? media.images
-    : Array.isArray(media.gallery)
-      ? media.gallery
-      : Array.isArray(source.images)
-        ? source.images
-        : [];
+  const rawImages =
+    nonEmptyArray(media.images) ??
+    nonEmptyArray(media.gallery) ??
+    nonEmptyArray(source.images) ??
+    [];
   const images = rawImages.map(normalizeImage).filter(Boolean) as IMediaImage[];
   const thumbnail =
-    normalizeImage(media.thumbnail)?.image ||
     images[0]?.image ||
+    normalizeImage(media.thumbnail)?.image ||
     "/pp_logo_1.png";
 
   return {

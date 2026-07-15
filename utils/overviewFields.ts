@@ -346,9 +346,14 @@ function buildAutoOverviewFields(
     ].filter((field) => field.value !== "Not Available");
   } else if (productKind === "label") {
     const brandName = getProductBrandName(currentProduct) || "Rollabel™";
+    // Labels are sold as rolls that each contain many stickers, so the roll
+    // count is a headline spec (e.g. "250"). Same label as COMMON_FIELDS so the
+    // admin overview config key (labels_per_roll) matches across kinds.
+    const labelsPerRoll = getFirstValue(currentProduct, ["label_in_roll", "label_in_role"]);
     fields = [
       { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
       { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
+      { label: "Labels per Roll", value: hasValue(labelsPerRoll) ? String(labelsPerRoll) : "Not Available" },
       { label: "Brand", value: brandName },
     ].filter((field) => field.value !== "Not Available");
   } else if (productKind === "paperbag") {

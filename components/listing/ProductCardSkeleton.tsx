@@ -49,30 +49,32 @@ function ProductCardSkeleton({ variant = "grid" }: { variant?: Variant }) {
   if (variant === "mobile") {
     return (
       <div
-        className="tw-flex tw-flex-col tw-w-full tw-min-h-[288px] tw-bg-[#f9f9f9]"
+        className="tw-flex tw-flex-col tw-w-full tw-min-h-[326px] tw-bg-white"
+        style={{ border: "1px solid #d9dde6" }}
         aria-hidden="true"
       >
         <div
           className="tw-relative tw-flex tw-justify-center tw-items-center tw-w-full tw-overflow-hidden"
-          style={{ height: "150px" }}
+          style={{ height: "164px" }}
         >
-          <div className="pp-skel" style={{ width: "110px", height: "103px" }} />
+          <div className="pp-skel" style={{ width: "154px", height: "112px" }} />
         </div>
         <div
           className="tw-flex tw-flex-col tw-w-full tw-flex-1"
-          style={{ gap: "10px", padding: "14px 12px 10px" }}
+          style={{ gap: "9px", padding: "0 12px 12px" }}
         >
           <div className="pp-skel" style={{ height: "12px", width: "90%" }} />
           <div className="pp-skel" style={{ height: "12px", width: "70%" }} />
+          <div className="pp-skel" style={{ height: "10px", width: "82%" }} />
           <div
             className="pp-skel"
-            style={{ height: "14px", width: "45%", margin: "6px auto 0" }}
+            style={{ height: "18px", width: "42%", marginTop: "auto" }}
+          />
+          <div
+            className="pp-skel"
+            style={{ height: "34px", width: "100%", borderRadius: 0 }}
           />
         </div>
-        <div
-          className="pp-skel"
-          style={{ height: "38px", width: "100%", borderRadius: 0 }}
-        />
         {shimmerStyles}
       </div>
     );
@@ -103,25 +105,41 @@ function ProductCardSkeleton({ variant = "grid" }: { variant?: Variant }) {
 
   // variant === "grid"
   return (
-    <div style={{ display: "flex", flexDirection: "column" }} aria-hidden="true">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "min(100%, 300px)",
+        minHeight: "380px",
+        border: "1px solid #d9dde6",
+        background: "#fff",
+      }}
+      aria-hidden="true"
+    >
       <div
         className="d-flex justify-content-center align-items-center"
-        style={{ height: "200px", width: "300px" }}
+        style={{ height: "250px", width: "100%", padding: "30px 12px 12px" }}
       >
-        <div className="pp-skel" style={{ width: "250px", height: "150px" }} />
+        <div className="pp-skel" style={{ width: "260px", height: "170px" }} />
       </div>
       <div
-        className="d-flex flex-column justify-content-evenly align-items-center"
-        style={{ height: "120px", width: "300px", paddingTop: "20px", gap: "10px" }}
+        className="d-flex flex-column"
+        style={{ flex: 1, width: "100%", padding: "0 18px 16px", gap: "8px" }}
       >
-        <div className="pp-skel" style={{ height: "14px", width: "80%" }} />
-        <div className="pp-skel" style={{ height: "14px", width: "60%" }} />
-        <div className="pp-skel" style={{ height: "16px", width: "40%" }} />
+        <div className="pp-skel" style={{ height: "14px", width: "84%" }} />
+        <div className="pp-skel" style={{ height: "14px", width: "64%" }} />
+        <div className="pp-skel" style={{ height: "11px", width: "78%" }} />
+        <div
+          className="d-flex align-items-end justify-content-between"
+          style={{ gap: "12px", marginTop: "auto" }}
+        >
+          <div className="pp-skel" style={{ height: "22px", width: "72px" }} />
+          <div
+            className="pp-skel"
+            style={{ height: "38px", width: "110px", borderRadius: 0 }}
+          />
+        </div>
       </div>
-      <div
-        className="pp-skel"
-        style={{ height: "50px", width: "300px", borderRadius: 0 }}
-      />
       {shimmerStyles}
     </div>
   );
