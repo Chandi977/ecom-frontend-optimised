@@ -73,10 +73,11 @@ function AddressModal({ visible, handleVisible, prev, address }) {
     if (address) {
       const index = temp.findIndex((x) => x.address === address.address);
       if (index !== -1) {
-        temp[index] = addressPayload;
+        // Keep the default flag; the payload form has no isDefault field.
+        temp[index] = { ...addressPayload, isDefault: Boolean(address?.isDefault) };
       }
     } else {
-      temp.push(addressPayload);
+      temp.push({ ...addressPayload, isDefault: temp.length === 0 });
     }
 
     const data = {
@@ -267,7 +268,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
               options={states}
               placeholder="Select state"
               value={selectedState}
-              onChange={setSelectedState}
+              onChange={(option) => setSelectedState(option || {})}
               instanceId="address-state-select"
               inputId="address-state-select"
               styles={reactSelectCustomStyles}

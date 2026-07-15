@@ -9,18 +9,11 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { getProductImageSrc } from "../../utils/productCatalog";
 import { addToCart } from "../../utils/cart";
+import AccountLayout, {
+  AccountUser,
+} from "../../components/account/AccountLayout";
 
-import {
-  FiPhone,
-  FiChevronDown,
-  FiCheckCircle,
-  FiTruck,
-  FiLoader,
-  FiXCircle,
-  FiChevronRight,
-  FiArrowLeft,
-  FiInfo,
-} from "react-icons/fi";
+import { FiPhone, FiChevronDown, FiLoader, FiInfo } from "react-icons/fi";
 
 const getOrderCreatedTime = (order: any) => {
   const timestamp = new Date(order?.createdAt || 0).getTime();
@@ -62,7 +55,7 @@ const getPaymentPhase = (order: any): "paid" | "review" | "payable" | "dead" => 
 const ORDER_ID_POLL_ATTEMPTS = 6;
 const ORDER_ID_POLL_INTERVAL_MS = 1500;
 
-const MyOrdersPage = () => {
+const OrdersContent = ({ user }: { user: AccountUser }) => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [showUtrModal, setShowUtrModal] = useState(false);
@@ -125,7 +118,8 @@ const MyOrdersPage = () => {
 
   useEffect(() => {
     getUser();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email_address]);
 
   useEffect(() => {
     if (!userEmail) return undefined;
@@ -149,21 +143,14 @@ const MyOrdersPage = () => {
 
   const getUser = async () => {
     try {
-      const userStr = localStorage.getItem("PIUser");
-      if (!userStr) {
+      // AccountLayout already fetched the user; just load their orders.
+      const email = user?.email_address;
+      if (!email) {
         setLoadingOrders(false);
         return;
       }
-      const user = JSON.parse(userStr);
-      const userResponse = await getService(`getuser/${user?._id}`);
-
-      if (userResponse?.data?.success) {
-        const email = userResponse?.data?.data?.email_address;
-        setUserEmail(email);
-        await fetchOrdersByEmail(email);
-      } else {
-        setLoadingOrders(false);
-      }
+      setUserEmail(email);
+      await fetchOrdersByEmail(email);
     } catch (error) {
       setLoadingOrders(false);
     }
@@ -410,59 +397,36 @@ const MyOrdersPage = () => {
 
   return (
     <>
-      <Head>
-        <title>My Orders | store.prempackaging</title>
-        <meta name="title" content="My Orders" />
-        <meta
-          name="description"
-          content="Check the status of your packaging product orders anytime. Track shipping, manage purchases, and stay updated with order details conveniently."
-        />
-      </Head>
-
       <div className="orders-root">
         <div className="orders-wrap">
-          {/* Breadcrumb */}
-          <nav className="orders-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/" className="crumb-link">Home</Link>
-            <FiChevronRight className="crumb-separator" />
-            <span className="crumb-current">My Orders</span>
-          </nav>
-
-          {/* Page Header */}
-          <header className="orders-header">
-            <div className="header-left">
-              <h1 className="orders-title">My Orders</h1>
-              <p className="orders-subtitle">Track, manage and reorder your purchases</p>
+          {/* Toolbar: status filter + expert contact */}
+          <div className="orders-toolbar">
+            {/* Filter */}
+            <div className="filter-select-wrapper">
+              <select
+                className="filter-select"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                aria-label="Filter orders by status"
+              >
+                <option value="All">All Orders</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <FiChevronDown className="filter-chevron" />
             </div>
-            
-            <div className="header-right">
-              {/* Filter */}
-              <div className="filter-select-wrapper">
-                <select
-                  className="filter-select"
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  aria-label="Filter orders by status"
-                >
-                  <option value="All">All Orders</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Shipped">Shipped</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-                <FiChevronDown className="filter-chevron" />
-              </div>
 
-              {/* Expert Contact */}
-              <div className="expert-badge">
-                <FiPhone className="expert-icon" />
-                <div className="expert-text">
-                  <span className="expert-label">Talk to an expert</span>
-                  <span className="expert-number">+91 84472 47227</span>
-                </div>
+            {/* Expert Contact */}
+            <div className="expert-badge">
+              <FiPhone className="expert-icon" />
+              <div className="expert-text">
+                <span className="expert-label">Talk to an expert</span>
+                <span className="expert-number">+91 84472 47227</span>
               </div>
             </div>
-          </header>
+          </div>
 
           {/* Orders Main Section */}
           {loadingOrders ? (
@@ -945,84 +909,36 @@ const MyOrdersPage = () => {
           
           font-family: var(--font-family);
           color: var(--color-ink);
-          background-color: var(--color-bg-canvas);
-          min-height: 100vh;
-          padding: 40px 0 80px;
           -webkit-font-smoothing: antialiased;
         }
 
         .orders-wrap {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 24px;
+          width: 100%;
         }
 
-        /* Breadcrumb styling */
-        .orders-breadcrumb {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 13px;
-          margin-bottom: 24px;
-        }
-        .crumb-link {
-          color: var(--color-slate-muted);
-          text-decoration: none;
-          font-weight: 500;
-          transition: color 0.15s ease;
-        }
-        .crumb-link:hover {
-          color: var(--color-ink);
-        }
-        .crumb-separator {
-          color: var(--color-slate-muted);
-          font-size: 11px;
-        }
-        .crumb-current {
-          color: var(--color-ink);
-          font-weight: 600;
-        }
-
-        /* Header block */
-        .orders-header {
+        /* Toolbar (filter + expert contact) */
+        .orders-toolbar {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 32px;
-          gap: 20px;
-        }
-        .orders-title {
-          font-size: 28px;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          color: var(--color-ink);
-          margin: 0;
-        }
-        .orders-subtitle {
-          font-size: 14px;
-          color: var(--color-slate-muted);
-          margin: 6px 0 0;
-        }
-
-        .header-right {
-          display: flex;
           align-items: center;
-          gap: 20px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          gap: 16px;
         }
 
         /* Filter Select Dropdown */
         .filter-select-wrapper {
           position: relative;
-          width: 160px;
+          width: 180px;
         }
         .filter-select {
           width: 100%;
-          height: 40px;
+          height: 44px;
           padding: 0 36px 0 16px;
           border: 1px solid var(--color-line);
           border-radius: 8px;
           background: #ffffff;
-          font-size: 13px;
+          font-size: 14.5px;
           font-weight: 600;
           color: var(--color-ink);
           outline: none;
@@ -1036,7 +952,7 @@ const MyOrdersPage = () => {
         .filter-select-wrapper :global(.filter-chevron) {
           position: absolute;
           right: 14px;
-          top: 13px;
+          top: 15px;
           font-size: 14px;
           color: var(--color-slate-muted);
           pointer-events: none;
@@ -1061,13 +977,13 @@ const MyOrdersPage = () => {
           flex-direction: column;
         }
         .expert-label {
-          font-size: 11px;
+          font-size: 12px;
           opacity: 0.8;
           font-weight: 500;
           letter-spacing: 0.02em;
         }
         .expert-number {
-          font-size: 13px;
+          font-size: 14.5px;
           font-weight: 700;
           letter-spacing: 0.02em;
         }
@@ -1158,7 +1074,7 @@ const MyOrdersPage = () => {
         .orders-table th {
           background: #f8fafc;
           padding: 16px 24px;
-          font-size: 11px;
+          font-size: 12.5px;
           font-weight: 700;
           letter-spacing: 0.08em;
           color: var(--color-slate-muted);
@@ -1176,13 +1092,13 @@ const MyOrdersPage = () => {
         /* ORDER Column styles */
         .order-id-txt {
           display: block;
-          font-size: 14.5px;
+          font-size: 16px;
           font-weight: 700;
           color: var(--color-ink);
         }
         .order-placed-sub {
           display: block;
-          font-size: 12px;
+          font-size: 13px;
           color: var(--color-slate-muted);
           margin-top: 2px;
         }
@@ -1190,13 +1106,13 @@ const MyOrdersPage = () => {
         /* DATE Column styles */
         .order-date-txt {
           display: block;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           color: var(--color-ink);
         }
         .order-time-txt {
           display: block;
-          font-size: 12px;
+          font-size: 13px;
           color: var(--color-slate-muted);
           margin-top: 2px;
         }
@@ -1229,7 +1145,7 @@ const MyOrdersPage = () => {
           object-fit: contain;
         }
         .items-total-label {
-          font-size: 13px;
+          font-size: 14.5px;
           font-weight: 600;
           color: var(--color-ink);
         }
@@ -1237,13 +1153,13 @@ const MyOrdersPage = () => {
         /* AMOUNT Column styles */
         .order-amount-txt {
           display: block;
-          font-size: 14.5px;
+          font-size: 16px;
           font-weight: 700;
           color: var(--color-ink);
         }
          .order-payment-sub {
           display: block;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 500;
           color: var(--color-slate-muted);
           margin-top: 2px;
@@ -1274,9 +1190,9 @@ const MyOrdersPage = () => {
         .status-badge {
           display: inline-flex;
           align-self: flex-start;
-          padding: 4px 10px;
+          padding: 5px 12px;
           border-radius: 6px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           letter-spacing: 0.01em;
         }
@@ -1297,7 +1213,7 @@ const MyOrdersPage = () => {
           color: #2563eb;
         }
         .status-subtext {
-          font-size: 11.5px;
+          font-size: 12.5px;
           color: var(--color-slate-muted);
         }
 
@@ -1309,12 +1225,12 @@ const MyOrdersPage = () => {
           gap: 6px;
         }
         .view-details-btn {
-          height: 34px;
-          padding: 0 16px;
+          height: 38px;
+          padding: 0 18px;
           background: #ffffff;
           border: 1px solid var(--color-line);
           border-radius: 6px;
-          font-size: 12.5px;
+          font-size: 14px;
           font-weight: 600;
           color: var(--color-ink);
           cursor: pointer;
@@ -1327,7 +1243,7 @@ const MyOrdersPage = () => {
         .reorder-link-btn {
           background: none;
           border: 0;
-          font-size: 12.5px;
+          font-size: 14px;
           font-weight: 700;
           color: #2563eb;
           cursor: pointer;
@@ -1782,16 +1698,9 @@ const MyOrdersPage = () => {
 
         /* ============ RESPONSIVE LAYOUTS ============ */
         @media (max-width: 900px) {
-          .orders-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-          }
-          .header-right {
+          .orders-toolbar {
             width: 100%;
             justify-content: space-between;
-            border-top: 1px solid var(--color-line);
-            padding-top: 16px;
           }
           .details-split-row {
             grid-template-columns: 1fr;
@@ -1804,13 +1713,6 @@ const MyOrdersPage = () => {
         }
 
         @media (max-width: 768px) {
-          .orders-wrap {
-            padding: 0 16px;
-          }
-          .orders-title {
-            font-size: 24px;
-          }
-          
           /* Table responsive collapse */
           .orders-table thead {
             display: none;
@@ -1859,6 +1761,29 @@ const MyOrdersPage = () => {
           }
         }
       `}</style>
+    </>
+  );
+};
+
+const MyOrdersPage = () => {
+  return (
+    <>
+      <Head>
+        <title>My Orders | store.prempackaging</title>
+        <meta name="title" content="My Orders" />
+        <meta
+          name="description"
+          content="Check the status of your packaging product orders anytime. Track shipping, manage purchases, and stay updated with order details conveniently."
+        />
+      </Head>
+
+      <AccountLayout
+        title="My Orders"
+        subtitle="Track, manage and reorder your purchases"
+        activeNav="orders"
+      >
+        {({ user }) => <OrdersContent user={user} />}
+      </AccountLayout>
     </>
   );
 };

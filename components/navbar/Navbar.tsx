@@ -421,6 +421,14 @@ const Navbar = () => {
     }
   };
 
+  const handleClickProfile = () => {
+    if (token) {
+      router.push("/profile");
+    } else {
+      router.push("/login");
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -677,6 +685,18 @@ const Navbar = () => {
                             color: "#333333",
                             fontWeight: "500",
                           }}
+                          onClick={handleClickProfile}
+                        >
+                          My Profile
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #eee",
+                            fontSize: "12px",
+                            color: "#333333",
+                            fontWeight: "500",
+                          }}
                           onClick={handleClickMyAccount}
                         >
                           My Orders
@@ -878,6 +898,24 @@ const Navbar = () => {
                     }}
                   >
                     Logout
+                  </span>
+                </div>
+
+                <div
+                  className="dropdown-item text-center"
+                  style={{ padding: "8px", borderBottom: "1px solid #ccc" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      textDecoration: "none solid rgb(51,51,51)",
+                      color: "#333333",
+                      cursor: "pointer",
+                    }}
+                    onClick={handleClickProfile}
+                  >
+                    My Profile
                   </span>
                 </div>
 
@@ -1452,7 +1490,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   className={"mobileIconButton"}
-                  onClick={handleClickMyAccount}
+                  onClick={handleClickProfile}
                   aria-label={token ? "Open my account" : "Open sign in"}
                 >
                   <img
