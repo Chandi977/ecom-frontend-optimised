@@ -3,8 +3,15 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { toast } from "react-toastify";
 import { postService } from "../../services/service";
 import Banner from "../../components/landing/Banner";
+
+// Existing Netlify/Vercel-hosted lead app for custom packaging enquiries. Kept
+// running in parallel with the self-hosted lead app (/lead/create) so both
+// pipelines receive every submission.
+const NETLIFY_CUSTOM_ENDPOINT =
+  "https://prem-industries-forms.vercel.app/api/email-store-custom.js";
 
 export async function getServerSideProps() {
   return { props: {} };
@@ -33,17 +40,66 @@ const CustomForm = () => {
   const handleSubmitForm = async (e) => {
     e.preventDefault();
 
+    // Lead handling needs at least a contact name + a valid email.
+    if (!formData.contact_person_name || !formData.contact_person_email) {
+      toast.error("Contact person name and email are required");
+      return;
+    }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      formData.contact_person_email,
+    );
+    if (!emailOk) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     try {
-      // Use centralized postService which reads base URL from env
-      const response = await postService("custom-packaging", formData);
+      // App 1 (self-hosted lead handling): capture the lead with its structured
+      // details, verify the email and fire the auto-generated acknowledgement +
+      // internal notification.
+      const leadReq = postService("lead/create", {
+        name: formData.contact_person_name,
+        email: formData.contact_person_email,
+        phone: formData.contact_person_mobile_number,
+        message: formData.rich_text,
+        company: formData.company_name,
+        productCategory: formData.product_category,
+        moq: formData.moq,
+        source: "custom-packaging",
+      });
 
-      // Send same data to email API (external)
-      await axios.post(
-        "https://prem-industries-forms.vercel.app/api/email-store-custom.js",
-        formData,
-      );
+      // Existing internal custom-packaging record.
+      const customReq = postService("custom-packaging", formData);
 
-      setSuccessMessage(response?.data?.message);
+      // App 2 (Netlify/Vercel): existing custom-packaging email pipeline — keep
+      // it running too. Never fail the whole submission if only this is down.
+      const netlifyReq = axios
+        .post(NETLIFY_CUSTOM_ENDPOINT, formData)
+        .catch((err) => {
+          console.error(
+            "Netlify custom endpoint failed:",
+            err instanceof Error ? err.message : err,
+          );
+          return null;
+        });
+
+      const [leadRes, customRes] = await Promise.all([
+        leadReq,
+        customReq,
+        netlifyReq,
+      ]);
+
+      // The self-hosted lead app drives the confirmation; fall back gracefully.
+      if (!leadRes && !customRes) {
+        // postService already surfaced the error toast.
+        return;
+      }
+
+      const message =
+        leadRes?.data?.message ||
+        customRes?.data?.message ||
+        "Your enquiry has been submitted successfully";
+      setSuccessMessage(message);
 
       setFormData({
         company_name: "",
@@ -57,7 +113,7 @@ const CustomForm = () => {
 
       setTimeout(() => {
         router.push("/");
-      }, 500);
+      }, 1500);
     } catch (error) {
       console.error("Error:", error instanceof Error ? error.message : error);
     }

@@ -109,7 +109,7 @@ const Cartpage = () => {
   // Consolidated Checkout States
   const [userAddresss, setUserAddresss] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
-  const [expressShip, setExpressShip] = useState(true);
+  const [expressShip, setExpressShip] = useState(false);
   const [pincode, setPincode] = useState("");
   const [shippingCost, setShippingCost] = useState(0);
   const [originalShippingCost, setOriginalShippingCost] = useState(0);
@@ -1471,7 +1471,9 @@ const Cartpage = () => {
                         <span className="row-label">
                           Shipping <FiInfo className="row-info-icon" title="Shipping is calculated at checkout based on location and weight" />
                         </span>
-                        <span className="row-val text-green">Free</span>
+                        <span className={`row-val ${shippingCost > 0 ? "" : "text-green"}`}>
+                          {shippingCost > 0 ? `₹${formatRounded(shippingCost)}` : "Free"}
+                        </span>
                       </div>
 
                       <div className="ct-summary-row">

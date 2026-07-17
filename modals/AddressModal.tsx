@@ -137,6 +137,10 @@ function AddressModal({ visible, handleVisible, prev, address }) {
       boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
       zIndex: 9999,
     }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 10010,
+    }),
   };
 
   return (
@@ -273,6 +277,8 @@ function AddressModal({ visible, handleVisible, prev, address }) {
               instanceId="address-state-select"
               inputId="address-state-select"
               styles={reactSelectCustomStyles}
+              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              menuPosition="fixed"
             />
           </div>
         </div>
