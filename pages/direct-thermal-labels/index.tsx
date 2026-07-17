@@ -21,6 +21,8 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { collapseLabelVariants } from "../../utils/labelVariants";
+import { useBrands } from "../../context/BrandContext";
 
 const DIRECT_THERMAL_SUBCATEGORY_ID = "6557e1cb301ec4f2f426614c";
 
@@ -155,6 +157,9 @@ const BoppTape = ({
     fetcher,
     initialLimit: DEFAULT_INITIAL_LIMIT,
   });
+  // One card per base model — the labels-per-roll quantities (e.g. DTL_50x25_
+  // 500/1000) become variants on that card instead of separate listings.
+  const displayProducts = useMemo(() => collapseLabelVariants(products || []), [products]);
   const CustomSliderStyles = {
     "& .MuiSlider-thumb": {
       color: "white",
@@ -217,7 +222,10 @@ const BoppTape = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, initialProducts.length]);
 
+  const { resolveId } = useBrands();
+
   const handlecat = async (id) => {
+    if (!id) return;
     filterBrandProducts(id);
   };
 
@@ -240,7 +248,7 @@ const BoppTape = ({
       return;
     }
     setSortBy(type);
-  };
+  };
 
   return (
     <>
@@ -535,7 +543,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("69268af9d53f3a772c6bccc2")
+                                handlecat(resolveId("amazon"))
                               }
                               sx={{
                                 padding: "0px",
@@ -564,7 +572,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6926d6bad53f3a772c6e978c")
+                                handlecat(resolveId("flipkart"))
                               }
                               sx={{
                                 padding: "0px",
@@ -594,7 +602,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6557dbcc301ec4f2f426610b")
+                                handlecat(resolveId("myntra"))
                               }
                               sx={{
                                 padding: "0px",
@@ -624,7 +632,7 @@ const BoppTape = ({
                             <Checkbox
                               {...label}
                               onChange={() =>
-                                handlecat("6582c8580ab82549a084894f")
+                                handlecat(resolveId("ajio"))
                               }
                               sx={{
                                 padding: "0px",
@@ -658,8 +666,8 @@ const BoppTape = ({
 
               {/* this column is for windows view */}
               <div className={"col-9 " + "productslistdivwindow"}>
-                {products && products.length > 0 ? (
-                  products.map((item, index) => (
+                {displayProducts && displayProducts.length > 0 ? (
+                  displayProducts.map((item, index) => (
                     <div
                       className="row w-40"
                       style={{ height: "400px" }}
@@ -887,8 +895,8 @@ const BoppTape = ({
               <div
                 className={"col-8 p-0 w-100 " + "productslistdivmobile"}
               >
-                {products && products.length > 0 ? (
-                  products.map((item, index) => (
+                {displayProducts && displayProducts.length > 0 ? (
+                  displayProducts.map((item, index) => (
                     <div
                       className="mt-4 d-flex flex-column justify-content-start align-items-center"
                       style={{ width: "180px", maxHeight: "280px" }}

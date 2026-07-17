@@ -110,6 +110,13 @@ const Footer = () => {
                         </Link>
                         <Link
                           className="bullets"
+                          href="/contact-us"
+                          style={{ textDecoration: "none" }}
+                        >
+                          <li style={{ color: "#FFFFFF9E" }}>Contact Us</li>
+                        </Link>
+                        <Link
+                          className="bullets"
                           href="/privacy-policy"
                           style={{ textDecoration: "none" }}
                         >

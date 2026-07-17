@@ -15,6 +15,7 @@ import Link from "next/link";
 import Head from "next/head";
 import Script from "next/script";
 import CustomPackaging from "./CustomPackaging";
+import { FiArrowRight } from "react-icons/fi";
 
 
 const Slider: any = dynamic(() => import("react-slick"), { ssr: false });
@@ -31,6 +32,81 @@ export async function getServerSideProps(context) {
     },
   };
 }
+
+const CATEGORIES = [
+  {
+    name: "Corrugated Boxes",
+    link: "/corrugated-boxes",
+    image: "/category-corrugated.png",
+    count: "Flipkart & Amazon Approved",
+  },
+  {
+    name: "Paper Bags",
+    link: "/paper-bags",
+    image: "/category-paper-bags.png",
+    count: "Eco-friendly Mailers & Bags",
+  },
+  {
+    name: "Poly Bags",
+    link: "/poly-bags",
+    image: "/category-poly-bags.png",
+    count: "High Durability Couriers",
+  },
+  {
+    name: "Carry Bags",
+    link: "/carry-bags",
+    image: "/carry-bag-banner.jpg",
+    count: "Heavy Duty Handles",
+  },
+  {
+    name: "Wrapping Papers",
+    link: "/packpro-food-wrapping-papers",
+    image: "/food-wrapping-paper-banner.jpg",
+    count: "Food Grade & Honeycomb",
+  },
+  {
+    name: "BOPP Tapes",
+    link: "/bopp-tapes",
+    image: "/BannerBopp.jpg",
+    count: "Standard & Custom Printed",
+  },
+  {
+    name: "Paper Tapes",
+    link: "/paper-tapes",
+    image: "/BannerPaperTape.jpg",
+    count: "Water-Activated & Eco",
+  },
+  {
+    name: "Void Tapes",
+    link: "/void-tapes",
+    image: "/BannerSpeciality.jpg",
+    count: "Tamper Evident Security",
+  },
+  {
+    name: "Carry Handle Tapes",
+    link: "/packpro-carry-handle-tapes",
+    image: "/bannercarryhandle.png",
+    count: "Convenient Handling",
+  },
+  {
+    name: "Direct Thermal Labels",
+    link: "/direct-thermal-labels",
+    image: "/BannerLabel.jpg",
+    count: "Barcode & Shipping Labels",
+  },
+  {
+    name: "Chromo Labels",
+    link: "/chromo-labels",
+    image: "/featuredproduct.png",
+    count: "High Gloss Product Labels",
+  },
+  {
+    name: "Custom Packaging",
+    link: "/custom-packaging",
+    image: "/bannerimg2.jpg",
+    count: "Tailored Brand Solutions",
+  },
+];
 
 export default function Home({ brand, product, deal }) {
   const router = useRouter();
@@ -373,6 +449,57 @@ export default function Home({ brand, product, deal }) {
                 </div>
               </div>
             </div>
+
+            {/* SHOP BY CATEGORY */}
+            <div className="container" style={{ marginTop: "70px", marginBottom: "50px" }}>
+              <div className="row">
+                <div className="col text-center">
+                  <h2 className="heading-first" style={{ color: "#182c5a", textTransform: "uppercase" }}>
+                    Shop By Category
+                  </h2>
+                  <div
+                    style={{
+                      height: "3px",
+                      width: "80px",
+                      backgroundColor: "#e92227",
+                      margin: "12px auto 40px auto",
+                      borderRadius: "2px"
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="row g-4 justify-content-center">
+                {CATEGORIES.map((cat, idx) => (
+                  <div key={idx} className="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <Link href={cat.link} style={{ textDecoration: "none" }}>
+                      <div className="category-card-wrapper">
+                        <div className="category-image-container">
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            layout="fill"
+                            objectFit="cover"
+                            className="category-card-img"
+                            priority={idx < 3}
+                          />
+                          <div className="category-card-overlay"></div>
+                        </div>
+                        <div className="category-card-info">
+                          <span className="category-card-tag">{cat.count}</span>
+                          <h3 className="category-card-name">{cat.name}</h3>
+                          <div className="category-card-action">
+                            <span>Explore Category</span>
+                            <FiArrowRight style={{ fontSize: "14px" }} />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* shop from top products */}
             <div className="container">
               <div className="row" style={{ marginTop: "50px" }}>
@@ -778,6 +905,100 @@ export default function Home({ brand, product, deal }) {
     margin-left: auto !important;
     margin-right: auto !important;
   }
+}
+
+.category-card-wrapper {
+  position: relative;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  background-color: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+.category-card-wrapper:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(24, 44, 90, 0.12);
+  border-color: rgba(24, 44, 90, 0.15);
+}
+.category-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+:global(.category-card-img) {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.category-card-wrapper:hover :global(.category-card-img) {
+  transform: scale(1.06) !important;
+}
+.category-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.3) 50%, rgba(15, 23, 42, 0) 100%);
+  z-index: 2;
+  transition: opacity 0.4s ease;
+}
+.category-card-wrapper:hover .category-card-overlay {
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.1) 100%);
+}
+.category-card-info {
+  position: relative;
+  z-index: 3;
+  padding: 24px;
+  color: #ffffff;
+  width: 100%;
+}
+.category-card-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #f1f5f9;
+  background-color: #e92227; /* Brand Accent Red */
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.category-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  font-family: 'Montserrat', sans-serif;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.category-card-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f8fafc;
+  opacity: 0.85;
+  transition: all 0.3s ease;
+}
+.category-card-action :global(svg) {
+  transition: transform 0.3s ease;
+}
+.category-card-wrapper:hover .category-card-action {
+  opacity: 1;
+  color: #f1f5f9;
+}
+.category-card-wrapper:hover .category-card-action :global(svg) {
+  transform: translateX(4px);
 }
       `}</style>
     </>

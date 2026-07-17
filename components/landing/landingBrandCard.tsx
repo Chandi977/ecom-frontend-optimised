@@ -184,7 +184,7 @@ function LandingBrandCard({ item }) {
       </button>
     </div>
       <style jsx>{`
-        .landing-pricetext { color: #249b3e; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
+        .landing-pricetext { color: #17803d; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
         .landing-packagebtn { border: 0; color: #fff; text-align: center; font-family: Montserrat; font-size: 18px; font-style: normal; font-weight: 400; line-height: 20px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; background-color: #182c5a; transition: background-color 0.2s ease-out; }
         .landing-packagebtn:hover { background-color: #e92227; }
       `}</style>

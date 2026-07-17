@@ -6,6 +6,15 @@ const DEFAULT_SORT_OPTIONS = [
   { value: "", label: "Default sorting", disabled: true },
   { value: "high to low", label: "High to Low" },
   { value: "low to high", label: "Low to high" },
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "name asc", label: "Name: A to Z" },
+  { value: "name desc", label: "Name: Z to A" },
+  { value: "discount high to low", label: "Discount: high to low" },
+  { value: "discount low to high", label: "Discount: low to high" },
+  { value: "stock high to low", label: "Stock: high to low" },
+  { value: "pack low to high", label: "Pack size: low to high" },
+  { value: "pack high to low", label: "Pack size: high to low" },
 ];
 
 const CatalogFilterControls = ({

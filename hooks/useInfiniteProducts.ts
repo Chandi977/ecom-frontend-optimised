@@ -1,33 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getPrimaryPriceTier } from "../utils/productCatalog";
+import { sortProducts } from "../utils/productSorting";
 
 export const DEFAULT_INITIAL_LIMIT = 20;
 export const DEFAULT_NEXT_LIMIT = 10;
-
-const sortProductsByPrice = (items: any[], sortBy: string) => {
-  if (!sortBy) {
-    return items;
-  }
-  if (sortBy === "low to high") {
-    return items
-      .slice()
-      .sort(
-        (a, b) =>
-          getPrimaryPriceTier(a).sellingPrice -
-          getPrimaryPriceTier(b).sellingPrice,
-      );
-  }
-  if (sortBy === "high to low") {
-    return items
-      .slice()
-      .sort(
-        (a, b) =>
-          getPrimaryPriceTier(b).sellingPrice -
-          getPrimaryPriceTier(a).sellingPrice,
-      );
-  }
-  return items;
-};
 
 const getTotalCount = (meta: any) =>
   typeof meta?.total === "number" ? meta.total : null;
@@ -85,7 +60,7 @@ export const useInfiniteProducts = ({
         const items = response?.data?.data ?? [];
         const responseMeta = response?.data?.meta;
         const sortedItems = sortRef.current
-          ? sortProductsByPrice(items, sortRef.current)
+          ? sortProducts(items, sortRef.current)
           : items;
         setProducts(sortedItems);
         setTotalCount(getTotalCount(responseMeta));
@@ -118,7 +93,7 @@ export const useInfiniteProducts = ({
       setProducts((prev) => {
         const merged = [...prev, ...nextItems];
         return sortRef.current
-          ? sortProductsByPrice(merged, sortRef.current)
+          ? sortProducts(merged, sortRef.current)
           : merged;
       });
       setOffset((prev) => {
@@ -170,7 +145,7 @@ export const useInfiniteProducts = ({
     const nextItems = Array.isArray(initialProducts) ? initialProducts : [];
     const responseMeta = initialMeta;
     const sortedItems = sortRef.current
-      ? sortProductsByPrice(nextItems, sortRef.current)
+      ? sortProducts(nextItems, sortRef.current)
       : nextItems;
     setProducts(sortedItems);
     setTotalCount(getTotalCount(responseMeta));
@@ -183,7 +158,7 @@ export const useInfiniteProducts = ({
     if (!sortBy) {
       return;
     }
-    setProducts((prev) => sortProductsByPrice(prev, sortBy));
+    setProducts((prev) => sortProducts(prev, sortBy));
   }, [sortBy]);
 
   return {

@@ -73,10 +73,11 @@ function AddressModal({ visible, handleVisible, prev, address }) {
     if (address) {
       const index = temp.findIndex((x) => x.address === address.address);
       if (index !== -1) {
-        temp[index] = addressPayload;
+        // Keep the default flag; the payload form has no isDefault field.
+        temp[index] = { ...addressPayload, isDefault: Boolean(address?.isDefault) };
       }
     } else {
-      temp.push(addressPayload);
+      temp.push({ ...addressPayload, isDefault: temp.length === 0 });
     }
 
     const data = {
@@ -136,12 +137,17 @@ function AddressModal({ visible, handleVisible, prev, address }) {
       boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
       zIndex: 9999,
     }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 10010,
+    }),
   };
 
   return (
     <Dialog
       visible={visible}
       style={{ width: "640px" }}
+      className="address-modal"
       onHide={() => {
         handleVisible(false);
         setDetails(emptyAddressDetails);
@@ -267,10 +273,12 @@ function AddressModal({ visible, handleVisible, prev, address }) {
               options={states}
               placeholder="Select state"
               value={selectedState}
-              onChange={setSelectedState}
+              onChange={(option) => setSelectedState(option || {})}
               instanceId="address-state-select"
               inputId="address-state-select"
               styles={reactSelectCustomStyles}
+              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              menuPosition="fixed"
             />
           </div>
         </div>
@@ -334,7 +342,13 @@ function AddressModal({ visible, handleVisible, prev, address }) {
         .addr-actions {
           display: flex;
           justify-content: center;
-          margin-top: 26px;
+          position: sticky;
+          bottom: -10px;
+          margin: 26px -5px -10px;
+          padding: 16px 5px 10px;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), #ffffff 32%);
+          border-top: 1px solid #e2e8f0;
+          z-index: 2;
         }
         .addr-submit-btn {
           width: 180px;
@@ -368,6 +382,9 @@ function AddressModal({ visible, handleVisible, prev, address }) {
           .addr-field.full-width {
             grid-column: span 1;
           }
+        }
+        :global(.address-modal .p-dialog-content) {
+          padding-bottom: 0;
         }
       `}</style>
     </Dialog>

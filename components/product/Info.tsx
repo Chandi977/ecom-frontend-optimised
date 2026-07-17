@@ -3,7 +3,23 @@ import { getOverviewFields } from "../../utils/overviewFields";
 import { isFieldVisible, FIELD_VISIBILITY_KEYS } from "../../utils/fieldVisibility";
 import ProductSpecifications from "./ProductSpecifications";
 
-function Info({ product, weight, packSize, mrp, sp, stock }) {
+const renderMultilineText = (text?: string) => {
+  if (!text) return null;
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length > 1) {
+    return (
+      <ul style={{ listStyleType: "disc", paddingLeft: "20px", margin: "8px 0" }}>
+        {lines.map((line, idx) => {
+          const cleanedLine = line.replace(/^[-*•]\s*/, "");
+          return <li key={idx} style={{ marginBottom: "6px" }}>{cleanedLine}</li>;
+        })}
+      </ul>
+    );
+  }
+  return <p style={{ whiteSpace: "pre-line", margin: 0 }}>{text}</p>;
+};
+
+function Info({ product, weight, packSize, mrp, sp, stock, isPaperBagProduct }) {
   const [activeTab, setActiveTab] = useState("overview");
 
   const toggleTab = (tab) => {
@@ -19,7 +35,37 @@ function Info({ product, weight, packSize, mrp, sp, stock }) {
     ? product.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
     : "";
   const hasDescription = Boolean(descriptionText);
-  const hasAboutItem = Boolean(product?.aboutItem && String(product.aboutItem).trim());
+
+  const aboutItemText = React.useMemo(() => {
+    if (product?.aboutItem && String(product.aboutItem).trim() !== "" && String(product.aboutItem).trim().toLowerCase() !== "text pending") {
+      return product.aboutItem;
+    }
+    if (isPaperBagProduct) {
+      return `- Made from high-quality kraft paper for durability.
+- Eco-friendly, recyclable, and biodegradable.
+- Strong handles for comfortable carrying.
+- Available in multiple sizes, colors, and GSM options.
+- Suitable for retail, gifting, grocery, and takeaway packaging.
+- Can be customized with brand logo and printing.`;
+    }
+    return "";
+  }, [product?.aboutItem, isPaperBagProduct]);
+
+  const usageText = React.useMemo(() => {
+    if (product?.usage && String(product.usage).trim() !== "" && String(product.usage).trim().toLowerCase() !== "text pending") {
+      return product.usage;
+    }
+    if (isPaperBagProduct) {
+      return `- Keep away from direct water contact or excessive moisture.
+- Store in a cool, dry place.
+- Do not exceed the recommended load capacity.
+- Reusable multiple times under normal handling.`;
+    }
+    return "";
+  }, [product?.usage, isPaperBagProduct]);
+
+  const hasAboutItem = Boolean(aboutItemText);
+  const hasUsage = Boolean(usageText);
 
   return (
     <>
@@ -125,21 +171,33 @@ function Info({ product, weight, packSize, mrp, sp, stock }) {
                 >
                   Product Details
                 </h3>
-                {hasDescription ? (
-                  <div
-                    className="mt-2"
-                    style={{ color: "#555555", lineHeight: "1.6" }}
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                ) : hasAboutItem ? (
-                  <p className="mt-2" style={{ color: "#555555", lineHeight: "1.6" }}>
-                    {product.aboutItem}
-                  </p>
-                ) : (
-                  <h5 className="mt-2" style={{ color: "#555555" }}>
-                    Not Available
-                  </h5>
-                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  {hasDescription && (
+                    <div>
+                      <div
+                        style={{ color: "#555555", lineHeight: "1.6" }}
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                      />
+                    </div>
+                  )}
+
+                  {hasUsage && (
+                    <div>
+                      <h4 style={{ color: "#182C5A", fontSize: "16px", fontWeight: "600", marginBottom: "8px" }}>
+                        Usage & Care Instructions
+                      </h4>
+                      <div style={{ color: "#555555", lineHeight: "1.6" }}>
+                        {renderMultilineText(usageText)}
+                      </div>
+                    </div>
+                  )}
+
+                  {!hasDescription && !hasUsage && (
+                    <h5 className="mt-2" style={{ color: "#555555" }}>
+                      Not Available
+                    </h5>
+                  )}
+                </div>
               </div>
               )}
             </div>

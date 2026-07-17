@@ -17,10 +17,6 @@ const nextConfig = {
     esmExternals: true,
   },
   images: {
-    domains: [
-      "prem-industries-ecom-images.s3.ap-south-1.amazonaws.com",
-      "d3dcdu6oc5g6yg.cloudfront.net",
-    ],
     remotePatterns: [
       {
         protocol: "https",

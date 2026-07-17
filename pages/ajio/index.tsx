@@ -14,18 +14,18 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { findBrandIdByName, findBrandIdBySlug } from "../../utils/brands";
 
-const AJIO_BRAND_ID = "6582c8580ab82549a084894f";
+// Route slug for this brand landing page; the id is resolved from /brand/all.
+const BRAND_SLUG = "ajio";
 
 export async function getServerSideProps(context) {
   const query = context.query;
-  let brandId = AJIO_BRAND_ID;
+  const brandsRes = await getService(`brand/all`);
+  const brands = brandsRes?.data?.data ?? [];
+  let brandId = findBrandIdBySlug(brands, BRAND_SLUG) ?? null;
   if (query?.brand) {
-    const brands = await getService(`brand/all`);
-    const brand = brands?.data?.data?.filter(
-      (item) => item.name === query?.brand,
-    );
-    brandId = brand[0]?._id || AJIO_BRAND_ID;
+    brandId = findBrandIdByName(brands, query.brand) ?? brandId;
   }
   let subCategoryId = null;
   if (query?.subcategory) {
@@ -36,7 +36,7 @@ export async function getServerSideProps(context) {
     subCategoryId = subcategory[0]?._id;
   }
   const filterPayload = {
-    brand: brandId,
+    ...(brandId && { brand: brandId }),
     ...(subCategoryId !== null && { subcategory: subCategoryId }),
     ...(query?.q && { q: query.q }),
     skip: 0,

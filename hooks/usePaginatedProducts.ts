@@ -1,32 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { getPrimaryPriceTier } from "../utils/productCatalog";
+import { sortProducts } from "../utils/productSorting";
 
 export const ITEMS_PER_PAGE = 10;
-
-const sortProductsByPrice = (items: any[], sortBy: string) => {
-  if (!sortBy) {
-    return items;
-  }
-  if (sortBy === "low to high") {
-    return items
-      .slice()
-      .sort(
-        (a, b) =>
-          getPrimaryPriceTier(a).sellingPrice -
-          getPrimaryPriceTier(b).sellingPrice,
-      );
-  }
-  if (sortBy === "high to low") {
-    return items
-      .slice()
-      .sort(
-        (a, b) =>
-          getPrimaryPriceTier(b).sellingPrice -
-          getPrimaryPriceTier(a).sellingPrice,
-      );
-  }
-  return items;
-};
 
 export const usePaginatedProducts = ({
   initialProducts = [] as any[],
@@ -70,7 +45,7 @@ export const usePaginatedProducts = ({
         const response = await fetcher(requestPayload);
         const items = response?.data?.data ?? [];
         const responseMeta = response?.data?.meta;
-        const sortedItems = sortBy ? sortProductsByPrice(items, sortBy) : items;
+        const sortedItems = sortBy ? sortProducts(items, sortBy) : items;
         setProducts(sortedItems);
         setTotalCount(
           typeof responseMeta?.total === "number"
@@ -126,7 +101,7 @@ export const usePaginatedProducts = ({
 
   useEffect(() => {
     if (sortBy && products.length > 0) {
-      setProducts((prev) => sortProductsByPrice(prev, sortBy));
+      setProducts((prev) => sortProducts(prev, sortBy));
     }
   }, [sortBy]);
 
@@ -134,7 +109,7 @@ export const usePaginatedProducts = ({
   useEffect(() => {
     const nextItems = Array.isArray(initialProducts) ? initialProducts : [];
     const sortedItems = sortBy
-      ? sortProductsByPrice(nextItems, sortBy)
+      ? sortProducts(nextItems, sortBy)
       : nextItems;
     setProducts(sortedItems);
     setTotalCount(

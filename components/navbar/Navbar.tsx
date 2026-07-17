@@ -30,11 +30,13 @@ import {
 import styled from "@emotion/styled";
 import Link from "next/link";
 import { getService, postService } from "../../services/service";
+import { useBrands } from "../../context/BrandContext";
 import { trackSearch } from "../../lib/analytics";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { clearWishlistCache } from "../../utils/favourites";
 import { AUTH_STATE_EVENT, clearToken } from "../../services/token";
+import { getProductDisplayName } from "../listing/productDisplay";
 
 const marqueeStyle = {
   backgroundColor: "#E92227",
@@ -64,6 +66,7 @@ const Marquee = dynamic(() => import("react-fast-marquee"), {
 
 const Navbar = () => {
   const router = useRouter();
+  const { brandNameById } = useBrands();
   const breakpoint = 700;
   const DEFAULT_NAVBAR_HEIGHT = 167;
   // Helpers to safely read auth state from localStorage
@@ -127,6 +130,26 @@ const Navbar = () => {
   const dropdownRef2 = useRef<any>(null);
   const packproDropdownRef = useRef<any>(null);
   const rollabelDropdownRef = useRef<any>(null);
+
+  const getSearchResults = (value: any): any[] => {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value?.data)) return value.data;
+    if (Array.isArray(value?.products)) return value.products;
+    return [];
+  };
+
+  const getSearchResultLabel = (product: any) =>
+    getProductDisplayName(product, { brandNameById }) ||
+    [product?.name, product?.model].filter(Boolean).join(" ");
+
+  const openSearchResult = (
+    product: any,
+    closeDropdown: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    if (!product?.slug) return;
+    router.push(`/${product.slug}`);
+    closeDropdown(false);
+  };
 
   const handleCart = async () => {
     const c = await getCartCount();
@@ -398,6 +421,14 @@ const Navbar = () => {
     }
   };
 
+  const handleClickProfile = () => {
+    if (token) {
+      router.push("/profile");
+    } else {
+      router.push("/login");
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -450,7 +481,9 @@ const Navbar = () => {
         { silent: true },
       );
 
-      const results = response?.data?.success ? response.data.data || [] : [];
+      const results = response?.data?.success
+        ? getSearchResults(response.data.data)
+        : [];
       if (response?.data?.success) {
         setSearchProducts(results);
         setShowDropdown(true);
@@ -466,6 +499,8 @@ const Navbar = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
+      setSearchProducts([]);
+      setShowDropdown(false);
     }
   };
 
@@ -487,7 +522,9 @@ const Navbar = () => {
         { silent: true },
       );
 
-      const results = response?.data?.success ? response.data.data || [] : [];
+      const results = response?.data?.success
+        ? getSearchResults(response.data.data)
+        : [];
       if (response?.data?.success) {
         setSearchProductsMobile(results);
         setShowDropdownMobile(true);
@@ -503,6 +540,8 @@ const Navbar = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
+      setSearchProductsMobile([]);
+      setShowDropdownMobile(false);
     }
   };
 
@@ -638,6 +677,18 @@ const Navbar = () => {
                           marginTop: "4px",
                         }}
                       >
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #eee",
+                            fontSize: "12px",
+                            color: "#333333",
+                            fontWeight: "500",
+                          }}
+                          onClick={handleClickProfile}
+                        >
+                          My Profile
+                        </div>
                         <div
                           style={{
                             padding: "8px 12px",
@@ -862,6 +913,24 @@ const Navbar = () => {
                       color: "#333333",
                       cursor: "pointer",
                     }}
+                    onClick={handleClickProfile}
+                  >
+                    My Profile
+                  </span>
+                </div>
+
+                <div
+                  className="dropdown-item text-center"
+                  style={{ padding: "8px", borderBottom: "1px solid #ccc" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      textDecoration: "none solid rgb(51,51,51)",
+                      color: "#333333",
+                      cursor: "pointer",
+                    }}
                     onClick={handleClickMyAccount}
                   >
                     My Orders
@@ -1001,7 +1070,7 @@ const Navbar = () => {
                   >
                     {searchProducts.map((product, index) => (
                       <div
-                        key={index}
+                        key={product?._id || product?.slug || index}
                         style={{
                           padding: "8px",
                           textTransform: "capitalize",
@@ -1013,29 +1082,10 @@ const Navbar = () => {
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          router.push(`/${product?.slug}`);
-                          // Close the dropdown when a product is clicked
-                          setShowDropdown(false);
+                          openSearchResult(product, setShowDropdown);
                         }}
                       >
-                        {product?.brand === "6926d6bad53f3a772c6e978c"
-                          ? "flipkart"
-                          : product?.brand === "6557dbcc301ec4f2f426610b"
-                            ? "myntra"
-                            : product?.brand === "69268af9d53f3a772c6bccc2"
-                              ? "amazon"
-                              : product?.brand === "6582c8580ab82549a084894f"
-                                ? "ajio"
-                                : product?.brand === "6557dbf9301ec4f2f426611e"
-                                  ? "rollabel"
-                                  : product?.brand ===
-                                      "6557dc10301ec4f2f4266122"
-                                    ? "pack-secure"
-                                    : product?.brand ===
-                                        "6582c8750ab82549a0848953"
-                                      ? "PackPro"
-                                      : product?.brand}{" "}
-                        {product.name} {product.model}
+                        {getSearchResultLabel(product)}
                       </div>
                     ))}
                   </div>
@@ -1440,7 +1490,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   className={"mobileIconButton"}
-                  onClick={handleClickMyAccount}
+                  onClick={handleClickProfile}
                   aria-label={token ? "Open my account" : "Open sign in"}
                 >
                   <img
@@ -1503,7 +1553,7 @@ const Navbar = () => {
                     >
                       {searchProductsMobile.map((product, index) => (
                         <div
-                          key={index}
+                          key={product?._id || product?.slug || index}
                           className={"mobileSearchDropdownItem"}
                           style={{
                             borderBottom:
@@ -1512,28 +1562,10 @@ const Navbar = () => {
                                 : "none",
                           }}
                           onClick={() => {
-                            router.push(`/${product?.slug}`);
-                            setShowDropdownMobile(false);
+                            openSearchResult(product, setShowDropdownMobile);
                           }}
                         >
-                          {product?.brand === "6926d6bad53f3a772c6e978c"
-                            ? "flipkart"
-                            : product?.brand === "6557dbcc301ec4f2f426610b"
-                              ? "myntra"
-                              : product?.brand === "69268af9d53f3a772c6bccc2"
-                                ? "amazon"
-                                : product?.brand === "6582c8580ab82549a084894f"
-                                  ? "ajio"
-                                  : product?.brand === "6557dbf9301ec4f2f426611e"
-                                    ? "rollabel"
-                                    : product?.brand ===
-                                        "6557dc10301ec4f2f4266122"
-                                      ? "pack-secure"
-                                      : product?.brand ===
-                                          "6582c8750ab82549a0848953"
-                                        ? "PackPro"
-                                        : product?.brand}{" "}
-                          {product.name} {product.model}
+                          {getSearchResultLabel(product)}
                         </div>
                       ))}
                     </div>

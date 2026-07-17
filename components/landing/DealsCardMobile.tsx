@@ -3,8 +3,10 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "../listing/productDisplay";
+import { useBrands } from "../../context/BrandContext";
 
 function DealsCardMobile({ item }) {
+  const { brandNameById } = useBrands();
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
 
@@ -106,7 +108,7 @@ function DealsCardMobile({ item }) {
               textAlign: "center",
             }}
           >
-            {getProductDisplayName(item)}
+            {getProductDisplayName(item, { brandNameById })}
           </p>
         </div>
         <div
@@ -117,7 +119,7 @@ function DealsCardMobile({ item }) {
       <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
         <div className=" m-0 d-flex flex-row align-items-center justify-content-start">
           <s>
-            <p className="landing-pricetext">₹{item?.priceList?.[0]?.MRP}</p>
+            <p className="landing-mrptext">₹{item?.priceList?.[0]?.MRP}</p>
           </s>
         </div>
 
@@ -145,7 +147,8 @@ function DealsCardMobile({ item }) {
       <style jsx>{`
         .landing-offtext { color: var(--white, #fff); padding: 0; margin: 0; text-align: center; font-family: Montserrat; font-size: 10px; font-style: normal; font-weight: 600; line-height: 12px; }
         .landing-toptext { color: var(--text, #666); text-align: center; font-family: "Montserrat", sans-serif; font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; }
-        .landing-pricetext { color: #249b3e; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
+        .landing-pricetext { color: #17803d; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
+        .landing-mrptext { color: #000000; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
         .landing-packagebtn { border: 0; color: #fff; text-align: center; font-family: Montserrat; font-size: 18px; font-style: normal; font-weight: 400; line-height: 20px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; background-color: #182c5a; transition: background-color 0.2s ease-out; }
         .landing-packagebtn:hover { background-color: #e92227; }
       `}</style>

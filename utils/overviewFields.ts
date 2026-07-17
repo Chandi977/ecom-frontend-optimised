@@ -23,7 +23,6 @@ const formatBoolean = (value: unknown): string => {
 const TAX_AND_SUSTAINABILITY_CONFIG = [
   { label: "HSN Code", keys: ["hsn_code"] },
   { label: "SAC Code", keys: ["sac_code"] },
-  { label: "Tax Category", keys: ["tax_category"] },
   { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
   { label: "Recyclable", keys: ["recyclable"], format: formatBoolean },
   { label: "Biodegradable", keys: ["biodegradable"], format: formatBoolean },
@@ -51,7 +50,6 @@ const COMMON_FIELDS = [
   { label: "Colour", keys: ["color"] },
   { label: "HSN Code", keys: ["hsn_code"] },
   { label: "SAC Code", keys: ["sac_code"] },
-  { label: "Tax Category", keys: ["tax_category"] },
   { label: "GST", getValue: (product) => resolveGstRate(product), format: (value: unknown) => formatGst(value) },
   { label: "Type", keys: ["name"] },
   { label: "Labels per Roll", keys: ["label_in_roll"] },
@@ -348,9 +346,14 @@ function buildAutoOverviewFields(
     ].filter((field) => field.value !== "Not Available");
   } else if (productKind === "label") {
     const brandName = getProductBrandName(currentProduct) || "Rollabel™";
+    // Labels are sold as rolls that each contain many stickers, so the roll
+    // count is a headline spec (e.g. "250"). Same label as COMMON_FIELDS so the
+    // admin overview config key (labels_per_roll) matches across kinds.
+    const labelsPerRoll = getFirstValue(currentProduct, ["label_in_roll", "label_in_role"]);
     fields = [
       { label: "Dimension (inch)", value: getDimensionInches(currentProduct) },
       { label: "Dimension (mm)", value: getDimensionMm(currentProduct) },
+      { label: "Labels per Roll", value: hasValue(labelsPerRoll) ? String(labelsPerRoll) : "Not Available" },
       { label: "Brand", value: brandName },
     ].filter((field) => field.value !== "Not Available");
   } else if (productKind === "paperbag") {

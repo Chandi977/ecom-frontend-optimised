@@ -1,10 +1,9 @@
 import React from "react";
-import Image from "next/image";
-import Skeleton from "@mui/material/Skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import {
   addToFav,
   getFav,
@@ -14,15 +13,18 @@ import {
 import { useEffect } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "./productDisplay";
+import { useBrands } from "../../context/BrandContext";
 import {
   formatCurrency,
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
+import ProductImage from "../product/ProductImage";
 
 type WishlistEntry = { product?: { _id?: string } };
 
 function ListingCardDesktop({ item }: { item?: any }) {
+  const { brandNameById } = useBrands();
   const [favourite, setFavourite] = useState<WishlistEntry[]>([]);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -95,18 +97,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
   };
 
   if (!item) {
-    return (
-      <>
-        <div className="col-4 d-flex flex-column align-items-center justify-content-center">
-          <Skeleton variant="rectangular" width={180} height={120} />
-        </div>
-        <div className="col-8 py-4 px-0 d-flex flex-column align-items-start justify-content-start">
-          <Skeleton variant="text" width="80%" />
-          <Skeleton variant="text" width="60%" />
-          <Skeleton variant="rectangular" height={36} width="70%" />
-        </div>
-      </>
-    );
+    return <ProductCardSkeleton variant="list" />;
   }
   return (
     <>
@@ -116,7 +107,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
         onClick={handleViewProduct}
       >
         <div className="p-0 d-flex flex-column align-items-start justify-content-start">
-          <Image
+          <ProductImage
             src={getProductImageSrc(item)}
             alt={item?.name || "Product image"}
             width={180}
@@ -130,7 +121,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
       <div className="col-8 py-4 px-0 d-flex flex-column align-items-start justify-content-start">
         <div className="p-0 m-0 w-100 d-flex flex-row justify-content-between">
           <p style={{ fontSize: "17px" }}>
-            {getProductDisplayName(item)}
+            {getProductDisplayName(item, { brandNameById })}
             <br />
             {/* Box NC19 */}
           </p>
@@ -167,7 +158,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
         </button>
         <style jsx>{`
           .listing-desk-pricetext {
-            color: #249b3e;
+            color: #17803d;
             font-size: 27.119px;
             font-style: normal;
             font-weight: 600;
