@@ -22,6 +22,8 @@ import {
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
 import { findBrandIdByName, findBrandIdBySlug } from "../../utils/brands";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 // Route slug for this brand landing page; the id is resolved from /brand/all.
 const BRAND_SLUG = "amazon";
@@ -337,7 +339,20 @@ const BoppTape = ({
           name="description"
           content="Buy Amazon corrugated boxes Online, Amazon paper bags, and Amazon polybags online at Store.PremPackaging.com. Order quality packaging solutions delivered to your doorstep today."
         />
+        <link rel="canonical" href={canonicalUrl("/amazon")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/amazon",
+          name: "Buy Amazon Corrugated Boxes Online",
+          description:
+            "Buy Amazon corrugated boxes Online, Amazon paper bags, and Amazon polybags online at Store.PremPackaging.com. Order quality packaging solutions delivered to your doorstep today.",
+          products: product,
+          breadcrumb: [{ name: "Amazon", path: "/amazon" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <Banner />
@@ -377,7 +392,7 @@ const BoppTape = ({
                   products.map((item, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={index}
                     >
                       <DesktopListingCard item={item} />
@@ -387,7 +402,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />

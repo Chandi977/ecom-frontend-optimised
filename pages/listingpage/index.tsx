@@ -12,6 +12,8 @@ import Head from "next/head";
 import { getService, postService } from "../../services/service";
 import Banner from "../../components/landing/Banner";
 import { useRouter } from "next/router";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 import ListingCard from "../../components/listing/ListingCard";
 import ListingCardDesktop from "../../components/listing/ListingCardDesktop";
 import CatalogFilterControls from "../../components/listing/CatalogFilterControls";
@@ -416,7 +418,27 @@ const Listingpage = ({
         <title>
           Product Listing - Prem Industries India Limited - Innovation In Action
         </title>
+        <meta
+          name="description"
+          content="Browse the full Prem Packaging catalogue — corrugated boxes, poly bags, paper bags, carry bags, tapes and labels — and filter by brand, category and size."
+        />
+        <link rel="canonical" href={canonicalUrl("/listingpage")} />
       </Head>
+
+      {/* Query-driven results, so this is a SearchResultsPage rather than a
+          CollectionPage — the URL varies with ?q=/?brand=/?subcategory=. */}
+      <JsonLd
+        id="search-results"
+        data={collectionPageSchema({
+          path: "/listingpage",
+          type: "SearchResultsPage",
+          name: q ? `Search results for “${q}”` : "Product Listing",
+          description:
+            "Browse the full Prem Packaging catalogue — corrugated boxes, poly bags, paper bags, carry bags, tapes and labels — and filter by brand, category and size.",
+          products: product,
+          breadcrumb: [{ name: "Product Listing", path: "/listingpage" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <Banner />
@@ -449,7 +471,7 @@ const Listingpage = ({
               renderFilterContent={renderFilterContent}
             />
             <div className="row mt-4">
-              <div className="col-4">{renderFilters()}</div>
+              <div className="col-4 desktopFilter">{renderFilters()}</div>
               {/* this column is for windows view */}
               <div className="col-8 p-0 page-productslistdivwindow">
                 {products && products.length > 0 ? (

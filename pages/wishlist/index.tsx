@@ -19,7 +19,39 @@ import {
   WISHLIST_UPDATED_EVENT,
 } from "../../utils/favourites";
 import { addToCart } from "../../utils/cart";
+import AddToCartContent from "../../components/common/AddToCartContent";
+import useAddToCart from "../../hooks/useAddToCart";
 import AccountLayout from "../../components/account/AccountLayout";
+import { cdn } from "../../lib/cdn";
+
+/**
+ * One button per row so each keeps its own idle/adding/added state. The flight
+ * source is looked up from the clicked button rather than a ref, which keeps
+ * the mapped list markup untouched.
+ */
+const WishlistAddToCartButton = ({
+  onAdd,
+}: {
+  onAdd: (event: React.MouseEvent<HTMLButtonElement>) => unknown;
+}) => {
+  const { state, buttonProps } = useAddToCart({
+    onAdd,
+    flySource: (button) =>
+      button.closest(".wl-item")?.querySelector<HTMLElement>(".wl-item-image"),
+  });
+
+  return (
+    <button type="button" className="wl-action-btn primary" {...buttonProps}>
+      <AddToCartContent
+        state={state}
+        idleLabel="Add to Cart"
+        addedLabel="Added"
+        icon={<FiShoppingCart style={{ flexShrink: 0 }} />}
+        iconSize={15}
+      />
+    </button>
+  );
+};
 
 const WishlistContent = () => {
   const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
@@ -109,6 +141,7 @@ const WishlistContent = () => {
     if (result) {
       handleRemoveFavorite(product);
     }
+    return result;
   };
 
   const formatAddedDate = (favProduct) => {
@@ -179,7 +212,7 @@ const WishlistContent = () => {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={product?.images?.[0]?.image || "/pp_logo_1.png"}
+                  src={product?.images?.[0]?.image || cdn("/pp_logo_1.png")}
                   alt={productName || "Wishlist product"}
                 />
               </button>
@@ -203,13 +236,9 @@ const WishlistContent = () => {
               </div>
 
               <div className="wl-item-actions">
-                <button
-                  type="button"
-                  className="wl-action-btn primary"
-                  onClick={(e) => handleCart(e, product)}
-                >
-                  <FiShoppingCart /> Add to Cart
-                </button>
+                <WishlistAddToCartButton
+                  onAdd={(event) => handleCart(event, product)}
+                />
                 <button
                   type="button"
                   className="wl-action-btn"

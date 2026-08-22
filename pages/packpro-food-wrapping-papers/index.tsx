@@ -22,6 +22,8 @@ import {
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
 import { useBrands } from "../../context/BrandContext";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const FOOD_WRAPPING_CATEGORY_IDS = [
   "69dcb22e733b8ba056529a9f",
@@ -257,7 +259,20 @@ const BoppTape = ({
           name="description"
           content="Prem Industries India Limited offers high-quality food wrapping paper to keep your food fresh & flavourable. Trust our reliable solutions. Order now!"
         />
+        <link rel="canonical" href={canonicalUrl("/packpro-food-wrapping-papers")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/packpro-food-wrapping-papers",
+          name: "Buy Best Food Wrapping Paper online",
+          description:
+            "Prem Industries India Limited offers high-quality food wrapping paper to keep your food fresh & flavourable. Trust our reliable solutions. Order now!",
+          products: product,
+          breadcrumb: [{ name: "Food Wrapping Papers", path: "/packpro-food-wrapping-papers" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <FoodWrappingPaperBanner />
@@ -628,7 +643,7 @@ const BoppTape = ({
                   products.map((item, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={index}
                     >
                       <DesktopListingCard item={item} />
@@ -638,7 +653,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />

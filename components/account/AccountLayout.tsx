@@ -215,7 +215,8 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
           -webkit-font-smoothing: antialiased;
         }
         .account-wrap {
-          max-width: 1200px;
+          max-width: 1560px;
+          width: 95vw;
           margin: 0 auto;
           padding: 0 24px;
         }
@@ -263,8 +264,8 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
 
         .account-body {
           display: grid;
-          grid-template-columns: 300px 1fr;
-          gap: 24px;
+          grid-template-columns: 250px 1fr;
+          gap: 28px;
           align-items: start;
         }
 

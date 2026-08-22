@@ -23,6 +23,8 @@ import {
 } from "../../hooks/useInfiniteProducts";
 import { collapseLabelVariants } from "../../utils/labelVariants";
 import { useBrands } from "../../context/BrandContext";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const DIRECT_THERMAL_SUBCATEGORY_ID = "6557e1cb301ec4f2f426614c";
 
@@ -261,7 +263,20 @@ const BoppTape = ({
           name="description"
           content="Discover high-quality direct thermal labels for packaging at Prem Industries India Limited. Ensure efficient printing and labeling solutions. Order now"
         />
+        <link rel="canonical" href={canonicalUrl("/direct-thermal-labels")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/direct-thermal-labels",
+          name: "Buy Best Direct Thermal Label online",
+          description:
+            "Discover high-quality direct thermal labels for packaging at Prem Industries India Limited. Ensure efficient printing and labeling solutions. Order now",
+          products: product,
+          breadcrumb: [{ name: "Direct Thermal Labels", path: "/direct-thermal-labels" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <DTLBanner />
@@ -670,7 +685,7 @@ const BoppTape = ({
                   displayProducts.map((item, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={index}
                     >
                       <DesktopListingCard item={item} />
@@ -680,7 +695,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />

@@ -5,6 +5,8 @@ import Head from "next/head";
 import Slider from "@mui/material/Slider";
 import Checkbox from "@mui/material/Checkbox";
 import { useRouter } from "next/router";
+import JsonLd from "../common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 import { getService, postService } from "../../services/service";
 import ListingCard from "./ListingCard";
 import CatalogFilterControls from "./CatalogFilterControls";
@@ -366,7 +368,20 @@ const PackproTapesCatalogPage = ({
           name="description"
           content="Browse all PackPro tape types in one place. Compare BOPP, paper, void, and carry handle tapes, then filter by tape type and size."
         />
+        <link rel="canonical" href={canonicalUrl("/packpro-tapes")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/packpro-tapes",
+          name: "Buy packaging tapes online",
+          description:
+            "Browse all PackPro tape types in one place. Compare BOPP, paper, void, and carry handle tapes, then filter by tape type and size.",
+          products: product,
+          breadcrumb: [{ name: "Packaging Tapes", path: "/packpro-tapes" }],
+        })}
+      />
       <div className="row p-0 m-0">
         <BannerComponent />
         <div className="row main-body" style={{ backgroundColor: "white" }}>
@@ -400,7 +415,7 @@ const PackproTapesCatalogPage = ({
             <div className="col-9 products-list-div-window">
               {products && products.length > 0 ? (
                 products.map((item, index) => (
-                  <div className="row w-40" style={{ height: "400px" }} key={index}>
+                  <div className="row w-40" style={{ minHeight: "400px" }} key={index}>
                     <DesktopListingCard item={item} />
                   </div>
                 ))
@@ -408,7 +423,7 @@ const PackproTapesCatalogPage = ({
                 Array.from({ length: 6 }).map((_, index) => (
                   <div
                     className="row w-40"
-                    style={{ height: "400px" }}
+                    style={{ minHeight: "400px" }}
                     key={`skeleton-${index}`}
                   >
                     <DesktopListingCard />

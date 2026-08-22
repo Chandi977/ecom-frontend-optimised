@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCartPlus,
   faEye,
-  faHeart,
   faScaleBalanced,
 } from "@fortawesome/free-solid-svg-icons";
 import type { IProduct } from "../../types/product";
@@ -16,6 +15,7 @@ import {
   getProductSubCategory,
 } from "../../utils/productCatalog";
 import ProductImage from "./ProductImage";
+import WishlistButton from "../common/WishlistButton";
 
 interface ProductCardProps {
   product?: IProduct;
@@ -35,11 +35,9 @@ const getName = (product?: IProduct): string =>
 
 export function ProductCard({
   product,
-  isWishlisted = false,
   compact = false,
   onView,
   onQuickView,
-  onWishlist,
   onCompare,
   onAddToCart,
 }: ProductCardProps) {
@@ -114,6 +112,22 @@ export function ProductCard({
             </span>
           )}
         </button>
+        {Number((product as any)?.ratingCount) > 0 && (
+          <div
+            style={{ display: "flex", alignItems: "center", gap: "4px", margin: "2px 0 4px" }}
+            aria-label={`Rated ${Number((product as any)?.ratingAverage).toFixed(1)} out of 5`}
+          >
+            <span style={{ color: "#f59e0b", fontSize: "13px", letterSpacing: "1px" }}>
+              {"★".repeat(Math.round(Number((product as any)?.ratingAverage) || 0))}
+              <span style={{ color: "#d1d5db" }}>
+                {"★".repeat(5 - Math.round(Number((product as any)?.ratingAverage) || 0))}
+              </span>
+            </span>
+            <span style={{ fontSize: "12px", color: "#6b7280" }}>
+              ({(product as any).ratingCount})
+            </span>
+          </div>
+        )}
         <div className="price-row">
           {tier.mrp > tier.sellingPrice && (
             <span className="mrp">{formatCurrency(tier.mrp)}</span>
@@ -136,14 +150,7 @@ export function ProductCard({
         >
           <FontAwesomeIcon icon={faEye} />
         </button>
-        <button
-          type="button"
-          onClick={() => onWishlist?.(product)}
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          className={isWishlisted ? "active" : ""}
-        >
-          <FontAwesomeIcon icon={faHeart} />
-        </button>
+        <WishlistButton product={product} variant="action" />
         <button
           type="button"
           onClick={() => onCompare?.(product)}

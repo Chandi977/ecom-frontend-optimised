@@ -205,6 +205,8 @@ const hydrateGuestCartProducts = async (cart) => {
   };
 };
 
+// No success toast on add: the fly-to-cart animation, the button's "Added"
+// state and the cart badge already confirm it. Failures still toast.
 export const addToCart = async (
   product,
   quantity,
@@ -248,7 +250,6 @@ export const addToCart = async (
         );
 
         setGuestCart(recalculateCart(products));
-        toast.success("Item added to the cart.");
         notifyCartUpdated();
         return true;
       }
@@ -267,7 +268,6 @@ export const addToCart = async (
       ]);
 
       setGuestCart(cartss);
-      toast.success("Item added to the cart.");
       notifyCartUpdated();
       return true;
     }
@@ -295,7 +295,6 @@ export const addToCart = async (
     const res = await postService("AddtoCart", cartss);
 
     if (res?.data?.success) {
-      toast.success("Item added to the cart.");
       notifyCartUpdated();
     }
     return true;

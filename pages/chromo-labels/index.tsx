@@ -15,6 +15,8 @@ import {
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
 import { collapseLabelVariants } from "../../utils/labelVariants";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const CHROMO_LABEL_SUBCATEGORY_ID = "6557e236301ec4f2f4266154";
 
@@ -259,7 +261,20 @@ const BoppTape = ({
           name="description"
           content="Discover premium Chromo Label solutions by Prem Industries India Limited that offers unparalleled quality and customization options. Contact us now!"
         />
+        <link rel="canonical" href={canonicalUrl("/chromo-labels")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/chromo-labels",
+          name: "Buy Best Chromo Label Online",
+          description:
+            "Discover premium Chromo Label solutions by Prem Industries India Limited that offers unparalleled quality and customization options. Contact us now!",
+          products: product,
+          breadcrumb: [{ name: "Chromo Labels", path: "/chromo-labels" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <ChromoLabelBanner />
@@ -488,7 +503,7 @@ const BoppTape = ({
                   displayProducts.map((item, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={index}
                     >
                       <DesktopListingCard item={item} />
@@ -498,7 +513,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />

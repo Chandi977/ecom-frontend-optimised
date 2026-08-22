@@ -1,1006 +1,753 @@
-import { getService } from "../services/service";
-import { useEffect, useRef, useState } from "react";
-import LandingBrandCard from "../components/landing/landingBrandCard";
-import DealsCard from "../components/landing/DealsCard";
-import TopCard from "../components/landing/TopCard";
-import TopCardMobile from "../components/landing/TopCardMobile";
-import DealsCardMobile from "../components/landing/DealsCardMobile";
-import dynamic from "next/dynamic";
-import Feedback from "../components/landing/feedback";
-import { useRouter } from "next/router";
-import Banner from "../components/landing/Banner";
-import Brand from "../components/landing/Brand";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+
+/* The homepage is a faithful port of the premium storefront concept
+   (hero -> benefits -> category grid -> product grid -> steps -> custom
+   packaging -> testimonial -> newsletter). It is wired to the real catalog
+   API instead of static mockups. Styling lives in public/homepage-store.css
+   (scoped under `.hps`); homepage.css still powers BestDeals & friends. */
+
 import Head from "next/head";
-import Script from "next/script";
-import CustomPackaging from "./CustomPackaging";
-import { FiArrowRight } from "react-icons/fi";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  Box,
+  Check,
+  Plus,
+  Search,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
+import JsonLd from "../components/common/JsonLd";
+import { canonicalUrl, homePageSchema } from "../utils/schema";
+import { getService } from "../services/service";
+import { getPrimaryPriceTier, getProductImageSrc } from "../utils/productCatalog";
+import {
+  formatProductCardPrice,
+  getProductCardBadge,
+  getProductCardDiscountLabel,
+  getProductCardSummary,
+  getProductDisplayName,
+} from "../components/listing/productDisplay";
+import { useBrands } from "../context/BrandContext";
+import WishlistButton from "../components/common/WishlistButton";
+import { addToCart as apiAddToCart } from "../utils/cart";
+import ProcessJourneySection from "../components/landing/ProcessJourneySection";
+
+const HOME_CATEGORY_LINKS = [
+  { name: "Corrugated Boxes", path: "/corrugated-boxes" },
+  { name: "Paper Bags", path: "/paper-bags" },
+  { name: "Poly Bags & Mailers", path: "/poly-bags" },
+  { name: "Carry Bags", path: "/carry-bags" },
+  { name: "Packaging Tapes", path: "/packpro-tapes" },
+  { name: "Labels", path: "/rollabel" },
+  { name: "Food Wrapping Papers", path: "/packpro-food-wrapping-papers" },
+  { name: "Best Deals", path: "/BestDeals" },
+];
+
+const CATEGORY_META: Record<
+  string,
+  { name: string; href: string; image: string; tone: string }
+> = {
+  "Corrugated Box": {
+    name: "Corrugated boxes",
+    href: "/corrugated-boxes",
+    image: "/category-cutouts/corrugated-boxes.png",
+    tone: "sand",
+  },
+  "Paper Bag": {
+    name: "Paper bags",
+    href: "/paper-bags",
+    image: "/category-cutouts/paper-bags.png",
+    tone: "mint",
+  },
+  "Poly Bag": {
+    name: "Poly bags & mailers",
+    href: "/poly-bags",
+    image: "/category-cutouts/poly-bags.png",
+    tone: "blue",
+  },
+  "Pack Pro": {
+    name: "Tapes & sealing",
+    href: "/packpro-tapes",
+    image: "/category-cutouts/bopp-tapes.png",
+    tone: "peach",
+  },
+  Rollabel: {
+    name: "Labels & finishing",
+    href: "/rollabel",
+    image: "/category-cutouts/chromo-labels.png",
+    tone: "yellow",
+  },
+  "Carry Bag": {
+    name: "Carry bags",
+    href: "/carry-bags",
+    image: "/category-cutouts/carry-bags.png",
+    tone: "sky",
+  },
+  "Food Wrapping Paper": {
+    name: "Food wrapping",
+    href: "/packpro-food-wrapping-papers",
+    image: "/category-cutouts/wrapping-papers.png",
+    tone: "rose",
+  },
+};
+
+const getCategoryName = (product: any): string => {
+  const category = product?.category;
+  if (typeof category === "string") return category;
+  return category?.name || "";
+};
+
+const FILTERS = [
+  { key: "all", label: "All products", match: [] as string[] },
+  { key: "corrugated", label: "Corrugated boxes", match: ["corrugated"] },
+  { key: "paper", label: "Paper bags", match: ["paper"] },
+  { key: "poly", label: "Poly mailers", match: ["poly"] },
+  { key: "tapes", label: "Tapes & labels", match: ["tape", "label"] },
+  { key: "food", label: "Food packaging", match: ["food", "wrap"] },
+];
 
 
-const Slider: any = dynamic(() => import("react-slick"), { ssr: false });
+const TESTIMONIAL = {
+  quote:
+    "Prem's innovative e-commerce packaging has enhanced both the durability and presentation of our products.",
+  name: "Fruitri",
+  role: "Long-term packaging partner",
+};
 
-export async function getServerSideProps(context) {
-  const searchRes = await getService(`brand/all`);
-  const prod = await getService("product/all");
-  const deal = await getService("deal/all");
-  return {
-    props: {
-      brand: searchRes?.data ? searchRes?.data?.data : [],
-      product: prod?.data ? prod?.data?.data : [],
-      deal: deal?.data ? deal?.data?.data : [],
-    },
-  };
-}
-
-const CATEGORIES = [
+const TESTIMONIAL_PROOF = [
   {
-    name: "Corrugated Boxes",
-    link: "/corrugated-boxes",
-    image: "/category-corrugated.png",
-    count: "Flipkart & Amazon Approved",
+    title: "Since 1977",
+    text: "Decades of manufacturing knowledge behind every order.",
   },
   {
-    name: "Paper Bags",
-    link: "/paper-bags",
-    image: "/category-paper-bags.png",
-    count: "Eco-friendly Mailers & Bags",
-  },
-  {
-    name: "Poly Bags",
-    link: "/poly-bags",
-    image: "/category-poly-bags.png",
-    count: "High Durability Couriers",
-  },
-  {
-    name: "Carry Bags",
-    link: "/carry-bags",
-    image: "/carry-bag-banner.jpg",
-    count: "Heavy Duty Handles",
-  },
-  {
-    name: "Wrapping Papers",
-    link: "/packpro-food-wrapping-papers",
-    image: "/food-wrapping-paper-banner.jpg",
-    count: "Food Grade & Honeycomb",
-  },
-  {
-    name: "BOPP Tapes",
-    link: "/bopp-tapes",
-    image: "/BannerBopp.jpg",
-    count: "Standard & Custom Printed",
-  },
-  {
-    name: "Paper Tapes",
-    link: "/paper-tapes",
-    image: "/BannerPaperTape.jpg",
-    count: "Water-Activated & Eco",
-  },
-  {
-    name: "Void Tapes",
-    link: "/void-tapes",
-    image: "/BannerSpeciality.jpg",
-    count: "Tamper Evident Security",
-  },
-  {
-    name: "Carry Handle Tapes",
-    link: "/packpro-carry-handle-tapes",
-    image: "/bannercarryhandle.png",
-    count: "Convenient Handling",
-  },
-  {
-    name: "Direct Thermal Labels",
-    link: "/direct-thermal-labels",
-    image: "/BannerLabel.jpg",
-    count: "Barcode & Shipping Labels",
-  },
-  {
-    name: "Chromo Labels",
-    link: "/chromo-labels",
-    image: "/featuredproduct.png",
-    count: "High Gloss Product Labels",
-  },
-  {
-    name: "Custom Packaging",
-    link: "/custom-packaging",
-    image: "/bannerimg2.jpg",
-    count: "Tailored Brand Solutions",
+    title: "One direct source",
+    text: "Boxes, bags, labels, tapes and more under one roof.",
   },
 ];
 
-export default function Home({ brand, product, deal }) {
-  const router = useRouter();
-  const [amazon, setAmazon] = useState<any[]>([]);
-  const [flipkart, setFlipkart] = useState<any[]>([]);
-  const [myntra, setMyntra] = useState<any[]>([]);
-  const [ajio, setAjio] = useState<any[]>([]);
-  const [deals, setDeals] = useState<any[]>([]);
-  const [top, setTop] = useState<any[]>([]);
-  const [type, setType] = useState("desktop");
-  const sliderRef1 = useRef<any>(null);
-  const sliderRef4 = useRef<any>(null);
+const FALLBACK_PRODUCTS = [
+  {
+    _id: "fb-1",
+    slug: "flipkart-corrugated-box-d4",
+    name: "Flipkart Corrugated Box D4",
+    model: "D4",
+    category: "Corrugated boxes",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 50, SP: 494, MRP: 600 }],
+    images: [{ image: "/category-cutouts/corrugated-boxes.png" }],
+  },
+  {
+    _id: "fb-2",
+    slug: "amazon-paper-bag-pm2",
+    name: "Amazon Paper Bag PM2",
+    model: "PM2",
+    category: "Paper bags",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 100, SP: 400, MRP: 450 }],
+    images: [{ image: "/category-cutouts/paper-bags.png" }],
+  },
+  {
+    _id: "fb-3",
+    slug: "amazon-poly-mailer-nmt2",
+    name: "Amazon Poly Mailer NMT2",
+    model: "NMT2",
+    category: "Poly bags",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 100, SP: 620, MRP: 760 }],
+    images: [{ image: "/category-cutouts/poly-bags.png" }],
+  },
+  {
+    _id: "fb-4",
+    slug: "packpro-brown-bopp-tape",
+    name: "PackPro Brown BOPP Tape",
+    model: "48mm x 65m",
+    category: "Packaging Tapes",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 6, SP: 299, MRP: 349 }],
+    images: [{ image: "/category-cutouts/bopp-tapes.png" }],
+  },
+  {
+    _id: "fb-5",
+    slug: "rollabel-chromo-labels",
+    name: "Rollabel Chromo Labels",
+    model: "CL_65x70",
+    category: "Labels",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 400, SP: 245, MRP: 299 }],
+    images: [{ image: "/category-cutouts/chromo-labels.png" }],
+  },
+  {
+    _id: "fb-6",
+    slug: "packpro-food-wrapping-paper",
+    name: "PackPro Food Wrapping Paper",
+    model: "11x12 in",
+    category: "Food Wrapping Papers",
+    top_product: true,
+    deal_product: true,
+    priceList: [{ number: 100, SP: 349, MRP: 399 }],
+    images: [{ image: "/category-cutouts/wrapping-papers.png" }],
+  },
+];
 
-  var settings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    responsive: [
-      {
-        breakpoint: 1400,
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          dots: false,
-        },
-      },
-      {
-        breakpoint: 1150,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          dots: false,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 767,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          dots: false,
-          padding: 26,
-        },
-      },
-    ],
-  };
+const getCategoryText = (product: any): string => {
+  const category = product?.category;
+  const subCategory = product?.sub_category;
+  const parts: string[] = [];
+  if (typeof category === "string") parts.push(category);
+  else if (category?.name) parts.push(category.name);
+  if (typeof subCategory === "string") parts.push(subCategory);
+  else if (subCategory?.name) parts.push(subCategory.name);
+  return parts.join(" ").toLowerCase();
+};
 
-  
+const getCategoryLabel = (product: any): string => {
+  const subCategory = product?.sub_category;
+  if (typeof subCategory === "string") return subCategory;
+  if (subCategory?.name) return subCategory.name;
+  const category = product?.category;
+  if (typeof category === "string") return category;
+  return category?.name || "Prem Packaging";
+};
+
+const SkeletonCard = () => (
+  <div className="skeleton-card">
+    <div className="skeleton-img" />
+    <div className="skeleton-line" />
+    <div className="skeleton-line short" />
+    <div className="skeleton-line tiny" />
+  </div>
+);
+
+type CategoryCardItem = {
+  name: string;
+  tag: string;
+  href: string;
+  image: string;
+  tone: string;
+};
+
+const CategoryCarousel = ({ cards }: { cards: CategoryCardItem[] }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+  const [perView, setPerView] = useState(5);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // Normalise strings so filters work regardless of casing/slug format.
-    const normalise = (value) =>
-      typeof value === "string" ? value.trim().toLowerCase() : "";
-
-    const getCategoryKey = (item) =>
-      normalise(
-        item?.category?.slug || item?.category?.name || item?.category,
-      );
-
-    const getBrandKey = (item) =>
-      normalise(item?.brand?.slug || item?.brand?.name || item?.brand);
-
-    const setDeviceType = () => {
-      if (typeof window !== "undefined") {
-        setType(window.innerWidth < 768 ? "mobile" : "desktop");
-      }
+    const measure = () => {
+      const width = containerRef.current?.clientWidth ?? 0;
+      let pv = 5;
+      if (width > 0 && width <= 520) pv = 1;
+      else if (width <= 760) pv = 2;
+      else if (width <= 980) pv = 3;
+      else if (width <= 1200) pv = 4;
+      setPerView(pv);
     };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
-    if (Array.isArray(product) && product.length) {
-      // Prefer e-com category when present; otherwise fall back to all products so users still see items.
-      const ecomScoped = product.filter((item) => {
-        const key = getCategoryKey(item);
-        if (!key) return false;
-        return key.includes("e-com") || key.includes("ecom");
+  useEffect(() => {
+    setIndex((i) => Math.max(0, Math.min(i, Math.max(0, cards.length - perView))));
+  }, [perView, cards.length]);
+
+  const advance = useCallback(
+    (dir: 1 | -1) => {
+      setIndex((i) => {
+        const max = Math.max(0, cards.length - perView);
+        return Math.max(0, Math.min(max, i + dir));
       });
+    },
+    [cards.length, perView],
+  );
 
-      const ecomProducts = ecomScoped.length ? ecomScoped : product;
+  const startAutoplay = useCallback(() => {
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    timerRef.current = window.setInterval(() => {
+      if (pausedRef.current) return;
+      setIndex((i) => {
+        const max = Math.max(0, cards.length - perView);
+        return i >= max ? i : i + 1;
+      });
+    }, 3500);
+  }, [cards.length, perView]);
 
-      const byBrand = (name) =>
-        ecomProducts.filter((item) => getBrandKey(item) === name);
+  useEffect(() => {
+    startAutoplay();
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+  }, [startAutoplay]);
 
-      setAmazon(byBrand("amazon"));
-      setFlipkart(byBrand("flipkart"));
-      setMyntra(byBrand("myntra"));
-      setAjio(byBrand("ajio"));
-      let dealsList = product.filter((item) => Boolean(item?.deal_product));
-      if (dealsList.length < 5 && product.length > dealsList.length) {
-        const remaining = product.filter(
-          (p) => !dealsList.some((d) => d.slug === p.slug)
-        );
-        const shuffled = [...remaining].sort(() => 0.5 - Math.random());
-        dealsList = [...dealsList, ...shuffled.slice(0, 5 - dealsList.length)];
+  const go = useCallback(
+    (dir: 1 | -1) => {
+      advance(dir);
+      startAutoplay();
+    },
+    [advance, startAutoplay],
+  );
+
+  const maxIndex = Math.max(0, cards.length - perView);
+  const slideWidth = 100 / perView;
+
+  return (
+    <div
+      className="cat-carousel"
+      ref={containerRef}
+      onMouseEnter={() => {
+        pausedRef.current = true;
+      }}
+      onMouseLeave={() => {
+        pausedRef.current = false;
+      }}
+    >
+      <div className="cat-viewport">
+        <div className="cat-track" style={{ transform: `translateX(-${index * slideWidth}%)` }}>
+          {cards.map((category) => (
+            <div className="cat-slide" style={{ width: `${slideWidth}%` }} key={category.name}>
+              <Link href={category.href} className={`category-card ${category.tone}`}>
+                <span>{category.tag}</span>
+                <h3>{category.name}</h3>
+                <img src={category.image} alt="" loading="lazy" />
+                <i>
+                  <ArrowRight size={18} strokeWidth={1.8} />
+                </i>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="cat-arrows">
+        <button
+          type="button"
+          className="cat-btn cat-btn-prev"
+          onClick={() => go(-1)}
+          disabled={index === 0}
+          aria-label="Previous categories"
+        >
+          <span className="cat-arrow-icon">
+            <ArrowRight size={15} strokeWidth={1.75} />
+          </span>
+        </button>
+        <button
+          type="button"
+          className="cat-btn cat-btn-next"
+          onClick={() => go(1)}
+          disabled={index === maxIndex}
+          aria-label="Next categories"
+        >
+          <span className="cat-arrow-icon">
+            <ArrowRight size={15} strokeWidth={1.75} />
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default function Home() {
+  const { brandNameById } = useBrands();
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [categoryList, setCategoryList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [toast, setToast] = useState("");
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const toastTimer = useRef<any>(null);
+  const addedTimer = useRef<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [productRes, categoryRes] = await Promise.all([
+          getService("product/all", {}, { silent: true }),
+          getService("category/all", {}, { silent: true }),
+        ]);
+        if (!mounted) return;
+        const products = Array.isArray(productRes?.data?.data)
+          ? productRes.data.data
+          : Array.isArray(productRes?.data)
+            ? productRes.data
+            : [];
+        const categories = Array.isArray(categoryRes?.data?.data)
+          ? categoryRes.data.data
+          : Array.isArray(categoryRes?.data)
+            ? categoryRes.data
+            : [];
+        setAllProducts(products);
+        setCategoryList(categories);
+      } catch (error) {
+        console.warn("Failed to load catalog:", error);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setDeals(dealsList);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-      let topList = product.filter((item) => Boolean(item?.top_product));
-      if (topList.length < 5 && product.length > topList.length) {
-        const remaining = product.filter(
-          (p) => !topList.some((t) => t.slug === p.slug)
+  const categoryCards = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const product of allProducts) {
+      const name = getCategoryName(product);
+      if (name) counts.set(name, (counts.get(name) || 0) + 1);
+    }
+    return categoryList
+      .map((category) => {
+        const name = typeof category?.name === "string" ? category.name : "";
+        const meta = CATEGORY_META[name];
+        if (!meta) return null;
+        return {
+          name: meta.name,
+          tag: `${counts.get(name) || 0} products`,
+          href: meta.href,
+          image: meta.image,
+          tone: meta.tone,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+  }, [categoryList, allProducts]);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(""), 2400);
+  }, []);
+
+  const handleAddToCart = useCallback(
+    async (product: any) => {
+      const tier = getPrimaryPriceTier(product);
+      const name =
+        getProductDisplayName(product, { brandNameById }) ||
+        product?.name ||
+        "Product";
+      try {
+        await apiAddToCart(
+          product,
+          1,
+          tier.sellingPrice,
+          0.5,
+          tier.number,
+          tier.number,
+          "Prem Packaging",
+          product?.category,
+          100,
         );
-        const shuffled = [...remaining].sort(() => 0.5 - Math.random());
-        topList = [...topList, ...shuffled.slice(0, 5 - topList.length)];
+        setAddedIds((prev) => new Set(prev).add(String(product?._id || "")));
+        if (addedTimer.current) clearTimeout(addedTimer.current);
+        addedTimer.current = setTimeout(() => setAddedIds(new Set()), 1800);
+        showToast(`${name} added to your cart`);
+      } catch (error) {
+        console.warn("Failed to add to cart:", error);
       }
-      setTop(topList);
-    } else {
-      setAmazon([]);
-      setFlipkart([]);
-      setMyntra([]);
-      setAjio([]);
-      setDeals([]);
-      setTop([]);
-    }
+    },
+    [brandNameById, showToast],
+  );
 
-    setDeviceType();
-    if (typeof window !== "undefined") {
-      window.addEventListener("resize", setDeviceType);
-      return () => window.removeEventListener("resize", setDeviceType);
-    }
+  const shelf = useMemo(() => {
+    const source = allProducts.length ? allProducts : FALLBACK_PRODUCTS;
+    const scored = [...source].map((p) => {
+      let rank = 0;
+      if (p?.deal_product) rank -= 3;
+      if (p?.top_product) rank -= 2;
+      return { p, rank };
+    });
+    scored.sort((a, b) => a.rank - b.rank);
+    return scored.map((entry) => entry.p);
+  }, [allProducts]);
 
-    return undefined;
-  }, [product]);
+  const visibleProducts = useMemo(() => {
+    const filter = FILTERS.find((f) => f.key === activeFilter);
+    const keywords = filter?.match || [];
+    const pool = keywords.length
+      ? shelf.filter((p) => {
+          const text = getCategoryText(p);
+          return keywords.some((keyword) => text.includes(keyword));
+        })
+      : shelf;
+    return pool.slice(0, 12);
+  }, [shelf, activeFilter]);
 
-  const handleClickAmazon = () => {
-    router.push("/amazon");
-  };
-
-  const handleClickFlipkart = () => {
-    router.push("/flipkart");
-  };
-
-  const handleClickAjio = () => {
-    router.push("/ajio");
-  };
-
-  const handleClickCustom = () => {
-    router.push("/custom-packaging");
-  };
+  const selectedFilter = FILTERS.find((f) => f.key === activeFilter);
 
   return (
     <>
       <Head>
-        <title>Buy Packaging Product Online India | store.prempackaging</title>
-        <meta name="title" content="Buy Packaging Product Online India" />
+        <title>Prem Packaging Store | Better Packaging Starts Here</title>
         <meta
           name="description"
-          content="Buy packaging product online in India from our custom packaging store online. Visit our online ecommerce packaging store and Shop packaging product online."
+          content="Shop boxes, paper bags, poly mailers, tapes, labels and food packaging directly from Prem Industries India Limited."
         />
-
-        <meta
-          name="google-site-verification"
-          content="google6b57cc2c5c60b7ce"
-        />
-
-        <style>{`
-          iframe {
-            width: 100%;
-            height: 100%;
-          }
-
-          @media (min-width: 900px) {
-            iframe {
-              width: 700px;
-              height: 450px;
-            }
-          }
-
-          @media (min-width: 1200px) {
-            iframe {
-              width: 900px;
-              height: 506px;
-            }
-          }
-
-          .video-container {
-            position: relative;
-            padding-bottom: 50%;
-            height: 0;
-            overflow: hidden;
-            max-width: 80%;
-            background: white;
-          }
-
-          .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 80%;
-            height: 80%;
-            display: flex;
-            justify-content: center;
-            align-self: center;
-          }
-        `}</style>
+        <link rel="canonical" href={canonicalUrl("/")} />
       </Head>
-      <Script
-        id="home-structured-data"
-        strategy="afterInteractive"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-              {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                url: "https://www.store.prempackaging.com/",
-                name: "Prem Packaging Store",
-                description:
-                  "Prem Packaging Store — Shop premium packaging products including boxes, tapes, bags, and labels online.",
-                potentialAction: {
-                  "@type": "SearchAction",
-                  target:
-                    "https://www.store.prempackaging.com/search?q={search_term_string}",
-                  "query-input": "required name=search_term_string",
-                },
-              },
-              {
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                name: "Prem Packaging Store",
-                url: "https://www.store.prempackaging.com/",
-                logo: "https://www.store.prempackaging.com/Logohead.png",
-                contactPoint: {
-                  "@type": "ContactPoint",
-                  telephone: "+91-84472-47227",
-                  contactType: "Customer Service",
-                },
-                sameAs: [
-                  "https://www.facebook.com/PremIndustriesIndiaLimited/",
-                  "https://www.instagram.com/prem_packaging/",
-                  "https://www.linkedin.com/company/prem-packaging",
-                ],
-              },
-            ]),
-        }}
+
+      <JsonLd
+        id="home"
+        data={homePageSchema({
+          name: "Prem Packaging Store",
+          description:
+            "Shop boxes, paper bags, poly mailers, tapes, labels and food packaging directly from Prem Industries India Limited.",
+          categories: HOME_CATEGORY_LINKS,
+        })}
       />
-      <Script
-        id="google-analytics-src"
-        strategy="afterInteractive"
-        src="https://www.googletagmanager.com/gtag/js?id=G-B5QF0YVXG5"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-B5QF0YVXG5');
-        `}
-      </Script>
-      <div
-        className="row m-0"
-        style={{
-          height: "fit-content",
-          backgroundColor: "white",
-        }}
-      >
-        {/* Main body */}
-        <div className="row p-0 m-0">
-          <Banner />
-          <div className="page-mainbody">            {/* E-COMMERCE BRANDS */}
-            <div className="row p-0">
-              <div className="col my-4 p-0 text-center">
-                <h1
-                  className="landing-title-main tw-text-[#3a5ba2]"
-                  style={{
-                    color: "#182C5A",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  we are authorised vendor for
-                </h1>
-                <div
-                  style={{
-                    marginTop: "16px",
-                    height: "3px",
-                    width: "234px",
-                  }}
-                ></div>
-                <div>
-                  <div>
-                    <div className="container-fluid">
-                      <div className="row mt-5 d-flex justify-content-center align-items-center g-3 px-3">
-                        <div className="col-12 col-md-4 d-flex justify-content-center pt-3">
-                          <Link href="/amazon" onClick={handleClickAmazon}>
-                            <Image
-                              src="/amazon.jpg"
-                              alt="Amazon packaging products"
-                              width={160}
-                              height={88}
-                              style={{ objectFit: "contain" }}
-                            ></Image>
-                          </Link>
-                        </div>
-                        <div className="col-12 col-md-4 d-flex justify-content-center pt-3">
-                          <Link href="/flipkart" onClick={handleClickFlipkart}>
-                            <Image
-                              src="/flipkart.jpg"
-                              alt="Flipkart packaging products"
-                              width={160}
-                              height={88}
-                              style={{ objectFit: "contain" }}
-                            ></Image>
-                          </Link>
-                        </div>
-                        <div className="col-12 col-md-4 d-flex justify-content-center pt-3">
-                          <Link href="/ajio" onClick={handleClickAjio}>
-                            <Image
-                              src="/Ajio.png"
-                              alt="Ajio packaging products"
-                              width={160}
-                              height={88}
-                              style={{ objectFit: "contain" }}
-                            ></Image>
-                          </Link>
-                        </div>
-                        <div className="col-12 d-flex justify-content-center align-items-center mt-5">
-                          <Link
-                            href="/custom-packaging"
-                            onClick={handleClickCustom}
-                            style={{
-                              textDecoration: "none",
-                              textAlign: "center",
-                            }}
-                          >
-                            <button className="package-btn-action">
-                              Custom Packaging
-                            </button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
+      <main className="hps">
+        {/* Hero */}
+        <section className="hero" aria-labelledby="hero-title">
+          <img
+            className="hero-background"
+            src="/hero-packaging.webp"
+            alt="Boxes, paper bags, mailers and packaging supplies"
+          />
+          <div className="hero-overlay" />
+          <div className="hero-copy">
+            <p className="eyebrow">Made to pack. Ready to send.</p>
+            <h1 id="hero-title">
+              Better packaging
+              <br />
+              starts right here.
+            </h1>
+            <p className="hero-sub">
+              Shop dependable boxes, bags, mailers, tapes and labels for your
+              everyday orders — delivered directly from the manufacturer.
+            </p>
+            <div className="hero-ctas">
+              <a className="button primary" href="#products">
+                Shop bestsellers <ArrowRight size={19} strokeWidth={1.8} />
+              </a>
+              <a className="button text-button" href="#categories">
+                Explore categories
+              </a>
             </div>
-
-            {/* SHOP BY CATEGORY */}
-            <div className="container" style={{ marginTop: "70px", marginBottom: "50px" }}>
-              <div className="row">
-                <div className="col text-center">
-                  <h2 className="heading-first" style={{ color: "#182c5a", textTransform: "uppercase" }}>
-                    Shop By Category
-                  </h2>
-                  <div
-                    style={{
-                      height: "3px",
-                      width: "80px",
-                      backgroundColor: "#e92227",
-                      margin: "12px auto 40px auto",
-                      borderRadius: "2px"
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="row g-4 justify-content-center">
-                {CATEGORIES.map((cat, idx) => (
-                  <div key={idx} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                    <Link href={cat.link} style={{ textDecoration: "none" }}>
-                      <div className="category-card-wrapper">
-                        <div className="category-image-container">
-                          <Image
-                            src={cat.image}
-                            alt={cat.name}
-                            layout="fill"
-                            objectFit="cover"
-                            className="category-card-img"
-                            priority={idx < 3}
-                          />
-                          <div className="category-card-overlay"></div>
-                        </div>
-                        <div className="category-card-info">
-                          <span className="category-card-tag">{cat.count}</span>
-                          <h3 className="category-card-name">{cat.name}</h3>
-                          <div className="category-card-action">
-                            <span>Explore Category</span>
-                            <FiArrowRight style={{ fontSize: "14px" }} />
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+            <div className="hero-proof">
+              <span>
+                <Check size={15} strokeWidth={1.8} /> GST invoice
+              </span>
+              <span>
+                <Check size={15} strokeWidth={1.8} /> Secure checkout
+              </span>
+              <span>
+                <Check size={15} strokeWidth={1.8} /> Pan-India delivery
+              </span>
             </div>
-
-            {/* shop from top products */}
-            <div className="container">
-              <div className="row" style={{ marginTop: "50px" }}>
-                <div className="col">
-                  <div className="">
-                    <div className="text-center">
-                      <h2 className="tw-text-[#182c5a] heading-first">
-                        SHOP FROM TOP PRODUCTS
-                      </h2>
-                    </div>
-                  </div>
-                  <div
-                    className="d-flex align-items-right justify-content-right"
-                    style={{
-                      height: "3px",
-                      width: "378px",
-                    }}
-                  ></div>
-                  {type === "desktop" && top?.length > 5 && (
-                    <>
-                      <br />
-                      <div
-                        className="slider-arrow-prev"
-                        style={{}}
-                        onClick={() => sliderRef1.current?.slickPrev?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                          alt="Previous slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div
-                        className="slider-arrow-next"
-                        onClick={() => sliderRef1.current?.slickNext?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                          alt="Next slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div
-                    className="mt-5 mb-2 ml-2 d-flex flex-row justify-content-start"
-                    style={{ columnGap: "35px" }}
-                  >
-                    {top?.length <= 5 &&
-                      type === "desktop" &&
-                      top?.map((item, index) => {
-                        return (
-                          <div key={index}>
-                            <TopCard item={item} />
-                          </div>
-                        );
-                      })}
-                  </div>
-
-                  {type === "desktop" && top?.length > 5 && (
-                    <Slider
-                      {...settings}
-                      ref={sliderRef1}
-                      style={{ marginLeft: "20px" }}
-                    >
-                      {top?.map((item, index) => {
-                        return (
-                          <div style={{ marginLeft: "20px" }} key={index}>
-                            <TopCard item={item} />
-                          </div>
-                        );
-                      })}
-                    </Slider>
-                  )}
-
-                  {type === "mobile" && top?.length > 5 && (
-                    <>
-                      <div
-                        className="slider-arrow-prev-mobile"
-                        style={{ marginLeft: "1px" }}
-                        onClick={() => sliderRef1.current?.slickPrev?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                          alt="Previous slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div
-                        className="slider-arrow-next-mobile"
-                        onClick={() => sliderRef1.current?.slickNext?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                          alt="Next slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div>
-                    {type === "mobile" && (
-                      <Slider {...settings} ref={sliderRef1}>
-                        {top?.map((item, index) => {
-                          return (
-                            <div key={index}>
-                              <TopCardMobile item={item} />
-                            </div>
-                          );
-                        })}
-                      </Slider>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* BEST DEALS ON FEATURED PRODUCTS */}
-            <div className="row" style={{ marginTop: "76px" }}>
-              <div className="col">
-                <div className="text-center">
-                  <p className="tw-text-[#182c5a] heading-first">
-                    BEST DEALS ON FEATURED PRODUCTS
-                  </p>
-                </div>
-                <div
-                  style={{
-                    height: "3px",
-                    width: "378px",
-                  }}
-                  className=" d-flex justify-content-right align-item-right"
-                ></div>
-                {type === "desktop" && deals?.length > 5 && (
-                  <>
-                    <div
-                      className="slider-arrow-prev"
-                      style={{}}
-                      onClick={() => sliderRef4.current?.slickPrev?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                        alt="Previous slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                    <div
-                      className="slider-arrow-next"
-                      onClick={() => sliderRef4.current?.slickNext?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                        alt="Next slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                  </>
-                )}
-
-                <div
-                  className="mt-5 mb-2 ml-2 d-flex flex-row justify-content-center"
-                  style={{ columnGap: "35px" }}
-                >
-                  {deals?.length <= 5 &&
-                    type === "desktop" &&
-                    deals?.map((item, index) => {
-                      return (
-                        <div key={index}>
-                          <DealsCard item={item} />
-                        </div>
-                      );
-                    })}
-                </div>
-
-                {type === "desktop" && deals?.length > 5 && (
-                  <Slider
-                    {...settings}
-                    ref={sliderRef4}
-                    style={{ marginLeft: "20px" }}
-                  >
-                    {deals?.map((item, index) => {
-                      return (
-                        <div style={{ marginLeft: "20px" }} key={index}>
-                          <DealsCard item={item} />
-                        </div>
-                      );
-                    })}
-                  </Slider>
-                )}
-
-                {type === "mobile" && deals?.length > 5 && (
-                  <>
-                    <div
-                      className="slider-arrow-prev-mobile"
-                      style={{}}
-                      onClick={() => sliderRef4.current?.slickPrev?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                        alt="Previous slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                    <div
-                      className="slider-arrow-next-mobile"
-                      onClick={() => sliderRef4.current?.slickNext?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                        alt="Next slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                  </>
-                )}
-
-                <div>
-                  {type === "mobile" && (
-                    <Slider {...settings} ref={sliderRef4}>
-                      {deals?.map((item, index) => {
-                        return (
-                          <div key={index}>
-                            <DealsCardMobile item={item} />
-                          </div>
-                        );
-                      })}
-                    </Slider>
-                  )}
-                </div>
-              </div>
-            </div>
-            {/* E-COMMERCE PACKAGING */}
-            <div className="container">
-              <CustomPackaging />
-            </div>
-            {/* E-com video */}
-            <section className=" mb-3">
-              <div className="container mt-5">
-                <div className="row">
-                  <div className="col-md-12">
-                    <h1
-                      className="text-center"
-                      style={{
-                        fontSize: "40px",
-                        color: "#182c5a",
-                        fontWeight: "700",
-                      }}
-                    >
-                      E-COMMERCE VIDEO
-                    </h1>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-1"></div>
-                  <div className="col-md-10 text-center mt-5">
-                    <iframe src="https://www.youtube.com/embed/7hIsUYzLc7U"></iframe>
-                  </div>
-                </div>
-              </div>
-            </section>
-            {/* TESTIMONIALS */}
-            <div className="row" style={{ marginTop: "72px" }}>
-              <div className="col">
-                <p className="tw-text-[#182c5a] tw-text-center heading-second">TESTIMONIALS</p>
-                <div
-                  style={{
-                    width: "234px",
-                  }}
-                ></div>
-              </div>
-            </div>
-            <Feedback />
           </div>
+          <div className="hero-note">
+            <span>Authorised packaging for</span>
+            <strong>amazon</strong>
+            <strong>Flipkart</strong>
+            <strong>AJIO</strong>
+          </div>
+        </section>
+
+        {/* Categories */}
+        <section className="category-section shell" id="categories">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Find your everyday essentials</p>
+              <h2>Shop top categories</h2>
+            </div>
+            <a href="#products">
+              View everything <ArrowRight size={18} strokeWidth={1.8} />
+            </a>
+          </div>
+          {categoryCards.length > 0 ? (
+            <CategoryCarousel cards={categoryCards} />
+          ) : (
+            <div className="category-grid">
+              {[0, 1, 2, 3, 4].map((index) => (
+                <div key={index} className="category-card sand skeleton-cat" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Products */}
+        <section className="products-section shell" id="products">
+          <div className="section-heading product-heading">
+            <div>
+              <p className="eyebrow">Customer favourites</p>
+              <h2>Packaging people keep coming back for</h2>
+            </div>
+            <p>
+              {selectedFilter?.label === "All products"
+                ? "Useful sizes, honest prices and no catalogue confusion."
+                : `Showing ${visibleProducts.length} ${selectedFilter?.label.toLowerCase()} products`}
+            </p>
+          </div>
+
+          <div className="filter-row" role="group" aria-label="Filter products">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter.key}
+                type="button"
+                className={activeFilter === filter.key ? "active" : ""}
+                onClick={() => setActiveFilter(filter.key)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="grid-skeleton" aria-label="Loading products">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="product-grid">
+              {visibleProducts.map((product) => (
+                <ProductCard
+                  key={product?._id || product?.slug}
+                  product={product}
+                  brandNameById={brandNameById}
+                  justAdded={addedIds.has(String(product?._id || ""))}
+                  onAdd={handleAddToCart}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Redesigned Process Journey Section */}
+        <ProcessJourneySection />
+
+        {/* Custom packaging */}
+        <section className="custom-section shell" id="custom">
+          <div className="custom-visual">
+            <img src="/custom-box.webp" alt="Custom kraft mailer box and labels" loading="lazy" />
+            <div className="custom-float">
+              <strong>Made for your brand</strong>
+              <span>Size · Print · Material</span>
+            </div>
+          </div>
+          <div className="custom-copy">
+            <p className="eyebrow">Make it unmistakably yours</p>
+            <h2>Need packaging with your name on it?</h2>
+            <p>
+              From the right box size to print, finish and material, our
+              packaging team can help turn your idea into a production-ready
+              pack.
+            </p>
+            <ul>
+              <li>
+                <Check size={17} strokeWidth={1.8} /> Expert structural guidance
+              </li>
+              <li>
+                <Check size={17} strokeWidth={1.8} /> Multi-format packaging support
+              </li>
+              <li>
+                <Check size={17} strokeWidth={1.8} /> Clear quotation and sampling
+              </li>
+            </ul>
+            <Link className="button primary" href="/custom-packaging">
+              Start a custom project <ArrowRight size={19} strokeWidth={1.8} />
+            </Link>
+          </div>
+        </section>
+
+        {/* Testimonial */}
+        <section className="testimonial-section shell">
+          <div className="testimonial-copy">
+            <p className="eyebrow">Loved by growing brands</p>
+            <blockquote>“{TESTIMONIAL.quote}”</blockquote>
+            <div className="quote-by">
+              <strong>{TESTIMONIAL.name}</strong>
+              <span>{TESTIMONIAL.role}</span>
+            </div>
+          </div>
+          <div className="testimonial-proof">
+            <span>Why shoppers choose Prem</span>
+            {TESTIMONIAL_PROOF.map((proof) => (
+              <div key={proof.title}>
+                <strong>{proof.title}</strong>
+                <p>{proof.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <div className={`hps-toast ${toast ? "visible" : ""}`}>
+        <Check size={16} strokeWidth={2.2} /> {toast}
+      </div>
+    </>
+  );
+}
+
+function ProductCard({
+  product,
+  brandNameById,
+  justAdded,
+  onAdd,
+}: {
+  product: any;
+  brandNameById: Record<string, string>;
+  justAdded: boolean;
+  onAdd: (product: any) => void;
+}) {
+  const tier = getPrimaryPriceTier(product);
+  const badge = getProductCardBadge(product);
+  const discountLabel = getProductCardDiscountLabel(tier);
+  const showMrp = tier.mrp > tier.sellingPrice;
+  const name = getProductDisplayName(product, { brandNameById });
+  const href = product?.slug ? `/${product.slug}` : "/listingpage";
+
+  return (
+    <article className="product-card">
+      <Link href={href} className="product-image">
+        <img src={getProductImageSrc(product)} alt={name} loading="lazy" />
+        {badge === "SALE" && <span className="badge">Sale</span>}
+        {badge === "POPULAR" && <span className="badge">Bestseller</span>}
+      </Link>
+      <WishlistButton product={product} size="md" variant="overlay" placement="top-right" />
+      <div className="product-info">
+        <div className="product-meta">
+          <span>{getCategoryLabel(product)}</span>
+          <span>Quality checked</span>
+        </div>
+        <Link href={href}>
+          <h3>{name}</h3>
+        </Link>
+        <p>
+          {getProductCardSummary(product) ||
+            (tier.number ? `Pack of ${tier.number}` : "Everyday packaging")}
+          <span> · ₹{(Number(tier.sellingPrice) / (Number(tier.number) || 1)).toFixed(0)} / unit</span>
+        </p>
+        <div className="product-buy">
+          <div className="price">
+            <strong>{formatProductCardPrice(tier.sellingPrice)}</strong>
+            {showMrp && <s>{formatProductCardPrice(tier.mrp)}</s>}
+            {discountLabel && <small>{discountLabel}</small>}
+          </div>
+          <button
+            type="button"
+            className={justAdded ? "added" : ""}
+            onClick={() => onAdd(product)}
+            aria-label={`Add ${name} to cart`}
+          >
+            {justAdded ? (
+              <>
+                <Check size={17} strokeWidth={2} /> Added
+              </>
+            ) : (
+              <>
+                <Plus size={17} strokeWidth={2} /> Add
+              </>
+            )}
+          </button>
         </div>
       </div>
-      <style jsx>{`
-.page-mainbody {
-  margin-top: 35px !important;
-  margin-left: 0px !important;
-  margin-bottom: 0px !important;
-  margin-right: 0px !important;
-  padding-left: 110px !important;
-  padding-right: 110px !important;
-}
-@media (max-width: 900px) {
-  .page-mainbody {
-    padding-left: 30px !important;
-    padding-right: 30px !important;
-  }
-}
-.package-btn-action {
-  border: 0;
-  color: #fff;
-  text-align: center;
-  font-family: Montserrat;
-  font-size: 18px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-transform: uppercase;
-  display: flex;
-  width: 230px;
-  height: 48px;
-  padding-top: 25px;
-  padding-bottom: 25px;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-shrink: 0;
-  background-color: #182c5a;
-  transition: background-color 0.2s ease-out;
-}
-.package-btn-action:hover {
-  background-color: #e92227;
-}
-.slider-arrow-prev {
-  position: absolute;
-  margin-top: 170px !important;
-  z-index: 2;
-  margin-left: -60px;
-  font-size: 10px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-prev-mobile {
-  position: absolute;
-  margin-top: 120px !important;
-  z-index: 2;
-  margin-left: -10px;
-  font-size: 10px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-next {
-  position: absolute;
-  margin-top: 170px;
-  z-index: 2;
-  right: 30px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-next-mobile {
-  position: absolute;
-  margin-top: 120px;
-  z-index: 2;
-  right: 30px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.arrow-image {
-  width: 20px;
-  height: 30px;
-}
-.heading-first {
-  font-size: 40px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 1.2;
-  font-family: "Montserrat", sans-serif;
-  color: #182c5a;
-}
-.heading-second {
-  font-size: 40px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 1.2;
-  font-family: "Montserrat", sans-serif;
-  color: #182c5a;
-}
-.landing-title-main {
-  font-size: 40px;
-  font-weight: 700;
-  color: #182c5a;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-@media (max-width: 767px) {
-  .heading-first, .heading-second, .landing-title-main {
-    font-size: 22px !important;
-    line-height: 1.3 !important;
-    max-width: 100% !important;
-    text-align: center !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-}
-
-.category-card-wrapper {
-  position: relative;
-  height: 240px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  background-color: #f8fafc;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-.category-card-wrapper:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(24, 44, 90, 0.12);
-  border-color: rgba(24, 44, 90, 0.15);
-}
-.category-image-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-:global(.category-card-img) {
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-.category-card-wrapper:hover :global(.category-card-img) {
-  transform: scale(1.06) !important;
-}
-.category-card-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.3) 50%, rgba(15, 23, 42, 0) 100%);
-  z-index: 2;
-  transition: opacity 0.4s ease;
-}
-.category-card-wrapper:hover .category-card-overlay {
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.1) 100%);
-}
-.category-card-info {
-  position: relative;
-  z-index: 3;
-  padding: 24px;
-  color: #ffffff;
-  width: 100%;
-}
-.category-card-tag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #f1f5f9;
-  background-color: #e92227; /* Brand Accent Red */
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-.category-card-name {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 12px 0;
-  font-family: 'Montserrat', sans-serif;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-}
-.category-card-action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #f8fafc;
-  opacity: 0.85;
-  transition: all 0.3s ease;
-}
-.category-card-action :global(svg) {
-  transition: transform 0.3s ease;
-}
-.category-card-wrapper:hover .category-card-action {
-  opacity: 1;
-  color: #f1f5f9;
-}
-.category-card-wrapper:hover .category-card-action :global(svg) {
-  transform: translateX(4px);
-}
-      `}</style>
-    </>
+    </article>
   );
 }

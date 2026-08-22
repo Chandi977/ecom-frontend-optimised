@@ -15,15 +15,19 @@ import {
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
 import { useBrands } from "../../context/BrandContext";
+import {
+  MARKETPLACE_BRAND_OPTIONS,
+  fetchBrandSlugsWithProducts,
+} from "../../utils/brands";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 
 // Curated label/order; the brand id is resolved dynamically from /brand/all.
-const BRAND_OPTIONS = [
-  { slug: "amazon", label: "Amazon" },
-  { slug: "flipkart", label: "Flipkart" },
-  { slug: "myntra", label: "Myntra" },
-  { slug: "ajio", label: "Ajio" },
-];
+const BRAND_OPTIONS = MARKETPLACE_BRAND_OPTIONS;
+
+const CORRUGATED_BOXES_DESCRIPTION =
+  "Buy corrugated boxes online for safe, durable, and reliable packaging. Choose from a wide range of sizes and customizations to suit your shipping, storage, ecommerce and business packaging needs. We provide customized options to fit all types of shipping requirements at affordable prices without compromising on quality.";
 
 export async function getServerSideProps(context) {
   const query = context.query;
@@ -69,7 +73,12 @@ export async function getServerSideProps(context) {
     limit: DEFAULT_INITIAL_LIMIT,
     includeMeta: true,
   };
-  const prod = await postService("product/filter", filterPayload);
+  const [prod, availableBrandSlugs] = await Promise.all([
+    postService("product/filter", filterPayload),
+    fetchBrandSlugsWithProducts({
+      filter: { category: corrugatedCategoryId ? [corrugatedCategoryId] : [] },
+    }),
+  ]);
 
   return {
     props: {
@@ -81,11 +90,20 @@ export async function getServerSideProps(context) {
       subCategoryId,
       q: query?.q ?? null,
       corrugatedCategoryId,
+      availableBrandSlugs,
     },
   };
 }
 
-const renderFilterCard = ({ title, children, minHeight }) => (
+const renderFilterCard = ({
+  title,
+  children,
+  minHeight,
+}: {
+  title: React.ReactNode;
+  children: React.ReactNode;
+  minHeight?: string;
+}) => (
   <div
     className="w-100"
     style={{
@@ -113,6 +131,7 @@ const BoppTape = ({
   q,
   meta,
   corrugatedCategoryId,
+  availableBrandSlugs,
 }) => {
   const router = useRouter();
   const { resolveId } = useBrands();
@@ -130,6 +149,17 @@ const BoppTape = ({
 
   const [seelctedCategories, setSelectedCategories] = useState<any[]>([]);
   const [seelctedBrand, setSelectedBrand] = useState<any[]>([]);
+
+  // Only brands that actually stock something in this category. A null list
+  // means the counts could not be read, in which case show them all rather
+  // than hide a working filter.
+  const visibleBrandOptions = useMemo(() => {
+    if (!Array.isArray(availableBrandSlugs)) return BRAND_OPTIONS;
+    return BRAND_OPTIONS.filter((option) =>
+      availableBrandSlugs.includes(option.slug),
+    );
+  }, [availableBrandSlugs]);
+
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
   const CustomSliderStyles = {
     "& .MuiSlider-thumb": {
@@ -289,6 +319,30 @@ const BoppTape = ({
     setSelectedBrand(nextBrands);
     const payload = {
       ...buildFilterPayload({ brands: nextBrands }),
+      endpoint: "/product/filter",
+    };
+    await applyFilter(payload);
+  };
+
+  const hasActiveFilters =
+    seelctedBrand.length > 0 ||
+    seelctedCategories.length > 0 ||
+    flags.size;
+
+  const handleResetFilters = async () => {
+    setSelectedBrand([]);
+    setSelectedCategories([]);
+    setLength([0, 300]);
+    setBreadth([0, 300]);
+    setHeight([0, 300]);
+    setUnit("inches");
+    setFlags({ size: false, category: false, sort: false });
+    const payload = {
+      ...buildFilterPayload({
+        categories: [],
+        brands: [],
+        includeSize: false,
+      }),
       endpoint: "/product/filter",
     };
     await applyFilter(payload);
@@ -515,12 +569,13 @@ const BoppTape = ({
     });
 
   const renderBrandFilter = () =>
-    renderFilterCard({
+    visibleBrandOptions.length === 0
+      ? null
+      : renderFilterCard({
       title: "Filter by Brands",
-      minHeight: "230px",
       children: (
-        <div className="mt-4 d-flex flex-column align-items-start gap-3">
-          {BRAND_OPTIONS.map((brandOption) => {
+        <div className="mt-4 mb-3 d-flex flex-column align-items-start gap-3">
+          {visibleBrandOptions.map((brandOption) => {
             const brandId = resolveId(brandOption.slug);
             return (
             <div className="d-flex" key={brandOption.slug}>
@@ -555,12 +610,25 @@ const BoppTape = ({
           })}
         </div>
       ),
-    });
+        });
 
   const renderFilterContent = ({ closeMobilePanel }: { closeMobilePanel?: any } = {}) => (
     <div className="d-flex flex-column gap-3 w-100">
       {renderSizeFilter({ closeMobilePanel })}
       {renderBrandFilter()}
+      {hasActiveFilters && (
+        <button
+          className="packagebtn"
+          onClick={async () => {
+            await handleResetFilters();
+            if (typeof closeMobilePanel === "function") {
+              closeMobilePanel();
+            }
+          }}
+        >
+          Reset Filters
+        </button>
+      )}
     </div>
   );
 
@@ -573,7 +641,19 @@ const BoppTape = ({
           name="description"
           content="You Can Buy corrugated boxes online at Prem Industries India Limited. We are one of the best corrugated boxes manufacturers & supplier in India."
         />
+        <link rel="canonical" href={canonicalUrl("/corrugated-boxes")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/corrugated-boxes",
+          name: "Buy Corrugated Boxes Online",
+          description: CORRUGATED_BOXES_DESCRIPTION,
+          products: product,
+          breadcrumb: [{ name: "Corrugated Boxes", path: "/corrugated-boxes" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <CorrugatedBanner />
@@ -621,7 +701,7 @@ const BoppTape = ({
                   products.map((item, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={index}
                     >
                       <DesktopListingCard item={item} />
@@ -631,7 +711,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />
@@ -764,11 +844,11 @@ const BoppTape = ({
         background-color: #182c5a;
       }
       .productsSection {
-        margin-top: 24px;
+        margin-top: 12px;
       }
       @media (max-width: 900px) {
         .productsSection {
-          margin-top: 16px;
+          margin-top: 8px;
         }
       }
       .desktopFilterColumn {

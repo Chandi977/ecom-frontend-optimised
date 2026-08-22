@@ -19,7 +19,13 @@ import { Dropdown } from "react-bootstrap";
 import CustomDropdown from "./CustomDropdown";
 import { getCartCount } from "../../utils/cart";
 import {
+  CART_FLY_ARRIVED_EVENT,
+  hasCartFlightInProgress,
+  registerCartTarget,
+} from "../../utils/flyToCart";
+import {
   faChevronDown,
+  faChevronRight,
   faNavicon,
   faPhone,
   faHeart,
@@ -32,6 +38,7 @@ import Link from "next/link";
 import { getService, postService } from "../../services/service";
 import { useBrands } from "../../context/BrandContext";
 import { trackSearch } from "../../lib/analytics";
+import { cdn } from "../../lib/cdn";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { clearWishlistCache } from "../../utils/favourites";
@@ -67,8 +74,6 @@ const Marquee = dynamic(() => import("react-fast-marquee"), {
 const Navbar = () => {
   const router = useRouter();
   const { brandNameById } = useBrands();
-  const breakpoint = 700;
-  const DEFAULT_NAVBAR_HEIGHT = 167;
   // Helpers to safely read auth state from localStorage
   const readStoredToken = () => {
     if (typeof window === "undefined") return null;
@@ -84,9 +89,20 @@ const Navbar = () => {
       const firstName = String(parsed?.first_name || parsed?.firstName || "").trim();
       const lastName = String(parsed?.last_name || parsed?.lastName || "").trim();
       const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+      const emailName = String(parsed?.email_address || parsed?.email || "")
+        .split("@")[0]
+        .trim();
       return (
         fullName ||
-        String(parsed?.name || parsed?.full_name || parsed?.fullName || "").trim() ||
+        String(
+          parsed?.name ||
+            parsed?.full_name ||
+            parsed?.fullName ||
+            parsed?.username ||
+            parsed?.user_name ||
+            "",
+        ).trim() ||
+        emailName ||
         null
       );
     } catch {
@@ -98,15 +114,158 @@ const Navbar = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [cart, setCart] = useState<any>(null);
+  const [isCartLanding, setIsCartLanding] = useState(false);
+  const cartLandingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sidebartranslatevalue, Setsidebartranslatevalue] = useState(100);
   const [isPackproDropdownOpen, setPackproDropdownOpen] = useState(false);
   const [isRollabelDropdownOpen, setRollabelDropdownOpen] = useState(false);
   const [isNewDropdownOpen, setIsNewDropdownOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const categoriesMenuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
+
+  const openCategoriesMenu = () => {
+    if (categoriesMenuTimerRef.current) {
+      clearTimeout(categoriesMenuTimerRef.current);
+    }
+    setIsCategoriesOpen(true);
+  };
+
+  const closeCategoriesMenu = () => {
+    if (categoriesMenuTimerRef.current) {
+      clearTimeout(categoriesMenuTimerRef.current);
+    }
+    categoriesMenuTimerRef.current = setTimeout(() => setIsCategoriesOpen(false), 150);
+  };
+
+  const toggleCategoriesMenu = () => {
+    setIsCategoriesOpen((prev) => !prev);
+  };
+
+  const [activeCategoryHover, setActiveCategoryHover] = useState<string | null>(null);
+
+  const CATEGORY_DROPDOWN_ITEMS = [
+    {
+      id: "corrugated-boxes",
+      label: "CORRUGATED BOXES",
+      path: "/corrugated-boxes",
+      subItems: [
+        { name: "All Corrugated Shipping Boxes", path: "/corrugated-boxes" },
+        { name: "3-Ply & 5-Ply Shipping Boxes", path: "/corrugated-boxes" },
+        { name: "E-Commerce Shipping Boxes", path: "/corrugated-boxes" },
+        { name: "Custom Printed Boxes", path: "/custom-packaging" },
+      ],
+    },
+    {
+      id: "paper-bags",
+      label: "PAPER BAGS",
+      path: "/paper-bags",
+      subItems: [
+        { name: "All Paper Bags", path: "/paper-bags" },
+        { name: "Twist Handle Paper Bags", path: "/paper-bags" },
+        { name: "Brown & White Kraft Bags", path: "/paper-bags" },
+      ],
+    },
+    {
+      id: "poly-bags",
+      label: "POLY BAGS & MAILERS",
+      path: "/poly-bags",
+      subItems: [
+        { name: "All Poly Courier Mailers", path: "/poly-bags" },
+        { name: "Tamper Evident Mailers", path: "/poly-bags" },
+        { name: "POD Jacket Courier Bags", path: "/poly-bags" },
+      ],
+    },
+    {
+      id: "packpro",
+      label: "PACKPRO™",
+      path: "/packpro-tapes",
+      subItems: [
+        { name: "CARRY BAGS", path: "/carry-bags" },
+        { name: "FOOD WRAPPING PAPERS", path: "/packpro-food-wrapping-papers" },
+        { name: "TAPES", path: "/packpro-tapes" },
+      ],
+    },
+    {
+      id: "rollabel",
+      label: "ROLLABEL™",
+      path: "/rollabel",
+      subItems: [
+        { name: "DIRECT THERMAL LABELS", path: "/direct-thermal-labels" },
+        { name: "CHROMO LABELS", path: "/chromo-labels" },
+      ],
+    },
+    {
+      id: "tapes-labels",
+      label: "PACKAGING TAPES & LABELS",
+      path: "/packpro-tapes",
+      subItems: [
+        { name: "BOPP Packaging Tapes", path: "/bopp-tapes" },
+        { name: "Water-Activated Paper Tapes", path: "/paper-tapes" },
+        { name: "Security & Void Tapes", path: "/void-tapes" },
+        { name: "Carry Handle Tapes", path: "/packpro-carry-handle-tapes" },
+      ],
+    },
+    {
+      id: "marketplace",
+      label: "MARKETPLACE PACKAGING",
+      path: "/amazon",
+      subItems: [
+        { name: "Amazon Packaging", path: "/amazon" },
+        { name: "Flipkart Packaging", path: "/flipkart" },
+        { name: "Myntra Packaging", path: "/myntra" },
+        { name: "Ajio Packaging", path: "/ajio" },
+      ],
+    },
+    {
+      id: "custom-packaging",
+      label: "CUSTOM PACKAGING",
+      path: "/custom-packaging",
+      subItems: [],
+    },
+  ];
+
+  const getCategoryUrl = (cat: any) => {
+    if (!cat) return "/corrugated-boxes";
+
+    const rawName = String(typeof cat === "string" ? cat : cat?.name || cat?.slug || cat?.title || "").trim();
+    const name = rawName.toLowerCase();
+    const rawSlug = String(typeof cat === "object" && cat?.slug ? cat.slug : "").trim();
+
+    if (name.includes("corrugated") || rawSlug.includes("corrugated")) return "/corrugated-boxes";
+    if (name.includes("paper bag") || rawSlug.includes("paper-bag") || rawSlug.includes("paperbag")) return "/paper-bags";
+    if (name.includes("poly bag") || name.includes("poly mailer") || rawSlug.includes("poly-bag") || rawSlug.includes("polybag")) return "/poly-bags";
+    if (name.includes("carry bag") || rawSlug.includes("carry-bag") || rawSlug.includes("carrybag")) return "/carry-bags";
+    if (name.includes("rollabel") || rawSlug.includes("rollabel")) return "/rollabel";
+    if (name.includes("food") || name.includes("parchment") || name.includes("wrapping") || rawSlug.includes("food")) return "/packpro-food-wrapping-papers";
+    if (name.includes("pack pro") || name.includes("packpro") || name.includes("tape")) return "/packpro-tapes";
+    if (name.includes("bopp") || rawSlug.includes("bopp")) return "/bopp-tapes";
+    if (name.includes("paper tape") || rawSlug.includes("paper-tape")) return "/paper-tapes";
+    if (name.includes("void") || rawSlug.includes("void")) return "/void-tapes";
+    if (name.includes("chromo") || rawSlug.includes("chromo")) return "/chromo-labels";
+    if (name.includes("thermal") || rawSlug.includes("thermal")) return "/direct-thermal-labels";
+    if (name.includes("amazon")) return "/amazon";
+    if (name.includes("flipkart")) return "/flipkart";
+    if (name.includes("myntra")) return "/myntra";
+    if (name.includes("ajio")) return "/ajio";
+    if (name.includes("custom")) return "/custom-packaging";
+    if (name.includes("bestseller") || name.includes("deal")) return "/BestDeals";
+
+    if (rawSlug && !rawSlug.includes(" ") && !rawSlug.includes("%") && rawSlug !== "null" && rawSlug !== "undefined") {
+      return `/${rawSlug}`;
+    }
+
+    if (typeof cat === "object" && cat?._id) {
+      return `/listingpage?category=${cat._id}`;
+    }
+
+    return "/corrugated-boxes";
+  };
+
   const [brands, setBrands] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [subCat, setSubCat] = useState([]);
-  const [width, setWidth] = useState(0);
   const [selctedBrand, setSelectedBrand] = useState("");
   const [selectedSubCat, setSelectedSubCat] = useState("");
   const [query, setQuery] = useState("");
@@ -118,11 +277,23 @@ const Navbar = () => {
   const [showDropdownMobile, setShowDropdownMobile] = useState(false);
   const [searchQueryMobile, setSearchQueryMobile] = useState("");
   const [searchProductsMobile, setSearchProductsMobile] = useState<any[]>([]);
+  const breakpoint = 700;
+  const DEFAULT_NAVBAR_HEIGHT = 120;
+  const [width, setWidth] = useState(1200);
   const [navbarHeight, setNavbarHeight] = useState(DEFAULT_NAVBAR_HEIGHT);
-  const userMenuTimerRef = useRef<any>(null);
   const navbarRef = useRef<any>(null);
+  const userMenuTimerRef = useRef<any>(null);
   const DEBOUNCE_DELAY = 500;
   const MIN_SEARCH_LENGTH = 2;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setWidth(window.innerWidth);
+      const handleResize = () => setWidth(window.innerWidth);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
   // Avoid re-tracking the same (debounced) query repeatedly for demand signals.
   const lastTrackedSearchRef = useRef("");
   const phoneNumber = "+918447247227";
@@ -163,32 +334,60 @@ const Navbar = () => {
     setUserName(readStoredUserName());
     setIsMounted(true);
     handleCart();
-    // console.log(PRODUCTION);
   }, []);
 
   useEffect(() => {
     const handleCartUpdate = () => {
+      if (hasCartFlightInProgress()) return;
       handleCart();
+    };
+
+    const handleCartFlyArrived = () => {
+      handleCart();
+      setIsCartLanding(true);
+      if (cartLandingTimerRef.current) {
+        clearTimeout(cartLandingTimerRef.current);
+      }
+      cartLandingTimerRef.current = setTimeout(
+        () => setIsCartLanding(false),
+        520,
+      );
     };
 
     if (typeof window !== "undefined") {
       window.addEventListener("cartUpdated", handleCartUpdate);
+      window.addEventListener(CART_FLY_ARRIVED_EVENT, handleCartFlyArrived);
     }
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("cartUpdated", handleCartUpdate);
+        window.removeEventListener(CART_FLY_ARRIVED_EVENT, handleCartFlyArrived);
       }
       if (userMenuTimerRef.current) {
         clearTimeout(userMenuTimerRef.current);
       }
+      if (cartLandingTimerRef.current) {
+        clearTimeout(cartLandingTimerRef.current);
+      }
     };
   }, []);
 
-  const Accordion = styled((props) => (
+  // Both headers register their icon; flyToCart aims at whichever is on screen.
+  const desktopCartRef = useRef<HTMLSpanElement | null>(null);
+  const mobileCartRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const unregister = [
+      registerCartTarget(desktopCartRef.current),
+      registerCartTarget(mobileCartRef.current),
+    ];
+    return () => unregister.forEach((remove) => remove());
+  });
+
+  const Accordion = styled((props: any) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />
   ))(({ theme }) => ({
     paddingLeft: "30px",
-
     border: `0px`,
     "&:not(:last-child)": {
       borderBottom: 0,
@@ -210,12 +409,13 @@ const Navbar = () => {
     setPackproDropdownOpen((current) => !current);
     setRollabelDropdownOpen(false);
   };
+
   const toggleRollabelDropdown = () => {
     setRollabelDropdownOpen((current) => !current);
     setPackproDropdownOpen(false);
   };
 
-  const handleNavDropdownOutside = (event) => {
+  const handleNavDropdownOutside = (event: any) => {
     const clickedInsidePackpro =
       packproDropdownRef.current &&
       packproDropdownRef.current.contains(event.target);
@@ -240,127 +440,12 @@ const Navbar = () => {
     }
   };
 
-  const handleCloseDropdown = () => {
-    setPackproDropdownOpen(false);
-    setRollabelDropdownOpen(false);
-  };
-
-  const handleClickOutside2 = (event) => {
-    if (dropdownRef2.current && !dropdownRef2.current.contains(event.target)) {
-      setIsOpen(false);
-      // setDropdownTapeOpen(false);
-      // setIsOpen(false);
-    }
-  };
-
-  const toggleNewDropdown = () => {
-    setIsNewDropdownOpen(!isNewDropdownOpen);
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleNavDropdownOutside);
-    // document.addEventListener("mousedown", handleClickOutside2);
-
-    return () => {
-      document.removeEventListener("mousedown", handleNavDropdownOutside);
-      // document.removeEventListener("mousedown", handleClickOutside2);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setWidth(window.innerWidth);
-      const handleResizeWindow = () => setWidth(window.innerWidth);
-      // subscribe to window resize event "onComponentDidMount"
-
-      window.addEventListener("resize", handleResizeWindow);
-      return () => {
-        // unsubscribe "onComponentDestroy"
-        window.removeEventListener("resize", handleResizeWindow);
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    const updateNavbarHeight = () => {
-      const nextHeight = Math.ceil(
-        navbarRef.current?.getBoundingClientRect().height || 0,
-      );
-
-      if (nextHeight > 0) {
-        setNavbarHeight((currentHeight) =>
-          currentHeight === nextHeight ? currentHeight : nextHeight,
-        );
-      }
-    };
-
-    updateNavbarHeight();
-
-    if (!navbarRef.current) {
-      return undefined;
-    }
-
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(updateNavbarHeight)
-        : null;
-
-    if (resizeObserver) {
-      resizeObserver.observe(navbarRef.current);
-    }
-
-    window.addEventListener("resize", updateNavbarHeight);
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", updateNavbarHeight);
-    };
-  }, [width]);
-
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      border: "none", // Remove the border
-      fontFamily: "Montserrat", // Set the custom font family
-      fontSize: "16px",
-      textAlign: "right",
-      color: "#333333",
-      fontWeight: 400,
-      textTransform: "capitalize",
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      color: "#333333",
-      textAlign: "right",
-      width: "auto",
-      minWidth: "40px", // Set the placeholder color to black
-    }),
-    menu: (provided) => ({
-      ...provided,
-      width: "120px", // Set the desired fixed width for the menu
-    }),
-    dropdownIndicator: (provided) => ({
-      ...provided,
-      backgroundImage:
-        'url("https://res.cloudinary.com/dwxqg9so3/image/upload/v1693866197/Stroke-1_ymridf.png")', // Set your custom arrow image
-      backgroundSize: "10px", // Adjust the size of your custom arrow
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "center",
-      width: "0px", // Set the width of the dropdown indicator
-    }),
-    // Add any other custom styles here for other components like menu, option, etc.
-  };
-
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
 
   const openUserMenu = () => {
-    if (!token) return; // do not open dropdown when logged out
+    if (!token) return;
     if (userMenuTimerRef.current) {
       clearTimeout(userMenuTimerRef.current);
     }
@@ -374,15 +459,44 @@ const Navbar = () => {
     userMenuTimerRef.current = setTimeout(() => setIsOpen(false), 120);
   };
 
+  const handleCategoriesOutsideClick = (event: MouseEvent) => {
+    if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
+      setIsCategoriesOpen(false);
+    }
+  };
+
   useEffect(() => {
-    // Refresh auth state on navigation (helps after login redirects)
+    document.addEventListener("mousedown", handleNavDropdownOutside);
+    document.addEventListener("mousedown", handleCategoriesOutsideClick);
+
+    const fetchCategories = async () => {
+      try {
+        const res = await getService("category/all", {}, { silent: true });
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          setCategories(res.data.data);
+        }
+      } catch (e) {
+        console.warn("Failed to fetch backend categories:", e);
+      }
+    };
+    fetchCategories();
+
+    return () => {
+      document.removeEventListener("mousedown", handleNavDropdownOutside);
+      document.removeEventListener("mousedown", handleCategoriesOutsideClick);
+      if (categoriesMenuTimerRef.current) {
+        clearTimeout(categoriesMenuTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     setToken(readStoredToken());
     setUserName(readStoredUserName());
     handleCart();
   }, [router.asPath]);
 
   useEffect(() => {
-    // Keep auth state in sync across tabs and storage updates
     const handleStorage = () => {
       setToken(readStoredToken());
       setUserName(readStoredUserName());
@@ -396,7 +510,6 @@ const Navbar = () => {
     };
   }, []);
 
-  // Ensure name clears when auth token is missing
   useEffect(() => {
     if (!token) {
       setUserName(null);
@@ -430,21 +543,17 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        // Clicked outside the dropdown, close it
         setShowDropdown(false);
       }
     };
-
-    // Attach the event listener
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Clean up the event listener on component unmount
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
+
 
   useEffect(() => {
     const trimmedQuery = searchQuery.trim();
@@ -595,8 +704,7 @@ const Navbar = () => {
   const handleClickFoodWrappingPaper = () => {
     router.push("/packpro-food-wrapping-papers");
   };
-
-  const handleClickSignUp = () => {
+  const handleClickSignUp = () => {
     router.push("/sign-up");
   };
 
@@ -617,991 +725,501 @@ const Navbar = () => {
     <>
       <div
         ref={navbarRef}
-        className="row m-0"
-        style={{
-          position: "fixed",
-          backgroundColor: "white",
-          zIndex: "20",
-          width: `${width > breakpoint ? "100vw" : "100vw"}`,
-          boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 12px",
-        }}
+        className="tw-w-full tw-fixed tw-top-0 tw-left-0 tw-z-50 tw-bg-white tw-shadow-sm"
       >
-        <Marquee className="text-white" style={marqueeStyle}>
-          {marqueeContent}
-        </Marquee>
-        {width > breakpoint && (
-          <div
-            className="topbar w-100"
-            style={{
-              backgroundColor: "#EAEAEA",
-              height: "32px",
-              fontSize: "12px",
-              fontFamily: "Montserrat, sans-serif",
-              fontWeight: "500",
-              color: "#333333",
-              borderBottom: "1px solid #dcdcdc"
-            }}
-          >
-            <div className="d-flex align-items-center justify-content-end h-100 w-100" style={{ gap: "12px", paddingRight: "75px" }}>
-              {/* Account Dropdown */}
-              <div style={{ position: "relative" }}>
-                {isMounted && isLoggedIn ? (
-                  <div
-                    onMouseEnter={openUserMenu}
-                    onMouseLeave={closeUserMenu}
-                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                  >
-                    <FontAwesomeIcon
-                      icon={faUser}
-                      style={{
-                        color: "#E92227",
-                        width: "12px",
-                        height: "12px",
-                      }}
-                    />
-                    <span>{accountLabel}</span>
-                    <ArrowDropDownIcon sx={{ color: "#333333", fontSize: "14px", marginLeft: "-4px" }} />
-                    
-                    {isOpen && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          right: "0",
-                          backgroundColor: "white",
-                          border: "1px solid #ccc",
-                          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-                          zIndex: 1000,
-                          minWidth: "120px",
-                          borderRadius: "4px",
-                          marginTop: "4px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            borderBottom: "1px solid #eee",
-                            fontSize: "12px",
-                            color: "#333333",
-                            fontWeight: "500",
-                          }}
-                          onClick={handleClickProfile}
-                        >
-                          My Profile
-                        </div>
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            borderBottom: "1px solid #eee",
-                            fontSize: "12px",
-                            color: "#333333",
-                            fontWeight: "500",
-                          }}
-                          onClick={handleClickMyAccount}
-                        >
-                          My Orders
-                        </div>
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            fontSize: "12px",
-                            color: "#E92227",
-                            fontWeight: "500",
-                          }}
-                          onClick={handleLogout}
-                        >
-                          Logout
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
-                    onClick={handleClickSignIn}
-                  >
-                    <FontAwesomeIcon
-                      icon={faUser}
-                      style={{
-                        color: "#E92227",
-                        width: "12px",
-                        height: "12px",
-                      }}
-                    />
-                    <span>Sign Up / Sign In</span>
-                  </div>
-                )}
-              </div>
-
-              <span style={{ color: "#ccc" }}>|</span>
-
-              {/* Cart */}
-              <Link
-                href="/my-cart"
-                style={{
-                  textDecoration: "none",
-                  color: "#333333",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={faCartShopping}
-                  style={{
-                    color: "#E92227",
-                    width: "12px",
-                    height: "12px",
-                  }}
-                />
-                <span>Cart ({cartCount})</span>
-              </Link>
-
-              <span style={{ color: "#ccc" }}>|</span>
-
-              {/* Wishlist */}
-              <Link
-                href="/wishlist"
-                style={{
-                  textDecoration: "none",
-                  color: "#333333",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  style={{
-                    color: "#E92227",
-                    width: "12px",
-                    height: "12px",
-                  }}
-                />
-                <span>Wishlist</span>
-              </Link>
+        {/* Top Announcement Bar */}
+        <div className="tw-bg-[#0B2348] tw-text-white tw-text-sm sm:tw-text-base tw-py-1.5 tw-px-4 tw-w-full">
+          <div className="tw-max-w-[1320px] tw-mx-auto tw-flex tw-items-center tw-justify-between tw-text-center">
+            <div className="tw-flex tw-items-center tw-gap-6 tw-mx-auto lg:tw-mx-0">
+              <span className="tw-font-medium">
+                Summer edit: 10% off storewide with code{" "}
+                <strong className="tw-underline tw-font-bold tw-text-white">SUMMERSALE10</strong>
+              </span>
+              <span className="tw-hidden sm:tw-inline tw-text-white/80">Pan-India Express Dispatch</span>
             </div>
-          </div>
-        )}
-        {isSidebarOpen && (
-          <button
-            type="button"
-            aria-label="Close navigation menu"
-            className={"mobileSidebarOverlay"}
-            onClick={changetranslate}
-          />
-        )}
-        {/* sidebar mobile view */}
-        <div
-          className="bg-white"
-          style={{
-            position: "absolute",
-            height: "100vh",
-            maxHeight: "100vh",
-            overflowY: "auto",
-            width: "min(320px, 82vw)",
-            zIndex: "1000000",
-            transition: "all 0.3s ease",
-            transform: "translate(-" + sidebartranslatevalue + "%, 0)",
-          }}
-        >
-          <div
-            className="row "
-            style={{ backgroundColor: "#182C5A", height: "50px" }}
-          >
-            <div
-              className="d-flex flex-row align-items-center "
-              style={{
-                justifyContent: "space-between",
-                marginTop: "10px",
-                // padding: "0px",
-                paddingLeft: "10px",
-                paddingRight: "10px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: "5px",
-                  alignItems: "center",
-                  paddingLeft: "20px",
-                  paddingRight: "10px",
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={faUser}
-                  // onClick={toggleDropdown}
-                  style={{
-                    color: "#e92227",
-                    width: "20px",
-                    height: "20px",
-                    paddingLeft: "0px",
-                  }}
-                />
-                <p
-                  className="headertext"
-                  style={{
-                    marginLeft: "7px",
-                    marginBottom: "0px",
-                    color: "#FFF",
-                    fontFeatureSettings: "'liga' off",
-                    fontFamily: "Montserrat",
-                    fontSize: "16px",
-                    fontStyle: "normal",
-                    fontWeight: "500",
-                    lineHeight: "18px",
-                    cursor: "pointer",
-                    textTransform: "capitalize",
-                    userSelect: "none",
-                  }}
-                  onClick={toggleDropdown}
+            {width > breakpoint && (
+              <div className="tw-hidden lg:tw-flex tw-items-center tw-gap-4 tw-text-sm tw-text-white/80">
+                <Link
+                  href="https://wa.me/8447247227?text=Hi"
+                  target="_blank"
+                  className="tw-text-white hover:tw-text-white/80 tw-no-underline tw-flex tw-items-center tw-gap-1.5"
                 >
-                  <span suppressHydrationWarning>
-                    {isMounted && isLoggedIn ? accountLabel : "Sign Up / Sign In"}
-                  </span>
-                </p>
-              </div>
-
-              <div className="m-0 d-flex" style={{ width: "fit-content" }}>
-                <img
-                  src="/sidebarcross.png"
-                  alt="Close navigation menu"
-                  onClick={changetranslate}
-                  style={{ cursor: "pointer", height: "24px", width: "24px" }}
-                />
-              </div>
-              {isOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "15%",
-                  right: "15%",
-                  backgroundColor: "white",
-                  border: "1px solid #ccc",
-                  marginTop: "5px",
-                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                    zIndex: "999",
-                  }}
-                >
-                <div
-                  className="dropdown-item"
-                  style={{ padding: "8px", borderBottom: "1px solid #ccc" }}
-                  onClick={handleLogout}
-                >
-                  <span
-                    style={{
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Logout
-                  </span>
-                </div>
-
-                <div
-                  className="dropdown-item text-center"
-                  style={{ padding: "8px", borderBottom: "1px solid #ccc" }}
-                >
-                  <span
-                    style={{
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      cursor: "pointer",
-                    }}
-                    onClick={handleClickProfile}
-                  >
-                    My Profile
-                  </span>
-                </div>
-
-                <div
-                  className="dropdown-item text-center"
-                  style={{ padding: "8px", borderBottom: "1px solid #ccc" }}
-                >
-                  <span
-                    style={{
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      cursor: "pointer",
-                    }}
-                    onClick={handleClickMyAccount}
-                  >
-                    My Orders
-                  </span>
-                </div>
+                  <WhatsAppIcon sx={{ fontSize: 18, color: "#25D366" }} />
+                  <span>+91 84472 47227</span>
+                </Link>
               </div>
             )}
-
-            <div
-              style={{
-                marginLeft: "12px",
-                height: "18px",
-                borderLeft: "2px solid #D9D9D9",
-              }}
-            ></div>
-            <Link
-              href="/my-cart"
-              onClick={handleClickCart}
-              style={{ textDecoration: "none", color: "black" }}
-            >
-              <FontAwesomeIcon
-                icon={faCartShopping}
-                style={{
-                  color: "#e92227",
-                  width: "15px",
-                  height: "15px",
-                  paddingLeft: "10px",
-                }}
-              />
-            </Link>
-            <p
-              className="headertext"
-              style={{ marginLeft: "7px", marginBottom: "0px" }}
-            >
-              <Link
-                href="/my-cart"
-                onClick={handleClickCart}
-                style={{
-                  textDecoration: "none solid rgb(51,51,51)",
-                  color: "#333333",
-                }}
-              >
-                Cart ({cart?.count !== undefined ? cart.count : 0})
-              </Link>
-            </p>
-            <div
-              style={{
-                marginLeft: "12px",
-                height: "18px",
-                borderLeft: "2px solid #D9D9D9",
-              }}
-            ></div>
-            <Link
-              href="/wishlist"
-              style={{ textDecoration: "none", color: "black" }}
-            >
-              <FontAwesomeIcon
-                icon={faHeart}
-                style={{
-                  color: "#E92227",
-                  width: "15px",
-                  height: "15px",
-                  paddingLeft: "10px",
-                }}
-              />
-            </Link>
-            <p
-              className="headertext"
-              style={{ marginLeft: "7px", marginBottom: "0px" }}
-            >
-              <Link
-                href="/wishlist"
-                style={{
-                  textDecoration: "none solid rgb(51,51,51)",
-                  color: "#333333",
-                }}
-              >
-                Wishlist
-              </Link>
-            </p>
           </div>
         </div>
-        </div>
 
-        {/* header part 1 */}
-
+        {/* Main Desktop Navigation Bar */}
         {width > breakpoint ? (
-          <div className="row p-0 m-0" style={{ height: "100px" }}>
-            <div className="row p-0 m-0">
-              <div className="col-3 m-0 p-0 d-flex justify-content-center align-items-center">
-                <Link href="https://prempackaging.com">
-                  <div className="row ml-3 d-flex flex-column justify-content-center align-items-center">
+          <nav className="tw-bg-white tw-border-b tw-border-solid tw-border-[#E6E8EC] tw-w-full">
+            <div className="tw-max-w-[1320px] tw-mx-auto tw-px-6 tw-py-2.5">
+              <div className="tw-flex tw-items-center tw-justify-between tw-gap-8">
+                
+                {/* Logo & Category Links */}
+                <div className="tw-flex tw-items-center tw-gap-8 lg:tw-gap-10">
+                  <Link href="/" className="tw-flex tw-items-center tw-no-underline">
                     <img
-                      src="/pp_logo_1.png"
-                      alt="Premium Packaging Logo"
-                      style={{ width: "110px", padding: "0px" }}
+                      src={cdn("/pp_logo.png")}
+                      alt="Prem Packaging Logo"
+                      className="tw-h-12 tw-w-auto"
+                    />
+                  </Link>
+
+                  <div className="tw-flex tw-items-center tw-gap-7 tw-text-base tw-font-semibold tw-text-[#10213D]">
+                    {/* Categories Dropdown Menu */}
+                    <div
+                      ref={categoriesRef}
+                      className="tw-relative"
+                      onMouseEnter={openCategoriesMenu}
+                      onMouseLeave={closeCategoriesMenu}
+                    >
+                      <button
+                        type="button"
+                        onClick={toggleCategoriesMenu}
+                        className={`tw-flex tw-items-center tw-gap-1.5 tw-bg-transparent tw-border-0 tw-p-0 tw-text-base tw-font-semibold tw-transition-colors tw-cursor-pointer ${
+                          isCategoriesOpen
+                            ? "tw-text-[#D7192D]"
+                            : "tw-text-[#10213D] hover:tw-text-[#D7192D]"
+                        }`}
+                        aria-expanded={isCategoriesOpen}
+                      >
+                        <span>Categories</span>
+                        <FontAwesomeIcon
+                          icon={faChevronDown}
+                          className={`tw-w-3.5 tw-h-3.5 tw-transition-transform tw-duration-200 ${
+                            isCategoriesOpen ? "tw-rotate-180 tw-text-[#D7192D]" : "tw-text-[#10213D]"
+                          }`}
+                        />
+                      </button>
+
+                      {/* Vertical Categories Dropdown Menu */}
+                      {isCategoriesOpen && (
+                        <div
+                          className="tw-absolute tw-left-0 tw-top-full tw-mt-2 tw-w-72 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-2xl tw-shadow-2xl tw-py-2 tw-z-[99999] before:tw-content-[''] before:tw-absolute before:-tw-top-3 before:tw-left-0 before:tw-w-full before:tw-h-3"
+                          onMouseLeave={() => setActiveCategoryHover(null)}
+                        >
+                          <div className="tw-flex tw-flex-col">
+                            {CATEGORY_DROPDOWN_ITEMS.map((item) => {
+                              const hasSubItems = item.subItems && item.subItems.length > 0;
+                              const isHovered = activeCategoryHover === item.id;
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="tw-relative"
+                                  onMouseEnter={() => setActiveCategoryHover(item.id)}
+                                >
+                                  <Link
+                                    href={item.path}
+                                    onClick={() => {
+                                      setIsCategoriesOpen(false);
+                                    }}
+                                    className={`tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-3.5 tw-no-underline tw-transition-colors ${
+                                      isHovered
+                                        ? "tw-bg-[#FAF9F6] tw-text-[#D7192D]"
+                                        : "tw-text-[#10213D] hover:tw-bg-[#FAF9F6] hover:tw-text-[#D7192D]"
+                                    }`}
+                                  >
+                                    <span className="tw-text-xs tw-font-bold tw-tracking-wide tw-uppercase">
+                                      {item.label}
+                                    </span>
+                                    {hasSubItems && (
+                                      <FontAwesomeIcon
+                                        icon={faChevronRight}
+                                        className={`tw-w-2.5 tw-h-2.5 ${
+                                          isHovered ? "tw-text-[#D7192D]" : "tw-text-[#667085]"
+                                        }`}
+                                      />
+                                    )}
+                                  </Link>
+
+                                  {/* Sub-menu Flyout */}
+                                  {hasSubItems && isHovered && (
+                                    <div
+                                      className="tw-absolute tw-left-full tw-top-0 -tw-mt-2 tw-ml-1.5 tw-w-64 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-2xl tw-shadow-2xl tw-py-2.5 tw-z-[99999]"
+                                      onMouseEnter={openCategoriesMenu}
+                                    >
+                                      {item.subItems.map((sub, sIdx) => (
+                                        <Link
+                                          key={sIdx}
+                                          href={sub.path}
+                                          onClick={() => {
+                                            setIsCategoriesOpen(false);
+                                          }}
+                                          className="tw-block tw-px-4 tw-py-2.5 tw-text-xs tw-font-medium tw-text-[#475467] hover:tw-text-[#D7192D] hover:tw-bg-[#FAF9F6] tw-no-underline tw-transition-colors"
+                                        >
+                                          {sub.name}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+
+                            {/* Dynamic backend categories if available */}
+                            {categories.length > 0 && (
+                              <div className="tw-mt-2 tw-pt-2 tw-border-t tw-border-solid tw-border-[#E6E8EC] tw-px-5">
+                                <span className="tw-text-[10px] tw-font-bold tw-text-[#667085] tw-uppercase tw-tracking-wider tw-block tw-mb-1.5">
+                                  All Database Categories
+                                </span>
+                                <div className="tw-flex tw-flex-col tw-gap-1">
+                                  {categories.map((cat: any) => (
+                                    <Link
+                                      key={cat._id || cat.slug}
+                                      href={getCategoryUrl(cat)}
+                                      onClick={() => setIsCategoriesOpen(false)}
+                                      className="tw-text-xs tw-text-[#475467] hover:tw-text-[#D7192D] tw-no-underline tw-py-1 tw-font-medium tw-block"
+                                    >
+                                      {cat.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <Link
+                      href="/BestDeals"
+                      className="tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
+                    >
+                      Bestsellers
+                    </Link>
+
+                    <Link
+                      href="/custom-packaging"
+                      className="tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
+                    >
+                      Custom packaging
+                    </Link>
+
+                    <Link
+                      href="https://prempackaging.com/about-us"
+                      className="tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
+                    >
+                      About Us
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Pill Search Input */}
+                <div className="tw-flex-1 tw-max-w-[440px] lg:tw-max-w-[500px] tw-relative">
+                  <div className="tw-relative tw-w-full">
+                    <span className="tw-absolute tw-left-4 tw-top-1/2 -tw-translate-y-1/2 tw-text-[#667085]">
+                      <FontAwesomeIcon icon={faSearch} className="tw-w-4 tw-h-4" />
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search boxes, bags, tapes..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="tw-w-full tw-pl-11 tw-pr-4 tw-py-2 tw-bg-[#F7F8FA] tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-full tw-text-base tw-text-[#10213D] focus:tw-outline-none focus:tw-bg-white focus:tw-border-[#0B2348] tw-transition-all"
                     />
                   </div>
-                </Link>
 
-                <div
-                  className="col-8 pl-5 d-flex justify-content-center align-items-center"
-                  style={{ position: "relative" }}
-                >
-                  <input
-                    className="w-100 px-2 bg-transparent border-1"
-                    style={{
-                      fontSize: "14px",
-                      borderRadius: "4px",
-                      paddingBlock: "8px",
-                    }}
-                    type="text"
-                    placeholder="Search for Products"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {searchProducts.length > 0 &&
-                searchQuery.length >= 2 &&
-                showDropdown && (
-                  <div
-                    ref={dropdownRef}
-                    className="dropdown-content"
-                    style={{
-                      position: "absolute",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #ccc",
-                      maxWidth: "280px",
-                      zIndex: "1000",
-                      marginTop: "67px",
-                      marginLeft: "147px",
-                      maxHeight: "150px",
-                      overflowY: "auto",
-                    }}
-                  >
-                    {searchProducts.map((product, index) => (
-                      <div
-                        key={product?._id || product?.slug || index}
-                        style={{
-                          padding: "8px",
-                          textTransform: "capitalize",
-                          // borderRadius: "40px",
-                          borderBottom:
-                            index !== searchProducts.length - 1
-                              ? "1px solid #ccc"
-                              : "none",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          openSearchResult(product, setShowDropdown);
-                        }}
-                      >
-                        {getSearchResultLabel(product)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-              <div className="col-7 m-0 p-0 d-flex align-items-center justify-content-center">
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "30px",
-                    fontSize: "18px",
-                    fontFamily: "Montserrat",
-                    fontWeight: "400",
-                    lineHeight: "24px",
-                  }}
-                >
-                  <Link
-                    href="/corrugated-boxes"
-                    onClick={handleClick}
-                    style={{
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      lineHeight: "21px",
-                    }}
-                  >
-                    <span>CORRUGATED BOXES</span>
-                  </Link>
-
-                  <Link
-                    href="/paper-bags"
-                    onClick={handleClickPaperBag}
-                    style={{
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      lineHeight: "21px",
-                    }}
-                  >
-                    <span>PAPER BAGS</span>
-                  </Link>
-
-                  <Link
-                    href="/poly-bags"
-                    onClick={handleClickPolyBag}
-                    style={{
-                      textDecoration: "none solid rgb(51,51,51)",
-                      color: "#333333",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      lineHeight: "21px",
-                    }}
-                  >
-                    <span>POLY BAGS</span>
-                  </Link>
-
-                  <div
-                    ref={packproDropdownRef}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      position: "relative",
-                      gap: "4px",
-                    }}
-                  >
-                    <Link
-                      href="/packpro"
-                      onClick={() => {
-                        handleCloseDropdown();
-                        handleClickPackpro();
-                      }}
-                      style={{
-                        textDecoration: "none solid rgb(51,51,51)",
-                        color: "#333333",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        lineHeight: "21px",
-                      }}
-                    >
-                      <span>PACKPRO&trade;</span>
-                    </Link>
-                    <div
-                      onClick={togglePackproDropdown}
-                      style={{
-                        textDecoration: "none solid rgb(51,51,51)",
-                        color: "#333333",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        lineHeight: "21px",
-                        cursor: "pointer",
-                        position: "relative",
-                      }}
-                    >
-                      <ArrowDropDownIcon sx={{ color: "#333333" }} />
-                    </div>
-                    {isPackproDropdownOpen && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                          position: "absolute",
-                          backgroundColor: "white",
-                          top: "20px",
-                          left: "0",
-                          border: "1px solid #ccc",
-                          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                          width: "220px",
-                          zIndex: 9999,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: "1px solid #ccc",
-                            paddingBlock: "10px",
-                          }}
-                        >
-                          <Link
-                            href="/carry-bags"
-                            onClick={() => {
-                              handleCloseDropdown();
-                              handleClickCarryBag();
-                            }}
-                            style={{
-                              textDecoration: "none",
-                              width: "100%",
-                              textAlign: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "none",
-                                color: "#333",
-                                fontWeight: 500,
-                                fontSize: "14px",
-                              }}
-                            >
-                              CARRY BAGS
-                            </span>
-                          </Link>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: "1px solid #ccc",
-                            paddingBlock: "10px",
-                          }}
-                        >
-                          <Link
-                            href="/packpro-food-wrapping-papers"
-                            style={{
-                              textDecoration: "none solid rgb(51,51,51)",
-                              color: "#333333",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              lineHeight: "21px",
-                              textAlign: "center",
-                              width: "100%",
-                            }}
-                            onClick={() => {
-                              handleCloseDropdown();
-                              handleClickFoodWrappingPaper();
-                            }}
-                          >
-                            FOOD WRAPPING PAPERS
-                          </Link>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            borderBottom: "1px solid #ccc",
-                          }}
-                        >
-                          <Link
-                            href="/packpro-tapes"
-                            onClick={() => {
-                              handleCloseDropdown();
-                              handleClickPackproTapes();
-                            }}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              padding: "10px 14px",
-                              color: "#333333",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              lineHeight: "21px",
-                              textAlign: "center",
-                              textDecoration: "none",
-                            }}
-                          >
-                            TAPES
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div
-                    ref={rollabelDropdownRef}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      position: "relative",
-                      gap: "4px",
-                    }}
-                  >
-                    <Link
-                      href="/rollabel"
-                      onClick={() => {
-                        handleCloseDropdown();
-                        handleClickRollabel();
-                      }}
-                      style={{
-                        textDecoration: "none solid rgb(51,51,51)",
-                        color: "#333333",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        lineHeight: "21px",
-                      }}
-                    >
-                      <span>ROLLABEL&trade;</span>
-                    </Link>
-                    <div
-                      onClick={toggleRollabelDropdown}
-                      style={{
-                        textDecoration: "none solid rgb(51,51,51)",
-                        color: "#333333",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        lineHeight: "21px",
-                        cursor: "pointer",
-                        position: "relative",
-                      }}
-                    >
-                      <ArrowDropDownIcon sx={{ color: "#333333" }} />
-                    </div>
-                    {isRollabelDropdownOpen && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          position: "absolute",
-                          backgroundColor: "white",
-                          top: "20px",
-                          left: "0",
-                          border: "1px solid #ccc",
-                          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                          width: "220px",
-                          zIndex: 9999,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: "1px solid #ccc",
-                            paddingBlock: "10px",
-                          }}
-                        >
-                          <Link
-                            href="/direct-thermal-labels"
-                            style={{
-                              textDecoration: "none solid rgb(51,51,51)",
-                              color: "#333333",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              lineHeight: "21px",
-                            }}
-                            onClick={() => {
-                              handleCloseDropdown();
-                              handleClickDTL();
-                            }}
-                          >
-                            DIRECT THERMAL LABELS
-                          </Link>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: "1px solid #ccc",
-                            paddingBlock: "10px",
-                          }}
-                        >
-                          <Link
-                            href="/chromo-labels"
-                            style={{
-                              textDecoration: "none solid rgb(51,51,51)",
-                              color: "#333333",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              lineHeight: "21px",
-                            }}
-                            onClick={() => {
-                              handleCloseDropdown();
-                              handleClickCL();
-                            }}
-                          >
-                            CHROMO LABELS
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-
-              <div className="col-2 p-0 mx-0">
-                <div className="row h-100 m-0">
-                  <div
-                    className="col-9 p-0 d-flex justify-content-center align-items-center"
-                    style={{ backgroundColor: "#182C5A" }}
-                  >
-                    <Link
-                      href={`tel:${phoneNumber}`}
-                      style={{ color: "inherit", textDecoration: "none" }}
-                    >
-                      <span className="w-100 h-100 d-flex flex-column justify-content-center pt-3  bg-transparent">
-                        <p
-                          className="m-0 text-center"
-                          style={{
-                            color: "white",
-                            fontSize: "14px",
-                            fontFamily: "Montserrat",
-                          }}
-                        >
-                          Talk to an expert
-                        </p>
-                        <p className={"whatsappNo"}>{phoneNumber}</p>
-                      </span>
-                    </Link>
-                  </div>
-                  <div
-                    className="col-3 d-flex justify-content-left align-items-center"
-                    style={{ backgroundColor: "#E92227" }}
-                  >
-                    <Link
-                      href="https://wa.me/8447247227?text=Hi"
-                      target="_blank"
-                    >
-                      <WhatsAppIcon
-                        fontSize="large"
-                        sx={{ color: "#FFFFFF" }}
-                      />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className={"mobileHeader"}>
-            <div className={"mobileHeaderTopRow"}>
-              <div className={"mobileHeaderGroup"}>
-                <button
-                  type="button"
-                  className={"mobileIconButton"}
-                  onClick={changetranslate}
-                  aria-label="Open navigation menu"
-                >
-                  <FontAwesomeIcon
-                    icon={faNavicon}
-                    style={{ color: "#182C5A", height: "25px", width: "25px" }}
-                  />
-                </button>
-                <Link
-                  href="/"
-                  className={"mobileIconButton"}
-                  aria-label="Go to homepage"
-                >
-                  <HomeOutlinedIcon sx={{ fontSize: 30, color: "#182C5A" }} />
-                </Link>
-              </div>
-
-              <Link
-                href="https://prempackaging.com"
-                className={"mobileLogoLink"}
-                style={{ textDecoration: "none", color: "black" }}
-              >
-                <img
-                  src="/pp_logo_1.png"
-                  alt="Premium Packaging Logo"
-                  width="88"
-                />
-              </Link>
-
-              <div className={"mobileHeaderGroup"}>
-                <button
-                  type="button"
-                  className={"mobileIconButton"}
-                  onClick={handleClickProfile}
-                  aria-label={token ? "Open my account" : "Open sign in"}
-                >
-                  <img
-                    src="/outlineduser.png"
-                    alt="User account"
-                    width="31"
-                    height="31"
-                  />
-                </button>
-                <Link
-                  href="/my-cart"
-                  className={"mobileIconButton"}
-                  aria-label="Open shopping cart"
-                >
-                  <span className={"mobileCartIconWrap"}>
-                    <img
-                      src="/cartnumbered.png"
-                      alt="Shopping cart"
-                      width="31"
-                      height="31"
-                    />
-                    {cartCount > 0 && (
-                      <span className={"mobileCartBadge"}>{cartCount}</span>
-                    )}
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-            <div className={"mobileSearchSection"}>
-              <div className={"mobileSearchBox"}>
-                <img
-                  src="/Search.png"
-                  alt="Search"
-                  className={"mobileSearchIcon"}
-                />
-                <input
-                  className={"mobileSearchInput"}
-                  type="text"
-                  placeholder="Search for Products"
-                  value={searchQueryMobile}
-                  onChange={(e) => {
-                    const nextSearchQuery = e.target.value;
-                    setSearchQueryMobile(nextSearchQuery);
-                    if (nextSearchQuery.trim().length >= MIN_SEARCH_LENGTH) {
-                      handleSearchMobile(nextSearchQuery);
-                    } else {
-                      setSearchProductsMobile([]);
-                      setShowDropdownMobile(false);
-                    }
-                  }}
-                />
-
-                {searchProductsMobile.length > 0 &&
-                  searchQueryMobile.length >= 2 &&
-                  showDropdownMobile && (
+                  {/* Search Results Dropdown */}
+                  {searchProducts.length > 0 && searchQuery.length >= 2 && showDropdown && (
                     <div
                       ref={dropdownRef}
-                      className={"mobileSearchDropdown"}
+                      className="tw-absolute tw-left-0 tw-right-0 tw-top-full tw-mt-2 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-xl tw-shadow-xl tw-z-50 tw-max-h-[300px] tw-overflow-y-auto tw-p-2"
                     >
-                      {searchProductsMobile.map((product, index) => (
+                      {searchProducts.map((product, index) => (
                         <div
                           key={product?._id || product?.slug || index}
-                          className={"mobileSearchDropdownItem"}
-                          style={{
-                            borderBottom:
-                              index !== searchProductsMobile.length - 1
-                                ? "1px solid #ccc"
-                                : "none",
-                          }}
-                          onClick={() => {
-                            openSearchResult(product, setShowDropdownMobile);
-                          }}
+                          onClick={() => openSearchResult(product, setShowDropdown)}
+                          className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-rounded-lg tw-cursor-pointer tw-text-base tw-text-[#10213D] tw-font-medium tw-transition-colors tw-capitalize"
                         >
                           {getSearchResultLabel(product)}
                         </div>
                       ))}
                     </div>
                   )}
+                </div>
+                {/* Right Action Icons: Account, Wishlist, Cart */}
+                <div className="tw-flex tw-items-center tw-gap-6 lg:tw-gap-8">
+                  
+                  {/* Account */}
+                  <div className="tw-relative">
+                    {isMounted && isLoggedIn ? (
+                      <div
+                        onMouseEnter={openUserMenu}
+                        onMouseLeave={closeUserMenu}
+                        className="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer tw-text-base tw-font-semibold tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faUser} className="tw-w-4 tw-h-4 tw-text-[#10213D]" />
+                        <span className="tw-max-w-32 tw-truncate" title={accountLabel}>
+                          {accountLabel}
+                        </span>
+                        <ArrowDropDownIcon sx={{ color: "#10213D", fontSize: "18px", marginLeft: "-4px" }} />
+                        
+                        {isOpen && (
+                          <div className="tw-absolute tw-right-0 tw-top-full tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-xl tw-shadow-xl tw-py-2 tw-z-50">
+                            <div
+                              onClick={handleClickProfile}
+                              className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-cursor-pointer tw-text-sm tw-text-[#10213D] tw-font-medium"
+                            >
+                              My Profile
+                            </div>
+                            <div
+                              onClick={handleClickMyAccount}
+                              className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-cursor-pointer tw-text-sm tw-text-[#10213D] tw-font-medium"
+                            >
+                              My Orders
+                            </div>
+                            <div
+                              onClick={handleLogout}
+                              className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-cursor-pointer tw-text-sm tw-text-[#D7192D] tw-font-medium tw-border-t tw-border-solid tw-border-[#E6E8EC]"
+                            >
+                              Logout
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        onClick={handleClickSignIn}
+                        className="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer tw-text-base tw-font-semibold tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faUser} className="tw-w-4 tw-h-4 tw-text-[#10213D]" />
+                        <span>Sign in</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Wishlist */}
+                  <Link
+                    href="/wishlist"
+                    className="tw-flex tw-items-center tw-gap-2 tw-text-base tw-font-semibold tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
+                  >
+                    <FontAwesomeIcon icon={faHeart} className="tw-w-4 tw-h-4 tw-text-[#10213D]" />
+                  </Link>
+
+                  {/* Cart */}
+                  <Link
+                    href="/my-cart"
+                    onClick={handleClickCart}
+                    className="tw-flex tw-items-center tw-gap-2 tw-text-base tw-font-semibold tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
+                  >
+                    <span
+                      ref={desktopCartRef}
+                      className="tw-relative tw-inline-flex tw-items-center tw-justify-center"
+                      style={{
+                        isolation: "isolate",
+                        transition: "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+                        transform: isCartLanding ? "scale(1.35) rotate(-8deg)" : "scale(1)",
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faCartShopping} className="tw-w-4 tw-h-4 tw-text-[#10213D]" />
+                      {cartCount > 0 && (
+                        <span className="tw-absolute -tw-top-2 -tw-right-2.5 tw-bg-[#D7192D] tw-text-white tw-text-[10px] tw-font-bold tw-w-4 tw-h-4 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </span>
+                    <span>Cart</span>
+                  </Link>
+
+                </div>
+              </div>
+            </div>
+          </nav>
+        ) : (
+          /* Mobile View Header */
+          <div className="mobileHeader">
+            <div className="mobileHeaderTopRow">
+              <div className="mobileHeaderGroup">
+                <button
+                  type="button"
+                  className="mobileIconButton"
+                  onClick={changetranslate}
+                  aria-label="Open navigation menu"
+                >
+                  <FontAwesomeIcon icon={faNavicon} style={{ color: "#10213D", height: "22px", width: "22px" }} />
+                </button>
+              </div>
+
+              <Link href="/" className="mobileLogoLink tw-flex tw-items-center" style={{ textDecoration: "none" }}>
+                <img src={cdn("/pp_logo.png")} alt="Prem Packaging Logo" className="tw-h-9 tw-w-auto" />
+              </Link>
+
+              <div className="mobileHeaderGroup">
+                <button
+                  type="button"
+                  className="mobileIconButton"
+                  onClick={handleClickProfile}
+                  aria-label="Account"
+                >
+                  <FontAwesomeIcon icon={faUser} style={{ color: "#10213D", height: "20px", width: "20px" }} />
+                </button>
+                <Link href="/my-cart" className="mobileIconButton" aria-label="Cart">
+                  <div className="tw-relative">
+                    <FontAwesomeIcon icon={faCartShopping} style={{ color: "#10213D", height: "20px", width: "20px" }} />
+                    {cartCount > 0 && (
+                      <span className="tw-absolute -tw-top-2 -tw-right-2 tw-bg-[#D7192D] tw-text-white tw-text-[10px] tw-font-bold tw-w-4 tw-h-4 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mobileSearchSection">
+              <div className="mobileSearchBox">
+                <FontAwesomeIcon icon={faSearch} className="mobileSearchIcon tw-text-[#667085]" />
+                <input
+                  className="mobileSearchInput"
+                  type="text"
+                  placeholder="Search boxes, bags, tapes..."
+                  value={searchQueryMobile}
+                  onChange={(e) => {
+                    const nextQuery = e.target.value;
+                    setSearchQueryMobile(nextQuery);
+                    if (nextQuery.trim().length >= MIN_SEARCH_LENGTH) {
+                      handleSearchMobile(nextQuery);
+                    } else {
+                      setSearchProductsMobile([]);
+                      setShowDropdownMobile(false);
+                    }
+                  }}
+                />
+                {searchProductsMobile.length > 0 && searchQueryMobile.length >= 2 && showDropdownMobile && (
+                  <div ref={dropdownRef} className="mobileSearchDropdown">
+                    {searchProductsMobile.map((product, index) => (
+                      <div
+                        key={product?._id || product?.slug || index}
+                        className="mobileSearchDropdownItem"
+                        onClick={() => openSearchResult(product, setShowDropdownMobile)}
+                      >
+                        {getSearchResultLabel(product)}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
+
+        {/* Mobile Sidebar Overlay & Drawer */}
+        {isSidebarOpen && (
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            className="mobileSidebarOverlay"
+            onClick={changetranslate}
+          />
+        )}
+
+        <div
+          className="tw-bg-white"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            height: "100vh",
+            maxHeight: "100vh",
+            overflowY: "auto",
+            width: "min(320px, 82vw)",
+            zIndex: 1000000,
+            transition: "all 0.3s ease",
+            transform: "translate(-" + sidebartranslatevalue + "%, 0)",
+          }}
+        >
+          <div className="tw-bg-[#0B2348] tw-p-4 tw-flex tw-items-center tw-justify-between tw-text-[#FFFFFF]">
+            <div className="tw-flex tw-items-center tw-gap-3">
+              <FontAwesomeIcon icon={faUser} className="tw-text-[#D7192D] tw-w-5 tw-h-5" />
+              <span className="tw-font-semibold tw-text-base tw-cursor-pointer" onClick={toggleDropdown}>
+                {isMounted && isLoggedIn ? accountLabel : "Sign Up / Sign In"}
+              </span>
+            </div>
+            <img
+              src={cdn("/sidebarcross.png")}
+              alt="Close"
+              onClick={changetranslate}
+              className="tw-w-5 tw-h-5 tw-cursor-pointer"
+            />
+          </div>
+
+          <div className="tw-p-4 tw-space-y-4 tw-font-medium tw-text-[#10213D]">
+            {/* Mobile Categories Accordion */}
+            <Accordion elevation={0} style={{ background: "transparent" }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                style={{ padding: 0, minHeight: "auto" }}
+              >
+                <span className="tw-font-semibold tw-text-[#10213D] tw-text-base">
+                  Categories
+                </span>
+              </AccordionSummary>
+              <AccordionDetails style={{ padding: "8px 0 0 8px" }}>
+                <div className="tw-space-y-3 tw-text-sm">
+                  {CATEGORY_DROPDOWN_ITEMS.map((catItem, idx) => (
+                    <div key={idx} className="tw-space-y-1">
+                      <Link
+                        href={catItem.path}
+                        onClick={changetranslate}
+                        className="tw-block tw-font-bold tw-text-xs tw-text-[#0B2348] hover:tw-text-[#D7192D] tw-no-underline"
+                      >
+                        {catItem.label}
+                      </Link>
+                      {catItem.subItems && catItem.subItems.map((item, subIdx) => (
+                        <Link
+                          key={subIdx}
+                          href={item.path}
+                          onClick={changetranslate}
+                          className="tw-block tw-text-xs tw-text-[#667085] hover:tw-text-[#D7192D] tw-no-underline tw-pl-2 tw-py-0.5"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </AccordionDetails>
+            </Accordion>
+
+            <Link href="/BestDeals" onClick={changetranslate} className="tw-block tw-py-2 tw-text-[#10213D] tw-no-underline">
+              Bestsellers
+            </Link>
+            <Link href="/custom-packaging" onClick={changetranslate} className="tw-block tw-py-2 tw-text-[#10213D] tw-no-underline">
+              Custom Packaging
+            </Link>
+            <Link href="https://prempackaging.com/about-us" onClick={changetranslate} className="tw-block tw-py-2 tw-text-[#10213D] tw-no-underline">
+              About Us
+            </Link>
+          </div>
+        </div>
+
       </div>
       <div aria-hidden="true" style={{ height: `${navbarHeight}px` }} />
       <style jsx>{`
-.topbar { display: block; background-color: #EAEAEA; height: 32px; padding: 0 !important; margin: 0 !important; }
-@media (max-width: 700px) { .topbar { display: none; } }
-.whatsappNo { color: white; font-size: 18px; line-height: 28px; font-weight: 600; font-family: "Montserrat"; }
 .mobileSidebarOverlay { display: none; }
 @media (max-width: 700px) {
-  .mobileSidebarOverlay { display: block; position: fixed; inset: 35px 0 0; border: 0; background: rgba(17, 24, 39, 0.22); z-index: 999999; }
+  .mobileSidebarOverlay { display: block; position: fixed; inset: 0; border: 0; background: rgba(17, 24, 39, 0.4); z-index: 999999; }
 }
 .mobileHeader { display: none; }
 @media (max-width: 700px) {
-  .mobileHeader { display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 14px 16px 12px; background: #fff; }
+  .mobileHeader { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e5e7eb; }
 }
 .mobileHeaderTopRow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
-.mobileHeaderGroup { display: flex; align-items: center; gap: 10px; }
+.mobileHeaderGroup { display: flex; align-items: center; gap: 12px; }
 .mobileHeaderGroup:last-child { justify-content: flex-end; }
-.mobileIconButton { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; background: transparent; text-decoration: none; }
+.mobileIconButton { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; background: transparent; text-decoration: none; }
 .mobileLogoLink { display: inline-flex; align-items: center; justify-content: center; }
 .mobileSearchSection { width: 100%; }
-.mobileSearchBox { position: relative; display: flex; align-items: center; width: 100%; min-height: 48px; padding-left: 40px; border: 1px solid #e5e7eb; background: #f7f7f7; }
-.mobileSearchIcon { position: absolute; left: 14px; width: 18px; height: 18px; }
-.mobileSearchInput { width: 100%; border: 0; background: transparent; color: #111827; font-family: "Montserrat", sans-serif; font-size: 14px; padding: 12px 14px 12px 0; }
+.mobileSearchBox { position: relative; display: flex; align-items: center; width: 100%; min-height: 42px; padding-left: 38px; border: 1px solid #e5e7eb; border-radius: 9999px; background: #f7f8fa; }
+.mobileSearchIcon { position: absolute; left: 14px; width: 16px; height: 16px; }
+.mobileSearchInput { width: 100%; border: 0; background: transparent; color: #111827; font-family: inherit; font-size: 14px; padding: 10px 14px 10px 0; }
 .mobileSearchInput:focus { outline: none; }
-.mobileSearchDropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 220px; overflow-y: auto; border: 1px solid #d1d5db; background: #fff; z-index: 1001; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
-.mobileSearchDropdownItem { padding: 10px 12px; cursor: pointer; text-transform: capitalize; font-family: "Montserrat", sans-serif; font-size: 13px; line-height: 1.5; }
-.mobileCartIconWrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-.mobileCartBadge { position: absolute; top: -6px; right: -8px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #E92227; color: #fff; font-family: "Montserrat", sans-serif; font-size: 10px; font-weight: 700; line-height: 18px; text-align: center; }
+.mobileSearchDropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 220px; overflow-y: auto; border: 1px solid #d1d5db; background: #fff; z-index: 1001; border-radius: 12px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+.mobileSearchDropdownItem { padding: 10px 14px; cursor: pointer; text-transform: capitalize; font-size: 13px; line-height: 1.5; border-bottom: 1px solid #f3f4f6; }
 `}</style>
     </>
   );

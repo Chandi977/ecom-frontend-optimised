@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Checkbox from "@mui/material/Checkbox";
 import { useRouter } from "next/router";
+import JsonLd from "../common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 import { postService } from "../../services/service";
 import ListingCard from "./ListingCard";
 import DesktopListingCard from "./DesktopLisingCard";
@@ -159,7 +161,20 @@ const PackproTapeCatalogPage = ({
           name="description"
           content="Browse PackPro carry bags, food wrapping papers, and tapes in one catalog, then filter by product group."
         />
+        <link rel="canonical" href={canonicalUrl("/packpro")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/packpro",
+          name: "Buy PackPro packaging products online",
+          description:
+            "Browse PackPro carry bags, food wrapping papers, and tapes in one catalog, then filter by product group.",
+          products: product,
+          breadcrumb: [{ name: "PackPro", path: "/packpro" }],
+        })}
+      />
       <div className="row p-0 m-0">
         <BannerComponent />
         <div
@@ -200,7 +215,7 @@ const PackproTapeCatalogPage = ({
                 products.map((item, index) => (
                   <div
                     className="row w-40"
-                    style={{ height: "400px" }}
+                    style={{ minHeight: "400px" }}
                     key={item?._id || index}
                   >
                     <DesktopListingCard item={item} />
@@ -210,7 +225,7 @@ const PackproTapeCatalogPage = ({
                 Array.from({ length: 6 }).map((_, index) => (
                   <div
                     className="row w-40"
-                    style={{ height: "400px" }}
+                    style={{ minHeight: "400px" }}
                     key={`skeleton-${index}`}
                   >
                     <DesktopListingCard />

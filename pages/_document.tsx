@@ -1,13 +1,11 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
 
-
-
 class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
         <Head>
-          {/* Add the Google Fonts link tag here */}
+          {/* Google Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link
             rel="preconnect"
@@ -15,12 +13,19 @@ class MyDocument extends Document {
             crossOrigin="anonymous"
           />
           <link
-            href="https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@100;200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600&family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Calistoga&family=Geist:wght@100..900&family=Inter:wght@100;200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600&family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
             rel="stylesheet"
-          ></link>
+          />
 
-          
-          {/* Add any other custom <head> elements you need */}
+          {/* Fallback styling when JS is disabled */}
+          <noscript>
+            <style
+              dangerouslySetInnerHTML={{
+                __html:
+                  "[data-reveal]{opacity:1!important;transform:none!important;}",
+              }}
+            />
+          </noscript>
         </Head>
         <body>
           <Main />

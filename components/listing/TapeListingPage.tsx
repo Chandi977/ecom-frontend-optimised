@@ -14,6 +14,8 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import JsonLd from "../common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const PACKPRO_TAPE_CATEGORY_ID = "6557df64301ec4f2f4266141";
 const SIZE_RANGE = { min: 0, max: 100 };
@@ -230,6 +232,21 @@ const TapeListingPage = ({
     setSortBy(value);
   };
 
+  const hasActiveFilters = selectedBrands.length > 0 || sizeFilterActive;
+
+  const handleResetFilters = async () => {
+    setSelectedBrands(brandId ? [brandId] : []);
+    setLength([SIZE_RANGE.min, SIZE_RANGE.max]);
+    setWidth([SIZE_RANGE.min, SIZE_RANGE.max]);
+    setThickness([SIZE_RANGE.min, SIZE_RANGE.max]);
+    setSizeFilterActive(false);
+    const payload = buildFilterPayload({
+      brandSelection: brandId ? [brandId] : [],
+      includeSize: false,
+    });
+    await applyFilter(payload);
+  };
+
   const handleQuery = useCallback(async () => {
     const payload = buildFilterPayload();
     await applyFilter(payload);
@@ -425,6 +442,19 @@ const TapeListingPage = ({
     <div className="d-flex flex-column gap-3 w-100">
       {renderSizeFilter({ className: "w-100", closeMobilePanel })}
       {visibleBrands.length > 0 && renderBrandFilter({ className: "w-100" })}
+      {hasActiveFilters && (
+        <button
+          className="packagebtn"
+          onClick={async () => {
+            await handleResetFilters();
+            if (typeof closeMobilePanel === "function") {
+              closeMobilePanel();
+            }
+          }}
+        >
+          Reset Filters
+        </button>
+      )}
     </div>
   );
 
@@ -434,7 +464,21 @@ const TapeListingPage = ({
         <title>{pageTitle}</title>
         <meta name="title" content={metaTitle} />
         <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={canonicalUrl(router.pathname)} />
       </Head>
+
+      {/* Each tape route (bopp / paper / void / carry-handle) renders this
+          component, so the collection schema is driven off its own props. */}
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: router.pathname,
+          name: metaTitle,
+          description: metaDescription,
+          products: product,
+          breadcrumb: [{ name: breadcrumbLabel, path: router.pathname }],
+        })}
+      />
       <div className="row p-0 m-0">
         <BannerComponent />
         <div className="row tw-px-[110px] max-[900px]:tw-px-[10px]" style={{ backgroundColor: "white" }}>
@@ -468,7 +512,7 @@ const TapeListingPage = ({
             <div className="col-9 productslistdivwindow">
               {products && products.length > 0 ? (
                 products.map((item, index) => (
-                  <div className="row w-40" style={{ height: "400px" }} key={index}>
+                  <div className="row w-40" style={{ minHeight: "400px" }} key={index}>
                     <DesktopListingCard item={item} />
                   </div>
                 ))
@@ -476,7 +520,7 @@ const TapeListingPage = ({
                 Array.from({ length: 6 }).map((_, index) => (
                   <div
                     className="row w-40"
-                    style={{ height: "400px" }}
+                    style={{ minHeight: "400px" }}
                     key={`skeleton-${index}`}
                   >
                     <DesktopListingCard />

@@ -163,14 +163,14 @@ const CatalogFilterControls = ({
       <style jsx>{`
 .cfc-header {
   display: flex;
-  margin-top: 46px;
+  margin-top: 12px;
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px;
   padding-left: 25px;
 }
 @media (max-width: 900px) {
-  .cfc-header { flex-direction: column; align-items: flex-start; padding-left: 0; gap: 10px; }
+  .cfc-header { flex-direction: column; align-items: flex-start; padding-left: 0; gap: 10px; margin-top: 8px; }
 }
 .cfc-results { display: flex; align-items: center; min-width: 0; }
 @media (max-width: 900px) { .cfc-results { width: 100%; } }

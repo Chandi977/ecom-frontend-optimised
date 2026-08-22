@@ -14,6 +14,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { syncFavToServer } from "../../utils/favourites";
 import { migrateGuestCartToServer } from "../../utils/cart";
 import { setAuthState } from "../../services/token";
+import { cdn } from "../../lib/cdn";
 //auth commit 4
 const Signuppage = () => {
   const router = useRouter();
@@ -478,7 +479,7 @@ const Signuppage = () => {
             </form>
           </div>
           <div className="col-md-6 text-center mb-3 d-flex justify-content-center align-items-center">
-            <img src="/signuppageimg.png" alt="..." height={400} width={400} />
+            <img src={cdn("/signuppageimg.png")} alt="..." height={400} width={400} />
           </div>
         </div>
       </div>

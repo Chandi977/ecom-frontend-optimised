@@ -14,6 +14,8 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const ROLLABEL_CATEGORY_ID = "6557deb6301ec4f2f4266135";
 const DIRECT_THERMAL_SUBCATEGORY_ID = "6557e1cb301ec4f2f426614c";
@@ -458,7 +460,20 @@ const BoppTape = ({
           name="description"
           content="Explore and buy Rollabel™ labels online at Store.prempackaging.com. Buy custom printed packaging labels online, including Chromo label and direct thermal label. Order now."
         />
+        <link rel="canonical" href={canonicalUrl("/rollabel")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/rollabel",
+          name: "Buy Rollabel™ Labels Online",
+          description:
+            "Explore and buy Rollabel™ labels online at Store.prempackaging.com. Buy custom printed packaging labels online, including Chromo label and direct thermal label. Order now.",
+          products: product,
+          breadcrumb: [{ name: "Rollabel", path: "/rollabel" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <LabelBanner />
@@ -491,7 +506,7 @@ const BoppTape = ({
               renderFilterContent={renderFilterContent}
             />
             <div className="row mt-4 d-flex" style={{ position: "relative" }}>
-              <div className="col-md-3 ">{renderFilters()}</div>
+              <div className="col-md-3 desktopFilter">{renderFilters()}</div>
 
               {/* this column is for windows view */}
               {products && products.length > 0 ? (
@@ -500,7 +515,7 @@ const BoppTape = ({
                     return (
                       <div
                         className="row w-40"
-                        style={{ height: "400px" }}
+                        style={{ minHeight: "400px" }}
                         key={index}
                       >
                         <DesktopListingCard item={item} />
@@ -513,7 +528,7 @@ const BoppTape = ({
                   {Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />

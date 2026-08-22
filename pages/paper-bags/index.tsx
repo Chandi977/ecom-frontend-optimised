@@ -22,8 +22,15 @@ import {
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
 import { useBrands } from "../../context/BrandContext";
+import {
+  MARKETPLACE_BRAND_OPTIONS,
+  fetchBrandSlugsWithProducts,
+} from "../../utils/brands";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const PAPER_BAG_CATEGORY_ID = "6557df46301ec4f2f4266139";
+const BRAND_OPTIONS = MARKETPLACE_BRAND_OPTIONS;
 
 export async function getServerSideProps(context) {
   const query = context.query;
@@ -56,7 +63,13 @@ export async function getServerSideProps(context) {
     limit: DEFAULT_INITIAL_LIMIT,
     includeMeta: true,
   };
-  const prod = await postService("product/filter", filterPayload);
+  const [prod, availableBrandSlugs] = await Promise.all([
+    postService("product/filter", filterPayload),
+    fetchBrandSlugsWithProducts(
+      { filter: { category: PAPER_BAG_CATEGORY_ID } },
+      BRAND_OPTIONS,
+    ),
+  ]);
 
   return {
     props: {
@@ -65,6 +78,7 @@ export async function getServerSideProps(context) {
       brandId,
       subCategoryId,
       q: query?.q ?? null,
+      availableBrandSlugs,
     },
   };
 }
@@ -75,6 +89,7 @@ const BoppTape = ({
   subCategoryId,
   q,
   meta,
+  availableBrandSlugs,
 }) => {
   const router = useRouter();
   const initialProducts = useMemo(() => (product ? product : []), [product]);
@@ -94,6 +109,16 @@ const BoppTape = ({
   const [seelctedBrand, setSelectedBrand] = useState([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
+
+  // Only brands that actually stock something in this category. A null list
+  // means the counts could not be read, in which case show them all rather
+  // than hide a working filter.
+  const visibleBrandOptions = useMemo(() => {
+    if (!Array.isArray(availableBrandSlugs)) return BRAND_OPTIONS;
+    return BRAND_OPTIONS.filter((option) =>
+      availableBrandSlugs.includes(option.slug),
+    );
+  }, [availableBrandSlugs]);
 
   const baseFilter = useMemo(
     () => ({
@@ -261,6 +286,69 @@ const BoppTape = ({
     await applyFilter(payload);
   };
 
+  const hasActiveFilters =
+    seelctedBrand.length > 0 ||
+    seelctedCategories.length > 0 ||
+    flags.size;
+
+  // Shared by the desktop sidebar and the mobile filter panel.
+  const renderBrandCheckboxes = () => (
+    <div className="mt-4 mb-3 d-flex flex-column align-items-start gap-3">
+      {visibleBrandOptions.map((brandOption) => {
+        const optionBrandId = resolveId(brandOption.slug);
+        return (
+          <div className="d-flex" key={brandOption.slug}>
+            <Checkbox
+              {...label}
+              onChange={() => handlecat(optionBrandId)}
+              checked={
+                !!optionBrandId && seelctedBrand.includes(optionBrandId as never)
+              }
+              sx={{
+                padding: "0px",
+                color: "gray",
+                "&.Mui-checked": {
+                  color: "gray",
+                },
+                "&.Mui-unchecked": {
+                  color: "gray",
+                },
+              }}
+              inputProps={{ "aria-label": `brand-${brandOption.label}` }}
+            />
+
+            <p
+              className="mb-0"
+              style={{
+                marginLeft: "9px",
+                textTransform: "capitalize",
+              }}
+            >
+              {brandOption.label}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const handleResetFilters = async () => {
+    setSelectedBrand([]);
+    setSelectedCategories([]);
+    setWidth([0, 600]);
+    setBreadth([0, 600]);
+    setFlap([0, 300]);
+    setGusset([0, 300]);
+    setHeight([100, 1000]);
+    setUnit("inches");
+    setFlags({ size: false, category: false, sort: false });
+    const payload = buildFilterPayload({
+      categories: [],
+      includeSize: false,
+    });
+    await applyFilter(payload);
+  };
+
   const handleSort = (type) => {
     if (!type) {
       return;
@@ -277,7 +365,20 @@ const BoppTape = ({
           name="description"
           content="Buy paper bags online from one of the best paper bag manufacturers in India. Buy custom paper bags online, kraft paper shopping bags for Amazon and Flipkart"
         />
+        <link rel="canonical" href={canonicalUrl("/paper-bags")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/paper-bags",
+          name: "Buy Paper Bags online",
+          description:
+            "Buy paper bags online from one of the best paper bag manufacturers in India. Buy custom paper bags online, kraft paper shopping bags for Amazon and Flipkart",
+          products: product,
+          breadcrumb: [{ name: "Paper Bags", path: "/paper-bags" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <PaperBagBanner />
@@ -570,9 +671,10 @@ const BoppTape = ({
                 </div>
 
                 <div className={"mt-3 col-12 p-0 m-0" + "filterslayout"}>
+                  {visibleBrandOptions.length > 0 && (
                   <div
                     className="w-100"
-                    style={{ height: "170px", border: "1px solid #E6E6E6" }}
+                    style={{ minHeight: "170px", border: "1px solid #E6E6E6" }}
                   >
                     <div
                       className="row m-0"
@@ -586,75 +688,20 @@ const BoppTape = ({
                           Filter by Brands
                         </p>
 
-                        <div
-                          className="mt-4 d-flex flex-column align-items-start gap-3"
-                          // key={index}
-                        >
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("amazon"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {/* {item?.name} */} Amazon
-                            </p>
-                          </div>
-
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("flipkart"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {/* {item?.name} */} Flipkart
-                            </p>
-                          </div>
-                        </div>
+                        {renderBrandCheckboxes()}
                       </div>
                     </div>
                   </div>
+                  )}
+                  {hasActiveFilters && (
+                    <button
+                      className="packagebtn"
+                      onClick={handleResetFilters}
+                      style={{ margin: "12px 0" }}
+                    >
+                      Reset Filters
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -666,7 +713,7 @@ const BoppTape = ({
                     return (
                       <div
                         className="row w-40"
-                        style={{ height: "400px" }}
+                        style={{ minHeight: "400px" }}
                         key={index}
                       >
                         <DesktopListingCard item={item} />
@@ -677,7 +724,7 @@ const BoppTape = ({
                   Array.from({ length: 6 }).map((_, index) => (
                     <div
                       className="row w-40"
-                      style={{ height: "400px" }}
+                      style={{ minHeight: "400px" }}
                       key={`skeleton-${index}`}
                     >
                       <DesktopListingCard />
@@ -957,6 +1004,7 @@ const BoppTape = ({
                 </div>
 
                 <div className={"mt-3 col-12 p-0 m-0" + "filterslayout1"}>
+                  {visibleBrandOptions.length > 0 && (
                   <div
                     className="w-100"
                     style={{
@@ -977,137 +1025,20 @@ const BoppTape = ({
                           Filter by Brands
                         </p>
 
-                        <div
-                          className="mt-4 d-flex flex-column align-items-start gap-3"
-                          // key={index}
-                        >
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("amazon"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {/* {item?.name} */} Amazon
-                            </p>
-                          </div>
-
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("flipkart"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {/* {item?.name} */} Flipkart
-                            </p>
-                          </div>
-
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("myntra"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              Myntra
-                            </p>
-                          </div>
-
-                          <div className="d-flex ">
-                            <Checkbox
-                              {...label}
-                              onChange={() =>
-                                handlecat(resolveId("ajio"))
-                              }
-                              // checked={checked[index] === true ? true : false}
-                              sx={{
-                                padding: "0px",
-                                color: "gray",
-                                "&.Mui-checked": {
-                                  color: "gray",
-                                },
-                                "&.Mui-unchecked": {
-                                  color: "gray",
-                                },
-                              }}
-                              inputProps={{ "aria-label": "controlled" }}
-                            />
-
-                            <p
-                              className="mb-0"
-                              style={{
-                                marginLeft: "9px",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {/* {item?.name} */} Ajio
-                            </p>
-                          </div>
-                        </div>
+                        {renderBrandCheckboxes()}
                       </div>
                     </div>
                   </div>
+                  )}
+                  {hasActiveFilters && (
+                    <button
+                      className="packagebtn"
+                      onClick={handleResetFilters}
+                      style={{ margin: "12px 0" }}
+                    >
+                      Reset Filters
+                    </button>
+                  )}
                 </div>
                 </div>
               )}

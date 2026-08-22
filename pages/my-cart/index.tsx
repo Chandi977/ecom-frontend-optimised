@@ -38,6 +38,7 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import { getProductSpecification, getProductImageSrc } from "../../utils/productCatalog";
+import { cdn } from "../../lib/cdn";
 
 declare global {
   interface Window {
@@ -907,7 +908,7 @@ const Cartpage = () => {
       currency: "INR",
       name: "Prem Packaging",
       description: "Secure Checkout Payment",
-      image: "/pp_logo_1.png",
+      image: cdn("/pp_logo_1.png"),
       order_id: guestToken,
       handler: async function (response: any) {
         const paymentData = {
@@ -1148,7 +1149,7 @@ const Cartpage = () => {
                         const model = item?.product?.model;
                         const specLines = getProductDetailsLines(item);
                         const hasStock = !hasStockIssue(item);
-                        const itemImg = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || "/pp_logo_1.png";
+                        const itemImg = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || cdn("/pp_logo_1.png");
                         const breakdown = getLineBreakdown(item);
 
                         return (
@@ -1579,7 +1580,7 @@ const Cartpage = () => {
                     {/* Items thumbnails list */}
                     <ul className="co-items">
                       {cart?.products?.map((x: any, index: number) => {
-                        const itemImg = getProductImageSrc(x?.product) || x?.product?.images?.[0]?.image || "/pp_logo_1.png";
+                        const itemImg = getProductImageSrc(x?.product) || x?.product?.images?.[0]?.image || cdn("/pp_logo_1.png");
                         return (
                           <li className="co-item" key={index}>
                             <span className="co-item-thumb">

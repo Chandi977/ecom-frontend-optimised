@@ -1,5 +1,8 @@
 import "../styles/globals.css";
 import "../styles/globals.scss";
+import "../public/homepage.css";
+import "../public/homepage-mobile.css";
+import "../public/homepage-store.css";
 import React from "react";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
@@ -21,18 +24,21 @@ import { ConfigProvider } from "antd";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useRouter } from "next/router";
 import { BrandProvider } from "../context/BrandContext";
-
+import { WishlistProvider } from "../context/WishlistContext";
+import JsonLd from "../components/common/JsonLd";
+import PageTransition from "../components/common/PageTransition";
+import { siteSchema } from "../utils/schema";
 
 config.autoAddCss = false;
 
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const isCheckout = router.pathname === "/checkoutpage";
+  const showGlobalShell = !isCheckout;
+  const showGlobalFooter = showGlobalShell;
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-      {/* Google Fonts are handled in _document.js, remove from here */}
-
       {/* Google Tag Manager Script */}
       <Script id="gtm-inline" strategy="afterInteractive">
         {`
@@ -44,18 +50,27 @@ export default function MyApp({ Component, pageProps }) {
         `}
       </Script>
 
+      {/* Site-wide Organization + WebSite nodes. Every page's own JSON-LD graph
+          references these two by @id, so they are declared here exactly once. */}
+      <JsonLd data={siteSchema()} id="site" />
+
       <BrandProvider>
-        <div
-          className="container-fluid d-flex flex-column justify-content-between p-0"
-          style={{ minHeight: "100vh" }}
-        >
-          <ToastContainer />
-          {!isCheckout && <Navbar />}
-          <ConfigProvider>
-            <Component {...pageProps} />
-          </ConfigProvider>
-          {!isCheckout && <Footer />}
-        </div>
+        <WishlistProvider>
+          <div
+            className="container-fluid d-flex flex-column justify-content-between p-0"
+            style={{ minHeight: "100vh" }}
+          >
+            <ToastContainer />
+            {showGlobalShell && <Navbar />}
+            <ConfigProvider>
+              {/* Re-keyed on the path so each route plays its entrance. */}
+              <PageTransition routeKey={router.asPath}>
+                <Component {...pageProps} />
+              </PageTransition>
+            </ConfigProvider>
+            {showGlobalFooter && <Footer />}
+          </div>
+        </WishlistProvider>
       </BrandProvider>
     </GoogleOAuthProvider>
   );

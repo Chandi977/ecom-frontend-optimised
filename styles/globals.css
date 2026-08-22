@@ -36,6 +36,19 @@
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
+
+  /* ── Motion scale ────────────────────────────────────────────────────────
+     CSS half of the tokens in utils/motion.ts — keep the two in sync. Use
+     these instead of writing a fresh duration/curve per component, so hovers
+     across the site land on the same beat. */
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --motion-instant: 120ms;
+  --motion-fast: 180ms;
+  --motion-base: 240ms;
+  --motion-medium: 320ms;
+  --motion-slow: 400ms;
 }
 
 html {
@@ -51,7 +64,7 @@ html {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -150,5 +163,71 @@ body::-webkit-scrollbar-thumb {
 
 .packagebtn:active, .page-packagebtn:active {
   transform: scale(0.97);
+}
+
+
+/* ── Add-to-cart animation ─────────────────────────────────────────────────
+   Used by components/common/AddToCartContent.tsx (button spinner) and the
+   Navbar cart icon (badge halo). Keyframes have to live in a global sheet —
+   inline styles can only reference them, not declare them. */
+@keyframes pi-atc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pi-cart-ping {
+  75%,
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────
+   Site-wide kill switch for users who ask the OS for less motion. Framer
+   Motion components read the same preference through `useReducedMotion` and
+   drop their transforms; this covers everything driven by CSS — the hover
+   lifts, image zooms, marquees and card reveals — in one place, so a new
+   `transition:` added anywhere is safe by default.
+
+   Progress indicators are the deliberate exception: freezing a spinner or a
+   skeleton removes the only signal that work is still happening. Anything
+   that must keep looping opts out with `data-motion-keep`. */
+@media (prefers-reduced-motion: reduce) {
+  *:not([data-motion-keep]),
+  *:not([data-motion-keep])::before,
+  *:not([data-motion-keep])::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  /* Reveals are hidden until they animate in — with motion off they must
+     still end up visible rather than stranded at opacity 0. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Sticky Sidebar for Desktop Product Listing Filters */
+.desktopFilter,
+.desktopFilterColumn,
+.pc-desktopFilter,
+.desktop-filter,
+.page-filterslayout {
+  position: sticky !important;
+  top: 160px !important;
+  align-self: flex-start !important;
+  z-index: 10;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
 }
 

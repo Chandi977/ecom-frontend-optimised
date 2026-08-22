@@ -14,6 +14,9 @@ import {
   DEFAULT_INITIAL_LIMIT,
   useInfiniteProducts,
 } from "../../hooks/useInfiniteProducts";
+import { fetchBrandIdsWithProducts } from "../../utils/brands";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, collectionPageSchema } from "../../utils/schema";
 
 const CARRY_BAG_CATEGORY_IDS = [
   "6557df71301ec4f2f4266145",
@@ -56,11 +59,24 @@ export async function getServerSideProps(context) {
     includeMeta: true,
   };
 
-  const prod = await postService("product/filter", filterPayload);
+  const allBrands = brandRes?.data?.data ?? [];
+  const [prod, brandIdsWithProducts] = await Promise.all([
+    postService("product/filter", filterPayload),
+    fetchBrandIdsWithProducts(
+      { filter: { category: CARRY_BAG_CATEGORY_IDS } },
+      allBrands.map((item) => item?._id),
+    ),
+  ]);
+
+  // Brands with nothing in this category would render a filter that always
+  // returns "no products", so they are dropped before the page ever sees them.
+  const brands = Array.isArray(brandIdsWithProducts)
+    ? allBrands.filter((item) => brandIdsWithProducts.includes(String(item?._id)))
+    : allBrands;
 
   return {
     props: {
-      brands: brandRes?.data ? brandRes?.data?.data : [],
+      brands,
       product: prod?.data ? prod?.data?.data : [],
       meta: prod?.data?.meta ? prod?.data?.meta : null,
       brandId: brandId || null,
@@ -193,6 +209,29 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
     const nextBrands = toggleSelection(selectedBrands, id);
     setSelectedBrands(nextBrands);
     const payload = buildFilterPayload({ brands: nextBrands });
+    await applyFilter(payload);
+  };
+
+  const hasActiveFilters = selectedBrands.length > 0 || sizeFilterActive;
+
+  const handleResetFilters = async () => {
+    setSelectedBrands(brandId ? [brandId] : []);
+    setLength([
+      SIZE_RANGE_BY_UNIT[DEFAULT_UNIT].min,
+      SIZE_RANGE_BY_UNIT[DEFAULT_UNIT].max,
+    ]);
+    setBreadth([
+      SIZE_RANGE_BY_UNIT[DEFAULT_UNIT].min,
+      SIZE_RANGE_BY_UNIT[DEFAULT_UNIT].max,
+    ]);
+    setGusset([0, 20]);
+    setThickness([0, 500]);
+    setUnit(DEFAULT_UNIT);
+    setSizeFilterActive(false);
+    const payload = buildFilterPayload({
+      brands: brandId ? [brandId] : [],
+      includeSize: false,
+    });
     await applyFilter(payload);
   };
 
@@ -350,7 +389,8 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
     </div>
   );
 
-  const renderBrandFilter = ({ className }) => (
+  const renderBrandFilter = ({ className }) =>
+    !brands?.length ? null : (
     <div className={className}>
       <div className={"filterCard"}>
         <div className="row m-0" style={{ paddingLeft: 3, paddingRight: 3 }}>
@@ -388,12 +428,17 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
         </div>
       </div>
     </div>
-  );
+    );
 
   const renderFilterContent = () => (
     <div className="d-flex flex-column gap-3 w-100">
       {renderSizeFilter({ className: "w-100" })}
       {renderBrandFilter({ className: "w-100" })}
+      {hasActiveFilters && (
+        <button className="packagebtn" onClick={handleResetFilters}>
+          Reset Filters
+        </button>
+      )}
     </div>
   );
 
@@ -406,7 +451,20 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
           name="description"
           content="Prem Industries India Limited offers high-quality Carry Bags for secure packaging needs. Trust our reliable solutions. Order Carry Bags now!"
         />
+        <link rel="canonical" href={canonicalUrl("/carry-bags")} />
       </Head>
+
+      <JsonLd
+        id="collection"
+        data={collectionPageSchema({
+          path: "/carry-bags",
+          name: "Buy Best Carry Bags online",
+          description:
+            "Prem Industries India Limited offers high-quality Carry Bags for secure packaging needs. Trust our reliable solutions. Order Carry Bags now!",
+          products: product,
+          breadcrumb: [{ name: "Carry Bags", path: "/carry-bags" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
           <CarryBagBanner />
@@ -441,13 +499,13 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
               <div className={"col-9 " + "productslistdivwindow"}>
                 {products && products.length > 0 ? (
                   products.map((item, index) => (
-                    <div className="row w-40" style={{ height: "400px" }} key={index}>
+                    <div className="row w-40" style={{ minHeight: "400px" }} key={index}>
                       <DesktopListingCard item={item} />
                     </div>
                   ))
                 ) : isLoading ? (
                   Array.from({ length: 6 }).map((_, index) => (
-                    <div className="row w-40" style={{ height: "400px" }} key={`skeleton-${index}`}>
+                    <div className="row w-40" style={{ minHeight: "400px" }} key={`skeleton-${index}`}>
                       <DesktopListingCard />
                     </div>
                   ))
