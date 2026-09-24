@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Image, { type ImageProps } from "next/image";
+import { cdn } from "../../lib/cdn";
+import { refreshProductImageUrl } from "../../utils/productImageUrl";
 
 type ProductImageProps = Omit<ImageProps, "src" | "alt"> & {
   src?: ImageProps["src"] | null;
@@ -7,7 +9,7 @@ type ProductImageProps = Omit<ImageProps, "src" | "alt"> & {
   fallbackSrc?: string;
 };
 
-const DEFAULT_FALLBACK_IMAGE = "/pp_logo_1.png";
+const DEFAULT_FALLBACK_IMAGE = cdn("/pp_logo_1.png");
 
 export function ProductImage({
   src,
@@ -19,9 +21,11 @@ export function ProductImage({
 }: ProductImageProps) {
   const initialSrc = src || fallbackSrc;
   const [displaySrc, setDisplaySrc] = useState<ImageProps["src"]>(initialSrc);
+  const [hasRetried, setHasRetried] = useState(false);
 
   useEffect(() => {
     setDisplaySrc(src || fallbackSrc);
+    setHasRetried(false);
   }, [src, fallbackSrc]);
 
   const isRemoteImage =
@@ -34,6 +38,20 @@ export function ProductImage({
       alt={alt}
       unoptimized={unoptimized ?? isRemoteImage}
       onError={(event) => {
+        const refreshRequest =
+          !hasRetried && typeof displaySrc === "string"
+            ? refreshProductImageUrl(displaySrc)
+            : undefined;
+
+        if (refreshRequest) {
+          setHasRetried(true);
+          void refreshRequest
+            .then((refreshedSrc) => setDisplaySrc(refreshedSrc))
+            .catch(() => setDisplaySrc(fallbackSrc));
+          onError?.(event);
+          return;
+        }
+
         if (displaySrc !== fallbackSrc) {
           setDisplaySrc(fallbackSrc);
         }

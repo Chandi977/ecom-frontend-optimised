@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { cdn } from "../../lib/cdn";
 
 function Banner() {
   return (
@@ -13,7 +14,7 @@ function Banner() {
     >
       <div className="w-100 h-100">
         <Image
-          src="/backgroundslider.png"
+          src={cdn("/backgroundslider.png")}
           alt="My Orders Banner"
           fill
           priority

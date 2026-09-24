@@ -4,6 +4,8 @@ import { useState } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "../listing/productDisplay";
 import { useBrands } from "../../context/BrandContext";
+import { cdn } from "../../lib/cdn";
+import WishlistButton from "../common/WishlistButton";
 
 function TopCardMobile({ item }) {
   const { brandNameById } = useBrands();
@@ -55,13 +57,15 @@ function TopCardMobile({ item }) {
           boxShadow: "2px 18px 18px #F5F5F9 ",
           cursor: "pointer",
           padding: "30px",
+          position: "relative",
         }}
       >
         <img
-          src={item?.images?.[0]?.image || "/pp_logo_1.png"}
+          src={item?.images?.[0]?.image || cdn("/pp_logo_1.png")}
           alt={item?.name || "Product image"}
           style={{ width: "120px", height: "120px" }}
         />
+        <WishlistButton product={item} size="sm" />
       </div>
       <div className="mt-4 d-flex justify-content-center align-items-center">
         <p className="landing-toptext" style={{ textTransform: "capitalize" }}>

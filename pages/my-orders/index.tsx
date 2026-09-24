@@ -8,12 +8,14 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getProductImageSrc } from "../../utils/productCatalog";
+import { cdn } from "../../lib/cdn";
 import { addToCart } from "../../utils/cart";
+import { downloadInvoicePdf } from "../../utils/invoiceGenerator";
 import AccountLayout, {
   AccountUser,
 } from "../../components/account/AccountLayout";
 
-import { FiPhone, FiChevronDown, FiLoader, FiInfo } from "react-icons/fi";
+import { FiPhone, FiChevronDown, FiLoader, FiInfo, FiDownload } from "react-icons/fi";
 
 const getOrderCreatedTime = (order: any) => {
   const timestamp = new Date(order?.createdAt || 0).getTime();
@@ -70,6 +72,21 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
   // Selected Order for View Details modal
   const [activeDetailsOrder, setActiveDetailsOrder] = useState<any | null>(null);
   const [filterStatus, setFilterStatus] = useState("All");
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
+
+  // Generate + download a branded PDF invoice for the given order.
+  const handleDownloadInvoice = async (order: any) => {
+    if (!order || downloadingInvoiceId) return;
+    setDownloadingInvoiceId(order?._id || order?.orderId || "active");
+    try {
+      await downloadInvoicePdf(order);
+    } catch (err) {
+      console.error("Invoice generation failed:", err);
+      toast.error("Could not generate the invoice. Please try again.");
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
+  };
 
   const handleModalShow = (orderId: string, orderValue: number) => {
     setSelectedOrderId(orderId);
@@ -242,7 +259,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
       currency: "INR",
       name: "Prem Packaging",
       description: "Order Payment",
-      image: "/pp_logo_1.png",
+      image: cdn("/pp_logo_1.png"),
       handler: async function (response: any) {
         const result = await putService("order/update/payment/status", {
           _id: orderId,
@@ -488,7 +505,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
                             <div className="items-column-cell">
                               <div className="items-preview-thumbs">
                                 {order?.items?.slice(0, 2).map((item: any, idx: number) => {
-                                  const img = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || "/pp_logo_1.png";
+                                  const img = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || cdn("/pp_logo_1.png");
                                   return (
                                     <div className="item-thumbnail-box" key={idx}>
                                       <img src={img} alt="Product preview" />
@@ -685,7 +702,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
                 <h4 className="column-title">Products</h4>
                 <ul className="details-products-list">
                   {activeDetailsOrder?.items?.map((item: any, idx: number) => {
-                    const img = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || "/pp_logo_1.png";
+                    const img = getProductImageSrc(item?.product) || item?.product?.images?.[0]?.image || cdn("/pp_logo_1.png");
                     return (
                       <li key={idx} className="details-product-item">
                         <img src={img} alt="Product thumbnail" className="details-prod-thumb" />
@@ -823,6 +840,19 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           </Modal.Body>
           
           <Modal.Footer className="details-modal-footer">
+            <button
+              type="button"
+              className="download-invoice-btn"
+              onClick={() => handleDownloadInvoice(activeDetailsOrder)}
+              disabled={!!downloadingInvoiceId}
+            >
+              {downloadingInvoiceId ? (
+                <FiLoader className="download-invoice-spin" />
+              ) : (
+                <FiDownload />
+              )}
+              {downloadingInvoiceId ? "Preparing…" : "Download Invoice"}
+            </button>
             <Button variant="secondary" onClick={() => setActiveDetailsOrder(null)}>
               Close
             </Button>
@@ -876,7 +906,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
             <div className="bank-payment-details">
               <span className="bank-details-title">Bank Transfer / UPI Options</span>
               <div className="bank-qr-container">
-                <img src="/qr_code.png" alt="Payment QR Code" />
+                <img src={cdn("/qr_code.png")} alt="Payment QR Code" />
               </div>
               <div className="vpa-details">
                 <span className="vpa-lbl">Pay via VPA (UPI ID):</span>
@@ -1061,6 +1091,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          width: 100%;
         }
         .orders-table-wrapper {
           width: 100%;
@@ -1068,22 +1099,25 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
         .orders-table {
           width: 100%;
+          min-width: 960px;
           border-collapse: collapse;
           text-align: left;
         }
         .orders-table th {
           background: #f8fafc;
-          padding: 16px 24px;
-          font-size: 12.5px;
+          padding: 18px 28px;
+          font-size: 13px;
           font-weight: 700;
           letter-spacing: 0.08em;
           color: var(--color-slate-muted);
           border-bottom: 1px solid var(--color-line);
+          white-space: nowrap;
         }
         .orders-table td {
-          padding: 20px 24px;
+          padding: 22px 28px;
           vertical-align: middle;
           border-bottom: 1px solid var(--color-line);
+          white-space: nowrap;
         }
         .orders-table tbody tr:last-child td {
           border-bottom: 0;
@@ -1095,12 +1129,14 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           font-size: 16px;
           font-weight: 700;
           color: var(--color-ink);
+          white-space: nowrap;
         }
         .order-placed-sub {
           display: block;
           font-size: 13px;
           color: var(--color-slate-muted);
           margin-top: 2px;
+          white-space: nowrap;
         }
 
         /* DATE Column styles */
@@ -1109,19 +1145,22 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           font-size: 15px;
           font-weight: 600;
           color: var(--color-ink);
+          white-space: nowrap;
         }
         .order-time-txt {
           display: block;
           font-size: 13px;
           color: var(--color-slate-muted);
           margin-top: 2px;
+          white-space: nowrap;
         }
 
         /* ITEMS Column styles */
         .items-column-cell {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
+          white-space: nowrap;
         }
         .items-preview-thumbs {
           display: flex;
@@ -1129,8 +1168,8 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           gap: 6px;
         }
         .item-thumbnail-box {
-          width: 42px;
-          height: 42px;
+          width: 44px;
+          height: 44px;
           border: 1px solid var(--color-line);
           border-radius: 6px;
           background: #ffffff;
@@ -1500,6 +1539,40 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
         .complete-payment-btn:hover {
           background: var(--color-primary-btn-hover);
+        }
+        .download-invoice-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          height: 40px;
+          padding: 0 18px;
+          background: #0f2747;
+          color: #ffffff;
+          border: 0;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.15s ease, opacity 0.15s ease;
+        }
+        .download-invoice-btn:hover {
+          background: #16305a;
+        }
+        .download-invoice-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .download-invoice-btn :global(svg) {
+          width: 16px;
+          height: 16px;
+        }
+        .download-invoice-btn :global(.download-invoice-spin) {
+          animation: invoiceSpin 0.8s linear infinite;
+        }
+        @keyframes invoiceSpin {
+          to {
+            transform: rotate(360deg);
+          }
         }
         .utr-submit-trigger-btn {
           height: 40px;
