@@ -1,392 +1,243 @@
-import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMailBulk, faPhone } from "@fortawesome/free-solid-svg-icons";
+"use client";
+
+import React, { useState, FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
+import { Mail, Phone, MapPin, Clock3, ArrowRight } from "lucide-react";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaYoutube,
+  FaWhatsapp,
+  FaLinkedinIn,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { postService } from "../../services/service";
 
-import InstagramIcon from "@mui/icons-material/Instagram";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import YouTubeIcon from "@mui/icons-material/YouTube";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+const footerGroups = [
+  {
+    title: "Shop Categories",
+    links: [
+      ["Corrugated boxes", "/corrugated-boxes"],
+      ["Paper bags", "/paper-bags"],
+      ["Poly mailers", "/poly-bags"],
+      ["Tapes & labels", "/packpro-tapes"],
+      ["Food packaging", "/packpro-food-wrapping-papers"],
+      ["Best Deals", "/BestDeals"],
+    ],
+  },
+  {
+    title: "Customer Account",
+    links: [
+      ["My Account", "/profile"],
+      ["My Orders", "/my-orders"],
+      ["Sign In / Login", "/login"],
+      ["Register Account", "/sign-up"],
+      ["Shopping Cart", "/my-cart"],
+      ["Monthly Subscription Order", "/subscription-order"],
+      ["Custom Packaging", "/custom-packaging"],
+    ],
+  },
+  {
+    title: "Help & Policies",
+    links: [
+      ["About Us", "https://prempackaging.com/about-us"],
+      ["Shipping Policy", "/shipping-policy"],
+      ["Returns & Exchange", "/return-and-exchange-policy"],
+      ["Terms of Sale", "/terms-of-sale"],
+      ["Privacy Policy", "/privacy-policy"],
+      ["Contact Us", "/contact-us"],
+    ],
+  },
+];
 
-const Footer = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone_no: "",
-    message: "",
-  });
+const footerSocialLinks = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/PremIndustriesIndiaLimited/",
+    Icon: FaFacebookF,
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/prem_packaging/?hl=en",
+    Icon: FaInstagram,
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@premindustries9251/videos",
+    Icon: FaYoutube,
+  },
+  {
+    label: "WhatsApp",
+    href: "https://wa.me/8447247227",
+    Icon: FaWhatsapp,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://in.linkedin.com/company/prem-packaging",
+    Icon: FaLinkedinIn,
+  },
+];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+function FooterBrand() {
+  return (
+    <Link className="footerBrandLogo" href="/" aria-label="Prem Packaging home">
+      <Image
+        src="/footerlogo.png"
+        alt="Prem Packaging"
+        width={190}
+        height={50}
+        style={{ objectFit: "contain", height: "auto" }}
+      />
+    </Link>
+  );
+}
 
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+export default function Footer() {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (Object.values(formData).some((value) => value === "")) {
-      toast.error("All fields are required");
+  const handleNewsletter = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNewsletterMessage("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
-    if (formData.phone_no.length !== 10) {
-      toast.error("Phone number should be only 10 digits");
-      return;
-    }
-
+    setNewsletterSubmitting(true);
     try {
-      // Send to existing API via centralized service
-      const response1 = await postService("customer/create", formData);
-
-      // Send to new email-store-contact API
-      await axios.post(
-        "https://prem-industries-forms.vercel.app/api/email-store-contact.js",
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone_no,
-          message: formData.message,
-        },
+      const res = await postService(
+        "/newsletter/subscribe",
+        { email },
+        { silent: true },
       );
-
-      toast.success("Message submitted successfully");
-
-      setFormData({
-        name: "",
-        email: "",
-        phone_no: "",
-        message: "",
-      });
-    } catch (error) {
-      console.error("Error:", error instanceof Error ? error.message : error);
+      if (res?.data?.success) {
+        setNewsletterMessage(
+          res.data.message || "You're on the list. Welcome to Prem Packaging.",
+        );
+        toast.success("Subscribed to Prem Packaging newsletter!");
+        setNewsletterEmail("");
+      } else {
+        const msg =
+          res?.data?.message || "Could not subscribe right now. Please try again.";
+        setNewsletterMessage(msg);
+        toast.error(msg);
+      }
+    } finally {
+      setNewsletterSubmitting(false);
     }
   };
 
   return (
-    <div className="row d-flex flex-column m-0 rootdiv">
-      <div className="tw-w-[90%] tw-mx-auto">
-        <div className="container-fluid">
-          <div className="row text-white">
-            <div className="col-md-9">
-              <div className="row">
-                <div className="col-md-4">
-                  <div>
-                    <div className="row m-0">
-                      <p
-                        className="footertext mt-4 ml-3"
-                        style={{ fontSize: "18px", fontWeight: "bold" }}
-                      >
-                        MORE INFORMATION
-                      </p>
-                    </div>
-                    <div>
-                      <ul
-                        style={{
-                          fontSize: "16px",
-                          fontWeight: "400",
-                          color: "white",
-                          lineHeight: "30px",
-                          listStyleType: "none",
-                        }}
-                      >
-                        <Link
-                          className="bullets"
-                          href="https://prempackaging.com/about-us"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>About Us</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/contact-us"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>Contact Us</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/privacy-policy"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>Privacy Policy</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/shipping-policy"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>
-                            Shipping Policy
-                          </li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/terms-of-sale"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>Terms Of Sale</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/return-and-exchange-policy"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>
-                            Return and Exchange Policy
-                          </li>
-                        </Link>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div>
-                    <div className="row m-0">
-                      <p
-                        className="footertext mt-4 ml-3"
-                        style={{ fontSize: "18px", fontWeight: "bold" }}
-                      >
-                        MY ACCOUNT
-                      </p>
-                    </div>
-                    <div>
-                      <ul
-                        style={{
-                          fontSize: "16px",
-                          fontWeight: "400",
-                          color: "white",
-                          lineHeight: "30px",
-                          listStyleType: "none",
-                        }}
-                      >
-                        <Link
-                          className="bullets"
-                          href="/my-cart"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>My Cart</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/my-orders"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>My Orders</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/wishlist"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>My Wishlist</li>
-                        </Link>
-                        <Link
-                          className="bullets"
-                          href="/subscription-order"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <li style={{ color: "#FFFFFF9E" }}>
-                            Monthly Subscription Order
-                          </li>
-                        </Link>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div>
-                    <div
-                      className="row"
-                      style={{ marginLeft: "0px", marginBottom: "10px" }}
-                    >
-                      <p
-                        className="footertext mt-4 ml-3"
-                        style={{ fontSize: "18px", fontWeight: "bold" }}
-                      >
-                        CONTACT US
-                      </p>
-                      <div className="container-fluid d-flex flex-row align-items-start">
-                        <p
-                          className="footertext ml-3"
-                          style={{ fontSize: "16px", color: "#FFFFFF9E" }}
-                        >
-                          C-209, Bulandshahar Road, Industrial Area, Ghaziabad,
-                          Uttar Pradesh, India - 201009
-                        </p>
-                      </div>
-                      <div className="container-fluid d-flex flex-row align-items-start">
-                        <p
-                          className="footertext ml-3"
-                          style={{ fontSize: "16px", color: "#FFFFFF9E" }}
-                        >
-                          Monday - Saturday (9AM - 6PM)
-                        </p>
-                      </div>
-                      <div className="container-fluid d-flex flex-row align-items-start">
-                        <p
-                          className="footertext ml-3"
-                          style={{ fontSize: "16px", color: "#FFFFFF9E" }}
-                        >
-                          +91-844-724-7227
-                        </p>
-                      </div>
-                      <div className="container-fluid d-flex flex-row align-items-start">
-                        <p
-                          className="footertext ml-3"
-                          style={{ fontSize: "16px", color: "#FFFFFF9E" }}
-                        >
-                          ecommerce@premindustries.in
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <form onSubmit={handleSubmit} className="mt-3">
-                <div>
-                  <label>
-                    Name <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    maxLength={100}
-                    required
-                    className="form-control"
-                    placeholder="Your Name"
-                  />
-                </div>
-                <div>
-                  <label>
-                    Email <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    maxLength={100}
-                    required
-                    className="form-control"
-                    placeholder="name@example.com"
-                  />
-                </div>
-                <div>
-                  <label>
-                    Phone Number <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    name="phone_no"
-                    value={formData.phone_no}
-                    onChange={handleChange}
-                    maxLength={10}
-                    minLength={10}
-                    required
-                    className="form-control"
-                    placeholder="Your Contact Number"
-                  />
-                </div>
-                <div>
-                  <label>
-                    Message <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Your message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    maxLength={1000}
-                    required
-                  />
-                </div>
-                <div className="row">
-                  <div className="col-md-12 text-center">
-                    <button
-                      type="submit"
-                      className="btn bg-white text-dark mt-2"
-                    >
-                      submit
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
+    <footer className="globalStorefrontFooter">
+      {/* Red Newsletter Banner */}
+      <section className="newsletterSection">
+        <div className="newsletterInner">
+          <div>
+            <p className="eyebrow redEyebrow">PACK SMARTER</p>
+            <h2>Fresh products and useful offers, occasionally.</h2>
           </div>
-          <div className="row text-white">
-            <div className="col-md-12 d-flex flex-column">
-              <div
-                className="d-flex justif-content-start align-items-center gap-4"
-                style={{ marginTop: "14px", marginBottom: "10px" }}
-              >
-                <span style={{ fontWeight: "bold" }}>FOLLOW US</span>
-                <Link
-                  href="https://www.facebook.com/PremIndustriesIndiaLimited/"
-                  target="_blank"
-                >
-                  <FacebookIcon fontSize="large" sx={{ color: "white" }} />
-                </Link>
-                <Link
-                  href="https://www.instagram.com/prem_packaging/?hl=en"
-                  target="_blank"
-                >
-                  <InstagramIcon fontSize="large" sx={{ color: "white" }} />
-                </Link>
-                <Link
-                  href="https://www.youtube.com/@premindustries9251/videos"
-                  target="_blank"
-                >
-                  <YouTubeIcon
-                    sx={{ color: "white", fontSize: 43, marginTop: 0 }}
-                  />
-                </Link>
-                <Link href="https://wa.me/8447247227" target="_blank">
-                  <WhatsAppIcon fontSize="large" sx={{ color: "white" }} />
-                </Link>
-                <Link
-                  href="https://in.linkedin.com/company/prem-packaging"
-                  target="_blank"
-                >
-                  <LinkedInIcon fontSize="large" sx={{ color: "white" }} />
-                </Link>
-              </div>
+          <form onSubmit={handleNewsletter} noValidate>
+            <label htmlFor="global-newsletter-email">EMAIL ADDRESS</label>
+            <div className="newsletterField">
+              <input
+                type="email"
+                id="global-newsletter-email"
+                placeholder="you@example.com"
+                value={newsletterEmail}
+                onChange={(e) => {
+                  setNewsletterEmail(e.target.value);
+                  setNewsletterMessage("");
+                }}
+                aria-describedby="global-newsletter-message"
+              />
+              <button type="submit" disabled={newsletterSubmitting}>
+                {newsletterSubmitting ? "Joining…" : "Join the list"}{" "}
+                <ArrowRight size={16} />
+              </button>
             </div>
+            <p id="global-newsletter-message" className="newsletterMessage">
+              {newsletterMessage || "No spam. Just useful packaging updates."}
+            </p>
+          </form>
+        </div>
+      </section>
+
+      {/* Main Dark Navy Site Footer */}
+      <div className="siteFooter">
+        <div className="container footerGrid">
+          <div className="footerBrand">
+            <FooterBrand />
+            <p>
+              Everyday packaging, made by experts and delivered directly to you.
+            </p>
+            <address className="footerContactDetails">
+              <p>
+                <MapPin size={16} aria-hidden="true" />
+                <span>
+                  C-209, Bulandshahar Road, Industrial Area, Ghaziabad, Uttar
+                  Pradesh, India - 201009
+                </span>
+              </p>
+              <p>
+                <Clock3 size={16} aria-hidden="true" />
+                <span>Monday - Saturday (9AM - 6PM)</span>
+              </p>
+            </address>
+            <a href="tel:+918447247227" className="footerContactLink">
+              <Phone size={16} />
+              +91 84472 47227
+            </a>
+            <a href="mailto:ecommerce@premindustries.in" className="footerContactLink">
+              <Mail size={16} />
+              ecommerce@premindustries.in
+            </a>
+            <nav
+              className="footerSocialLinks"
+              aria-label="Follow Prem Packaging"
+            >
+              <span>Follow us</span>
+              <div className="footerSocialIconsRow">
+                {footerSocialLinks.map(({ label, href, Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="footerSocialIconButton"
+                  >
+                    <Icon size={16} />
+                  </a>
+                ))}
+              </div>
+            </nav>
           </div>
+          {footerGroups.map((group) => (
+            <div className="footerGroup" key={group.title}>
+              <h3>{group.title}</h3>
+              {group.links.map(([label, href]) => (
+                <Link
+                  key={label}
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noreferrer" : undefined}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="container footerBottom">
+          <p>© 2026 Prem Industries India Limited</p>
+          <p>Ghaziabad, Uttar Pradesh, India</p>
         </div>
       </div>
-      <style jsx>{`
-        @media (max-width: 800px) {
-          .formFields { flex-direction: column; }
-          .formInput { margin-top: 20px; }
-          .list { flex-direction: column; gap: 30px; justify-content: center; align-items: center; }
-          .sections { width: 100% !important; }
-          .formButton { margin-top: 20px; }
-        }
-        .bullets { color: white; }
-        .bullets:hover { color: #e92227; }
-      `}</style>
-    </div>
+    </footer>
   );
-};
-
-export default Footer;
+}

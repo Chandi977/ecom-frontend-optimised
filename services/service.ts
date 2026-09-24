@@ -142,4 +142,30 @@ export const putService = async (url, data, headers = {}, options = {}) => {
   }
 };
 
+export const patchService = async (url, data, options = {}) => {
+  try {
+    return await axiosInstance.patch(
+      url,
+      data,
+      buildRequestConfig({}, options),
+    );
+  } catch (err) {
+    if (shouldReportError(err, options)) {
+      reportError(err);
+    }
+    return null;
+  }
+};
+
+export const deleteService = async (url, options = {}) => {
+  try {
+    return await axiosInstance.delete(url, buildRequestConfig({}, options));
+  } catch (err) {
+    if (shouldReportError(err, options)) {
+      reportError(err);
+    }
+    return null;
+  }
+};
+
 

@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useRef } from "react";
 import { addToCart } from "../../utils/cart";
 import {
   getProductImageSrc,
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
+import AddToCartContent from "../common/AddToCartContent";
+import CartQuantityControl from "../common/CartQuantityControl";
+import useAddToCart from "../../hooks/useAddToCart";
+import useCartLine from "../../hooks/useCartLine";
+import useRevealOnScroll from "../../hooks/useRevealOnScroll";
 import ProductImage from "../product/ProductImage";
 import ProductCardSkeleton from "./ProductCardSkeleton";
+import WishlistButton from "../common/WishlistButton";
 import {
   formatProductCardPrice,
   getProductCardDiscountLabel,
@@ -17,14 +23,46 @@ import { useBrands } from "../../context/BrandContext";
 
 function ListingCard({ item }: { item?: any }) {
   const { brandNameById } = useBrands();
+  const imageRef = useRef<HTMLButtonElement | null>(null);
+  // Shorter travel than the desktop card: on a 2-up phone grid a long rise
+  // reads as the layout still settling rather than as content arriving.
+  const { ref: cardRef, revealProps } = useRevealOnScroll<HTMLElement>({
+    distance: 16,
+  });
+
+  const tier = getPrimaryPriceTier(item);
+  // Cart lines are counted in packs, not pieces: quantity is the number of
+  // packs and packSize is how many pieces each pack holds (the cart page reads
+  // `Pack of {packSize} · Qty {quantity}` and looks the price tier up by it).
+  const packSize = Math.max(1, tier.number);
+
+  const {
+    state: cartState,
+    isBusy: isAdding,
+    buttonProps: cartButtonProps,
+  } = useAddToCart({
+    onAdd: () =>
+      addToCart(
+        item,
+        1,
+        tier.sellingPrice,
+        Number(tier.packWeight) || 0,
+        packSize,
+        packSize,
+        (item?.brand as any)?._id || item?.brand,
+        item?.category,
+        tier.stockQuantity,
+      ),
+    flySource: imageRef,
+  });
+  const cartLine = useCartLine(item?._id);
+  // Hold the button until the confirmation has played out, then hand over.
+  const showQuantityControl = Boolean(cartLine) && !isAdding;
 
   if (!item) {
     return <ProductCardSkeleton variant="mobile" />;
   }
 
-  const tier = getPrimaryPriceTier(item);
-  const quantity = Math.max(1, tier.number);
-  const priceForOne = tier.sellingPrice / quantity;
   // Collapsed label listing: several labels-per-roll products shown as one card.
   // Title uses the base model (display-only clone — the item itself keeps its
   // real model for cart payloads) and the quantities render as a variants line.
@@ -53,16 +91,13 @@ function ListingCard({ item }: { item?: any }) {
     }
   };
 
-  const handleCart = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    await addToCart(item, quantity, priceForOne);
-  };
-
   return (
-    <article className="mobile-product-card">
+    <article className="mobile-product-card" ref={cardRef} {...revealProps}>
       {badge && <span className={`card-badge ${badge.toLowerCase()}`}>{badge}</span>}
+      <WishlistButton product={item} size="sm" />
 
       <button
+        ref={imageRef}
         type="button"
         className="image-button"
         onClick={handleViewProduct}
@@ -96,9 +131,27 @@ function ListingCard({ item }: { item?: any }) {
           {discountLabel && <span>{discountLabel}</span>}
         </div>
 
-        <button type="button" className="add-cart-button" onClick={handleCart}>
-          ADD TO CART
-        </button>
+        {showQuantityControl ? (
+          <div className="cart-control-slot">
+            <CartQuantityControl
+              productId={String(item._id)}
+              quantity={cartLine?.quantity || 1}
+              packSize={cartLine?.packSize || packSize}
+              size="sm"
+            />
+          </div>
+        ) : (
+          <button type="button" className="add-cart-button" {...cartButtonProps}>
+            <AddToCartContent
+              state={cartState}
+              idleLabel="ADD TO CART"
+              addingLabel="ADDING..."
+              addedLabel="ADDED"
+              icon={false}
+              iconSize={13}
+            />
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -142,6 +195,13 @@ function ListingCard({ item }: { item?: any }) {
           padding: 28px 8px 8px;
           background: #fff;
           cursor: pointer;
+          /* Touch-first surface: there is no hover to lean on, so the press
+             itself has to answer. Scaling the button (not the card) keeps the
+             feedback inside its own bounds and shifts nothing around it. */
+          transition: transform var(--motion-instant) var(--motion-ease-standard);
+        }
+        .image-button:active {
+          transform: scale(0.97);
         }
         .card-body {
           display: flex;
@@ -222,6 +282,11 @@ function ListingCard({ item }: { item?: any }) {
           line-height: 1;
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
+        }
+        .cart-control-slot {
+          display: flex;
+          width: 100%;
+          margin-top: 10px;
         }
         .add-cart-button {
           display: inline-flex;

@@ -1,4 +1,5 @@
 import React from "react";
+import { cdn } from "../../lib/cdn";
 
 function BOPPTapeBanner() {
   return (
@@ -10,7 +11,7 @@ function BOPPTapeBanner() {
     >
       <div className="w-100 h-100">
         <img
-          src="/BannerBopp.jpg"
+          src={cdn("/BannerBopp.jpg")}
           alt="BOPP Tapes Banner"
           className="p-0 tw-block tw-w-full tw-h-auto tw-object-cover"
           style={{

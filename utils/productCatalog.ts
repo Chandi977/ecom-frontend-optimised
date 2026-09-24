@@ -317,6 +317,65 @@ export const getProductSeo = (
   };
 };
 
+export interface SubCategoryFaq {
+  question: string;
+  answer: string;
+}
+
+export interface SubCategorySeoContent {
+  /** Section heading; defaults to "About <sub-category>" when left blank. */
+  heading: string;
+  /** Long-form plain-text copy. Blank lines split paragraphs, `- ` makes bullets. */
+  description: string;
+  faqs: SubCategoryFaq[];
+  /** Sub-category the copy was authored on, used for the default heading. */
+  subCategoryName: string;
+}
+
+/**
+ * Sub-category-level SEO copy + FAQ shared by every product in the sub-category.
+ *
+ * `product/get/:slug` resolves this server-side (including the legacy
+ * category-mirrors-sub-category case) into `sub_category_seo_content`; the
+ * populated `sub_category` is the fallback for any other caller.
+ */
+export const getSubCategorySeoContent = (
+  product?: Partial<IProduct> | UnknownRecord,
+): SubCategorySeoContent | null => {
+  const source = (product || {}) as UnknownRecord;
+  const resolved = isRecord(source.sub_category_seo_content)
+    ? source.sub_category_seo_content
+    : null;
+  const subCategory = isRecord(source.sub_category) ? source.sub_category : {};
+  const block =
+    resolved ||
+    (isRecord(subCategory.seo_content) ? subCategory.seo_content : null);
+  if (!block) return null;
+
+  const description = stringOrEmpty(block.description);
+  const faqs = (Array.isArray(block.faqs) ? block.faqs : [])
+    .map((entry) => {
+      const row = isRecord(entry) ? entry : {};
+      return {
+        question: stringOrEmpty(row.question),
+        answer: stringOrEmpty(row.answer),
+      };
+    })
+    .filter((faq) => faq.question && faq.answer);
+
+  if (!description && faqs.length === 0) return null;
+
+  const subCategoryName =
+    stringOrEmpty(block.sub_category_name) || stringOrEmpty(subCategory.name);
+
+  return {
+    heading: stringOrEmpty(block.heading),
+    description,
+    faqs,
+    subCategoryName,
+  };
+};
+
 export const getLegacyCompatibleProduct = (
   product?: Partial<IProduct> | UnknownRecord,
 ): UnknownRecord => {

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "../listing/productDisplay";
 import { useBrands } from "../../context/BrandContext";
+import { cdn } from "../../lib/cdn";
+import WishlistButton from "../common/WishlistButton";
 
 function DealsCard({ item }) {
   const { brandNameById } = useBrands();
@@ -36,7 +38,7 @@ function DealsCard({ item }) {
   return (
     <>
     <div
-      className="d-flex flex-column justify-content-start align-items-center mx-md-0 mx-5"
+      className="deals-card d-flex flex-column justify-content-start align-items-center mx-md-0 mx-5"
       style={{
         width: "227px",
         height: "320px",
@@ -54,10 +56,11 @@ function DealsCard({ item }) {
         }}
       >
         <img
-          src={item?.images?.[0]?.image || "/pp_logo_1.png"}
+          src={item?.images?.[0]?.image || cdn("/pp_logo_1.png")}
           alt={item?.name || "Product image"}
           style={{ width: "150px", height: "150px" }}
         />
+        <WishlistButton product={item} size="sm" placement="top-left" />
         {item?.priceList?.[0]?.MRP !== item?.priceList?.[0]?.SP && (
           <div
             className="d-flex flex-column justify-content-center align-items-center"
@@ -154,6 +157,17 @@ function DealsCard({ item }) {
         .landing-mrptext { color: #000000; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
         .landing-packagebtn { border: 0; color: #fff; text-align: center; font-family: Montserrat; font-size: 18px; font-style: normal; font-weight: 400; line-height: 20px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; background-color: #182c5a; transition: background-color 0.2s ease-out; }
         .landing-packagebtn:hover { background-color: #e92227; }
+
+        /* Hover lift — same easing as the category cards on the home page. */
+        .deals-card { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease; }
+        .deals-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(24, 44, 90, 0.12); border-color: rgba(24, 44, 90, 0.15) !important; }
+        .deals-card img { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .deals-card:hover img { transform: scale(1.05); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .deals-card, .deals-card img { transition: none; }
+          .deals-card:hover, .deals-card:hover img { transform: none; }
+        }
       `}</style>
     </>
   );

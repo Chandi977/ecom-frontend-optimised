@@ -1,7 +1,8 @@
 "use client"; // This is a client component 👈🏽
 import React, { useEffect, useState } from "react";
-import Banner from "../../components/landing/Banner";
 import Head from "next/head";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, contentPageSchema } from "../../utils/schema";
 
 const PrivacyPolicy = () => {
 
@@ -14,10 +15,22 @@ const PrivacyPolicy = () => {
           name="description"
           content="Get fast, reliable, and secure delivery with our shipping policy. Track your orders and enjoy timely packaging product deliveries nationwide."
         />
+        <link rel="canonical" href={canonicalUrl("/shipping-policy")} />
       </Head>
+
+      <JsonLd
+        id="page"
+        data={contentPageSchema({
+          path: "/shipping-policy",
+          name: "Shipping Policy",
+          type: "WebPage",
+          description:
+            "Get fast, reliable, and secure delivery with our shipping policy. Track your orders and enjoy timely packaging product deliveries nationwide.",
+          breadcrumb: [{ name: "Shipping Policy", path: "/shipping-policy" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
-          <Banner />
           <div
             className="row policy-mainbody"
             style={{ backgroundColor: "white" }}

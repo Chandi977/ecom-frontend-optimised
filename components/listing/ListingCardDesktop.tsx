@@ -1,15 +1,7 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import ProductCardSkeleton from "./ProductCardSkeleton";
-import {
-  addToFav,
-  getFav,
-  removeFromFav,
-  WISHLIST_UPDATED_EVENT,
-} from "../../utils/favourites";
 import { useEffect } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "./productDisplay";
@@ -20,31 +12,14 @@ import {
   getPrimaryPriceTier,
 } from "../../utils/productCatalog";
 import ProductImage from "../product/ProductImage";
-
-type WishlistEntry = { product?: { _id?: string } };
+import WishlistButton from "../common/WishlistButton";
 
 function ListingCardDesktop({ item }: { item?: any }) {
   const { brandNameById } = useBrands();
-  const [favourite, setFavourite] = useState<WishlistEntry[]>([]);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [final, setFinal] = useState(0);
-  const checkFav = (id) => {
-    const temp = favourite?.map((x) => x?.product?._id).indexOf(id);
-    if (temp === -1 || temp === undefined || temp === null) {
-      return false;
-    } else {
-      return true;
-    }
-  };
-
-  const getFavourite = async () => {
-    const result = await getFav();
-    setFavourite(Array.isArray(result) ? result : []);
-  };
-
   useEffect(() => {
-    getFavourite();
     if (item) {
       const tier = getPrimaryPriceTier(item);
       const priceForOne = tier.sellingPrice / Math.max(1, tier.number);
@@ -53,29 +28,6 @@ function ListingCardDesktop({ item }: { item?: any }) {
       setFinal(tier.sellingPrice);
     }
   }, [item]);
-
-  useEffect(() => {
-    const handleWishlistUpdate = () => {
-      getFavourite();
-    };
-
-    window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-    return () => {
-      window.removeEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-    };
-  }, []);
-
-  const handleFavourite = async (e, product) => {
-    e.stopPropagation();
-    const temp = favourite?.map((x) => x?.product?._id).indexOf(product?._id);
-    if (temp === -1 || temp === undefined || temp === null) {
-      await addToFav(product);
-      getFavourite();
-    } else {
-      await removeFromFav(product?._id);
-      getFavourite();
-    }
-  };
 
   const handleCart = async (e) => {
     e.stopPropagation();
@@ -125,31 +77,7 @@ function ListingCardDesktop({ item }: { item?: any }) {
             <br />
             {/* Box NC19 */}
           </p>
-          {checkFav(item?._id) ? (
-            <FontAwesomeIcon
-              icon={faHeart}
-              style={{
-                color: "red",
-                width: "15px",
-                height: "15px",
-                paddingRight: "15px",
-                cursor: "pointer",
-              }}
-              onClick={(e) => handleFavourite(e, item)}
-            />
-          ) : (
-            <FontAwesomeIcon
-              icon={faHeart}
-              style={{
-                color: "grey",
-                width: "15px",
-                height: "15px",
-                paddingRight: "15px",
-                cursor: "pointer",
-              }}
-              onClick={(e) => handleFavourite(e, item)}
-            />
-          )}
+          <WishlistButton product={item} variant="inline" size="sm" />
         </div>
 
         <p className="listing-desk-pricetext">{formatCurrency(final)}</p>

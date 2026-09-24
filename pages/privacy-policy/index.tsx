@@ -12,10 +12,11 @@ import Pagination from "@mui/material/Pagination";
 import Head from "next/head";
 import Stack from "@mui/material/Stack";
 import { getService, postService } from "../../services/service";
-import Banner from "../../components/landing/Banner";
 import { useRouter } from "next/router";
 import ListingCard from "../../components/listing/ListingCard";
 import ListingCardDesktop from "../../components/listing/ListingCardDesktop";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, contentPageSchema } from "../../utils/schema";
 
 const PrivacyPolicy = () => {
 
@@ -25,10 +26,22 @@ const PrivacyPolicy = () => {
         <title>
           Privacy Policy - Prem Industries India Limited - Innovation In Action
         </title>
+        <link rel="canonical" href={canonicalUrl("/privacy-policy")} />
       </Head>
+
+      <JsonLd
+        id="page"
+        data={contentPageSchema({
+          path: "/privacy-policy",
+          name: "Privacy Policy",
+          type: "WebPage",
+          description:
+            "How Prem Industries India Limited collects, uses and protects the personal information you share with the Prem Packaging store.",
+          breadcrumb: [{ name: "Privacy Policy", path: "/privacy-policy" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
-          <Banner />
           <div
             className="row policy-mainbody"
             style={{ backgroundColor: "white" }}

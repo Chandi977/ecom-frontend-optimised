@@ -10,6 +10,7 @@ import Head from "next/head";
 import Loader from "../../components/loader"; // Import your loader component
 import { postService } from "../../services/service";
 import Link from "next/link";
+import { cdn } from "../../lib/cdn";
 
 const Forgetpage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -118,7 +119,7 @@ const Forgetpage = () => {
             </div>
             <div className="col-md-6 text-center">
               <img
-                src="/forgotpasswordimg.png"
+                src={cdn("/forgotpasswordimg.png")}
                 alt="..."
                 height={300}
                 width={300}

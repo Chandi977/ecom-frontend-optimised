@@ -13,11 +13,28 @@ import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-toastify";
 import { syncFavToServer } from "../../utils/favourites";
 import { migrateGuestCartToServer } from "../../utils/cart";
-import { setAuthState } from "../../services/token";
+import {
+  getRefreshToken,
+  getToken,
+  setAuthState,
+} from "../../services/token";
+import { refreshAccessToken } from "../../services/auth";
+import { cdn } from "../../lib/cdn";
+
+const getSafeRedirectPath = (redirect: string | string[] | undefined) => {
+  const path = Array.isArray(redirect) ? redirect[0] : redirect;
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/";
+  }
+
+  const pathname = path.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+  return pathname === "/login" ? "/" : path;
+};
 
 const Loginpage = () => {
   const [widt, setWidt] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const breakpoint = 700;
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -34,11 +51,45 @@ const Loginpage = () => {
   }, []);
   const router = useRouter();
 
-  const getRedirectPath = () => {
-    const redirect = router.query.redirect;
-    const path = Array.isArray(redirect) ? redirect[0] : redirect;
-    return path && path.startsWith("/") && !path.startsWith("//") ? path : "/";
-  };
+  const getRedirectPath = () =>
+    getSafeRedirectPath(router.query.redirect);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    let isActive = true;
+
+    const redirectAuthenticatedUser = async () => {
+      try {
+        let authenticated = Boolean(getToken());
+
+        if (!authenticated && getRefreshToken()) {
+          authenticated = Boolean(await refreshAccessToken());
+        }
+
+        if (!isActive) return;
+
+        if (authenticated) {
+          const navigated = await router.replace(getRedirectPath());
+          if (navigated || !isActive) return;
+        }
+      } catch {
+        // Keep the login form available if the session check cannot complete.
+      }
+
+      if (isActive) {
+        setIsCheckingSession(false);
+      }
+    };
+
+    void redirectAuthenticatedUser();
+
+    return () => {
+      isActive = false;
+    };
+    // The redirect query is stable once router.isReady becomes true.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
 
   const [login, setLogin] = useState({
     email_address: "",
@@ -84,6 +135,10 @@ const Loginpage = () => {
   const handleGoogleError = () => {
     toast.error("Google login failed. Please try again.");
   };
+
+  if (isCheckingSession) {
+    return null;
+  }
 
   return (
     <>
@@ -299,7 +354,7 @@ const Loginpage = () => {
               </form>
             </div>
             <div className="col-md-6 text-center mb-3">
-              <img src="/loginpageimg.png" alt="..." height={350} width={350} />
+              <img src={cdn("/loginpageimg.png")} alt="..." height={350} width={350} />
             </div>
           </div>
         </div>

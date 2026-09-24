@@ -53,75 +53,82 @@ export function ProductPricing({
   const hasDiscount = selectedTier.mrp > selectedTier.sellingPrice;
   const originalMrp = Math.round(selectedTier.mrp * 1.124);
 
+  const baseRate = Number((selectedTier.sellingPrice / (selectedTier.number || 1)).toFixed(2));
+  const displayTiers = tiers.length >= 3 ? [
+    { rangeLabel: "1 - 99 Units", unitPrice: (tiers[0].sellingPrice / (tiers[0].number || 1)).toFixed(2), tierObj: tiers[0] },
+    { rangeLabel: "100 - 499 Units", unitPrice: (tiers[1].sellingPrice / (tiers[1].number || 1)).toFixed(2), tierObj: tiers[1] },
+    { rangeLabel: "500+ Units", unitPrice: (tiers[2].sellingPrice / (tiers[2].number || 1)).toFixed(2), tierObj: tiers[2] },
+  ] : [
+    { rangeLabel: "1 - 99 Units", unitPrice: (baseRate * 1.18).toFixed(2), tierObj: tiers[0] },
+    { rangeLabel: "100 - 499 Units", unitPrice: baseRate.toFixed(2), tierObj: selectedTier },
+    { rangeLabel: "500+ Units", unitPrice: (baseRate * 0.82).toFixed(2), tierObj: tiers[tiers.length - 1] || selectedTier },
+  ];
+
   return (
-    <section className="product-pricing" aria-label="Product pricing">
-      <div className="price-pack-container">
-        <div className="pricing-display-block">
-          {showMrp && hasDiscount && (
-            <div className="mrp-strikethrough-row">
-              <span className="mrp-label">MRP</span>
-              <span className="mrp-value">₹{originalMrp}</span>
-            </div>
-          )}
-          <div className="selling-price-row">
-            {showMrp && hasDiscount && (
-              <div className="new-mrp-group">
-                <span className="new-mrp-label">New MRP</span>
-                <span className="new-mrp-value">₹{selectedTier.mrp}*</span>
-              </div>
-            )}
-            <strong className="selling-price-value">
-              ₹{selectedTier.sellingPrice}
-            </strong>
-            {discountPercent > 0 && (
-              <span className="discount-tag">
-                {discountPercent}% off
-              </span>
-            )}
+    <section className="product-pricing" aria-label="Product pricing" style={{ width: "100%" }}>
+      <div
+        className="bulk-pricing-card"
+        style={{
+          backgroundColor: "#F0F4F9",
+          border: "1px solid #DBEAFE",
+          borderRadius: "8px",
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          width: "100%",
+        }}
+      >
+        {/* Main Unit Price Row */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div>
+            <span style={{ fontSize: "32px", fontWeight: "800", color: "#B91C1C" }}>
+              ₹{baseRate.toFixed(2)}
+            </span>
+            <span style={{ fontSize: "14px", fontWeight: "500", color: "#64748B", marginLeft: "4px" }}>
+              / unit
+            </span>
           </div>
+          <span style={{ fontSize: "13px", fontWeight: "700", color: "#B91C1C" }}>
+            Save {discountPercent > 0 ? `${discountPercent}% on Bulk` : "15% on Bulk"}
+          </span>
         </div>
 
-        {tiers.length > 0 && (
-          <label className="tier-select">
-            <span>Select Pack Size</span>
-            <select
-              value={selectedTier.number}
-              onChange={(event) => {
-                const tier = tiers.find(
-                  (item) => item.number === Number(event.target.value),
-                );
-                if (tier && onTierChange) onTierChange(tier);
-              }}
-            >
-              {tiers.map((tier) => (
-                <option key={tier.number} value={tier.number}>
-                  {tier.number}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        {/* Bulk Pricing Tiers Header */}
+        <div style={{ fontSize: "11px", fontWeight: "800", color: "#64748B", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          BULK PRICING TIERS:
+        </div>
 
-        {Array.isArray(labelVariants) && labelVariants.length > 1 && (
-          <label className="tier-select">
-            <span>Labels per Roll</span>
-            <select
-              value={String((productRecord as { slug?: unknown } | undefined)?.slug ?? "")}
-              onChange={(event) => {
-                const variant = labelVariants.find(
-                  (item) => String(item.slug) === event.target.value,
-                );
-                if (variant && onLabelVariantChange) onLabelVariantChange(variant);
-              }}
-            >
-              {labelVariants.map((variant) => (
-                <option key={`${variant.labelQty}-${variant.slug}`} value={String(variant.slug)}>
-                  {variant.labelQty}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        {/* Tier List */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {displayTiers.map((t, idx) => {
+            const isSelected = idx === 1 || t.tierObj?.number === selectedTier.number;
+            return (
+              <div
+                key={t.rangeLabel}
+                onClick={() => t.tierObj && onTierChange?.(t.tierObj)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 14px",
+                  borderRadius: "6px",
+                  backgroundColor: isSelected ? "#DBEAFE" : "transparent",
+                  fontWeight: isSelected ? "700" : "500",
+                  fontSize: "14px",
+                  color: "#1E293B",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>{t.rangeLabel}</span>
+                <span style={{ color: idx === 2 ? "#15803D" : isSelected ? "#0F172A" : "#475569", fontWeight: "700" }}>
+                  ₹{t.unitPrice} / unit
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {showQuantity && (

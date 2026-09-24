@@ -5,7 +5,9 @@ const Loader = ({ variant = "card", count = 1 }) => {
   if (variant === "spinner") {
     return (
       <div className="tw-flex tw-items-center tw-justify-center tw-p-3">
-        <div className="spinner"></div>
+        {/* data-motion-keep: progress feedback survives the reduced-motion
+            guard in styles/globals.css — a frozen spinner reads as a hang. */}
+        <div className="spinner" data-motion-keep role="status" aria-label="Loading"></div>
         <style jsx>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }

@@ -1,4 +1,5 @@
 import React from "react";
+import { cdn } from "../../lib/cdn";
 
 function PaperTapeBanner() {
   return (
@@ -10,7 +11,7 @@ function PaperTapeBanner() {
     >
       <div className="w-100 h-100">
         <img
-          src="BannerPaperTape.jpg"
+          src={cdn("/BannerPaperTape.jpg")}
           alt="Paper Tapes Banner"
           className="p-0 tw-block tw-w-full tw-h-auto tw-object-cover"
           style={{
