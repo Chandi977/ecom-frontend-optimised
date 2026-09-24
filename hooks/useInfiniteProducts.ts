@@ -41,6 +41,7 @@ export const useInfiniteProducts = ({
   const [currentFilter, setCurrentFilter] = useState(initialFilter);
   const [observerNode, setObserverNode] = useState<any>(null);
   const sortRef = useRef(sortBy);
+  const isFetchingMoreRef = useRef(false);
 
   useEffect(() => {
     sortRef.current = sortBy;
@@ -77,9 +78,10 @@ export const useInfiniteProducts = ({
   );
 
   const fetchMore = useCallback(async () => {
-    if (isFetchingMore || !hasMore || isLoading) {
+    if (isFetchingMoreRef.current || !hasMore || isLoading) {
       return;
     }
+    isFetchingMoreRef.current = true;
     setIsFetchingMore(true);
     try {
       const response = await fetcher({
@@ -109,13 +111,13 @@ export const useInfiniteProducts = ({
     } catch (error) {
       console.error("Error occurred:", error);
     } finally {
+      isFetchingMoreRef.current = false;
       setIsFetchingMore(false);
     }
   }, [
     currentFilter,
     fetcher,
     hasMore,
-    isFetchingMore,
     isLoading,
     nextLimit,
     offset,

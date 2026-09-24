@@ -723,7 +723,20 @@ const Productpage = ({ product: rawProduct }) => {
         {seo.description && (
           <meta name="twitter:description" content={seo.description} />
         )}
-        {seo.canonical && <link rel="canonical" href={seo.canonical} />}
+        {seo.canonical ? (
+          <link rel="canonical" href={seo.canonical} />
+        ) : (
+          <link
+            rel="canonical"
+            href={`https://www.store.prempackaging.com/${String(
+              product?.slug || product?._id || "",
+            )
+              .split("/")
+              .filter(Boolean)
+              .map(encodeURIComponent)
+              .join("/")}`}
+          />
+        )}
         {seo.schema && (
           <script
             type="application/ld+json"

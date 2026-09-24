@@ -438,7 +438,7 @@ const TapeListingPage = ({
       <div className="row p-0 m-0">
         <BannerComponent />
         <div className="row tw-px-[110px] max-[900px]:tw-px-[10px]" style={{ backgroundColor: "white" }}>
-          <div className="mt-2 d-flex flex-column">
+          <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
             <p className="tw-text-[#222] tw-font-montserrat tw-underline tw-cursor-pointer">
               <span onClick={() => router.push("/")}>Homepage</span> /{" "}
               <span className="tw-no-underline">{breadcrumbLabel}</span>
@@ -459,13 +459,16 @@ const TapeListingPage = ({
             renderFilterContent={renderFilterContent}
           />
           <div className="row mt-4 d-flex" style={{ position: "relative" }}>
-            <div className="d-flex flex-column col-3 desktopFilter">
+            <div className="d-flex flex-column col-3 desktopFilter" data-catalog-filters>
               <div className="col-12 p-0 m-0 tw-flex tw-flex-col tw-items-start max-[900px]:tw-hidden">
                 {renderFilterContent()}
               </div>
             </div>
 
-            <div className="col-9 productslistdivwindow">
+            <div
+              className="col-9 productslistdivwindow"
+              data-product-grid
+            >
               {products && products.length > 0 ? (
                 products.map((item, index) => (
                   <div className="row w-40" style={{ height: "400px" }} key={index}>

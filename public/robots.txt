@@ -1,5 +1,15 @@
 User-agent: *
-Disallow: 
+Disallow:
 Disallow: /admin
+Disallow: /my-cart
+Disallow: /wishlist
+Disallow: /checkoutpage
+Disallow: /payment
+Disallow: /login
+Disallow: /sign-up
+Disallow: /forget-password
+Disallow: /reset-password
+Disallow: /verify-otp
+Disallow: /profile
 
-Sitemap: https://store.prempackaging.com/sitemap.xml
+Sitemap: https://www.store.prempackaging.com/sitemap.xml

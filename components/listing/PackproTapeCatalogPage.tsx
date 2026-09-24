@@ -166,7 +166,7 @@ const PackproTapeCatalogPage = ({
           className="row pc-mainbody"
           style={{ backgroundColor: "white" }}
         >
-          <div className="mt-2 d-flex flex-column">
+          <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
             <p className="pc-catalogpath">
               <span onClick={() => router.push("/")}>Homepage</span> /{" "}
               <span className="tw-no-underline">PackPro</span>
@@ -189,13 +189,16 @@ const PackproTapeCatalogPage = ({
             renderFilterContent={renderFilterContent}
           />
           <div className="row mt-4 d-flex" style={{ position: "relative" }}>
-            <div className="d-flex flex-column col-3 pc-desktopFilter">
+            <div className="d-flex flex-column col-3 pc-desktopFilter" data-catalog-filters>
               <div className="col-12 p-0 m-0 pc-filterslayout">
                 {renderFilterContent()}
               </div>
             </div>
 
-            <div className="col-9 pc-productslistdivwindow">
+            <div
+              className="col-9 pc-productslistdivwindow"
+              data-product-grid
+            >
               {products?.length > 0 ? (
                 products.map((item, index) => (
                   <div

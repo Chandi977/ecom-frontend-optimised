@@ -370,7 +370,7 @@ const PackproTapesCatalogPage = ({
       <div className="row p-0 m-0">
         <BannerComponent />
         <div className="row main-body" style={{ backgroundColor: "white" }}>
-          <div className="mt-2 d-flex flex-column">
+          <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
             <p className="catalog-path">
               <span onClick={() => router.push("/")}>Homepage</span> /{" "}
               <span className="tw-no-underline">Tapes</span>
@@ -391,13 +391,16 @@ const PackproTapesCatalogPage = ({
             renderFilterContent={renderFilterContent}
           />
           <div className="row mt-4 d-flex" style={{ position: "relative" }}>
-            <div className="d-flex flex-column col-3 desktop-filter">
+            <div className="d-flex flex-column col-3 desktop-filter" data-catalog-filters>
               <div className="col-12 p-0 m-0 filters-layout">
                 {renderFilterContent()}
               </div>
             </div>
 
-            <div className="col-9 products-list-div-window">
+            <div
+              className="col-9 products-list-div-window"
+              data-product-grid
+            >
               {products && products.length > 0 ? (
                 products.map((item, index) => (
                   <div className="row w-40" style={{ height: "400px" }} key={index}>

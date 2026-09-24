@@ -424,7 +424,7 @@ const Listingpage = ({
             className="row page-mainbody"
             style={{ backgroundColor: "white" }}
           >
-            <div className="mt-2 d-flex flex-column">
+            <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
               <p className="page-catalogpath">
                 <span onClick={() => router.push("/")}>Homepage</span> /{" "}
                 <span className="tw-no-underline">Product Listing</span>
@@ -449,9 +449,12 @@ const Listingpage = ({
               renderFilterContent={renderFilterContent}
             />
             <div className="row mt-4">
-              <div className="col-4">{renderFilters()}</div>
+              <div className="col-4" data-catalog-filters>{renderFilters()}</div>
               {/* this column is for windows view */}
-              <div className="col-8 p-0 page-productslistdivwindow">
+              <div
+                className="col-8 p-0 page-productslistdivwindow"
+                data-product-grid
+              >
                 {products && products.length > 0 ? (
                   products.map((item, index) => (
                     <div

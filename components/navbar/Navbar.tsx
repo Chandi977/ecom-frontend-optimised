@@ -292,6 +292,7 @@ const Navbar = () => {
       );
 
       if (nextHeight > 0) {
+        document.documentElement.style.setProperty("--store-navbar-height", `${nextHeight}px`);
         setNavbarHeight((currentHeight) =>
           currentHeight === nextHeight ? currentHeight : nextHeight,
         );

@@ -169,6 +169,16 @@ const CatalogFilterControls = ({
   gap: 16px;
   padding-left: 25px;
 }
+@media (min-width: 901px) {
+  .cfc-header {
+    position: sticky;
+    top: calc(var(--store-navbar-height, 167px) + 38px);
+    z-index: 17;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: #fff;
+  }
+}
 @media (max-width: 900px) {
   .cfc-header { flex-direction: column; align-items: flex-start; padding-left: 0; gap: 10px; }
 }

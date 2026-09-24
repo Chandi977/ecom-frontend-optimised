@@ -20,7 +20,32 @@ import "antd/dist/reset.css";
 import { ConfigProvider } from "antd";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { BrandProvider } from "../context/BrandContext";
+
+const NOINDEX_PREFIXES: string[] = [
+  "/my-cart",
+  "/wishlist",
+  "/login",
+  "/sign-up",
+  "/profile",
+  "/payment",
+  "/verify-otp",
+  "/forget-password",
+  "/reset-password",
+  "/re-verify-email",
+  "/email-verification",
+  "/my-orders",
+  "/subscription-order",
+  "/logout",
+];
+
+const NOINDEX_EXACT: string[] = [
+  "/forget-password",
+  "/reset-password",
+  "/re-verify-email",
+  "/email-verification",
+];
 
 
 config.autoAddCss = false;
@@ -45,6 +70,12 @@ export default function MyApp({ Component, pageProps }) {
       </Script>
 
       <BrandProvider>
+        <Head>
+          {(NOINDEX_PREFIXES.some((p) => router.pathname.startsWith(p)) ||
+            NOINDEX_EXACT.includes(router.pathname)) && (
+            <meta name="robots" content="noindex, nofollow" />
+          )}
+        </Head>
         <div
           className="container-fluid d-flex flex-column justify-content-between p-0"
           style={{ minHeight: "100vh" }}

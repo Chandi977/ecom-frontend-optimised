@@ -267,7 +267,7 @@ const BoppTape = ({
             className={"row " + "mainbody"}
             style={{ backgroundColor: "white" }}
           >
-            <div className="mt-2 d-flex flex-column">
+            <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
               <p className={"catalogpath"}>
                 <span onClick={() => router.push("/")}>Homepage</span> /{" "}
                 <span className={"tw-no-underline"}>Chromo Labels</span>
@@ -298,6 +298,7 @@ const BoppTape = ({
               {/* Filters for Desktop View */}
               <div
                 className={"d-flex flex-column col-3 " + "desktopFilter"}
+                data-catalog-filters
               >
                 <div className={"col-12 p-0 m-0" + "filterslayout"}>
                   <div
@@ -483,7 +484,10 @@ const BoppTape = ({
                 </div>
               </div>
               {/* this column is for windows view */}
-              <div className={"col-9 " + "productslistdivwindow"}>
+              <div
+                className={"col-9 " + "productslistdivwindow"}
+                data-product-grid
+              >
                 {displayProducts && displayProducts.length > 0 ? (
                   displayProducts.map((item, index) => (
                     <div

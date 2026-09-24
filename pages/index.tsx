@@ -1,5 +1,5 @@
 import { getService } from "../services/service";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import LandingBrandCard from "../components/landing/landingBrandCard";
 import DealsCard from "../components/landing/DealsCard";
 import TopCard from "../components/landing/TopCard";
@@ -117,9 +117,6 @@ export default function Home({ brand, product, deal }) {
   const [deals, setDeals] = useState<any[]>([]);
   const [top, setTop] = useState<any[]>([]);
   const [type, setType] = useState("desktop");
-  const sliderRef1 = useRef<any>(null);
-  const sliderRef4 = useRef<any>(null);
-
   var settings = {
     dots: false,
     infinite: true,
@@ -518,39 +515,6 @@ export default function Home({ brand, product, deal }) {
                       width: "378px",
                     }}
                   ></div>
-                  {type === "desktop" && top?.length > 5 && (
-                    <>
-                      <br />
-                      <div
-                        className="slider-arrow-prev"
-                        style={{}}
-                        onClick={() => sliderRef1.current?.slickPrev?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                          alt="Previous slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div
-                        className="slider-arrow-next"
-                        onClick={() => sliderRef1.current?.slickNext?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                          alt="Next slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                    </>
-                  )}
-
                   <div
                     className="mt-5 mb-2 ml-2 d-flex flex-row justify-content-start"
                     style={{ columnGap: "35px" }}
@@ -569,7 +533,6 @@ export default function Home({ brand, product, deal }) {
                   {type === "desktop" && top?.length > 5 && (
                     <Slider
                       {...settings}
-                      ref={sliderRef1}
                       style={{ marginLeft: "20px" }}
                     >
                       {top?.map((item, index) => {
@@ -582,41 +545,9 @@ export default function Home({ brand, product, deal }) {
                     </Slider>
                   )}
 
-                  {type === "mobile" && top?.length > 5 && (
-                    <>
-                      <div
-                        className="slider-arrow-prev-mobile"
-                        style={{ marginLeft: "1px" }}
-                        onClick={() => sliderRef1.current?.slickPrev?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                          alt="Previous slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div
-                        className="slider-arrow-next-mobile"
-                        onClick={() => sliderRef1.current?.slickNext?.()}
-                      >
-                        <Image
-                          src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                          alt="Next slide"
-                          className="arrow-image"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                        />
-                      </div>
-                    </>
-                  )}
-
                   <div>
                     {type === "mobile" && (
-                      <Slider {...settings} ref={sliderRef1}>
+                      <Slider {...settings}>
                         {top?.map((item, index) => {
                           return (
                             <div key={index}>
@@ -645,32 +576,6 @@ export default function Home({ brand, product, deal }) {
                   }}
                   className=" d-flex justify-content-right align-item-right"
                 ></div>
-                {type === "desktop" && deals?.length > 5 && (
-                  <>
-                    <div
-                      className="slider-arrow-prev"
-                      style={{}}
-                      onClick={() => sliderRef4.current?.slickPrev?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                        alt="Previous slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                    <div
-                      className="slider-arrow-next"
-                      onClick={() => sliderRef4.current?.slickNext?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                        alt="Next slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                  </>
-                )}
-
                 <div
                   className="mt-5 mb-2 ml-2 d-flex flex-row justify-content-center"
                   style={{ columnGap: "35px" }}
@@ -689,7 +594,6 @@ export default function Home({ brand, product, deal }) {
                 {type === "desktop" && deals?.length > 5 && (
                   <Slider
                     {...settings}
-                    ref={sliderRef4}
                     style={{ marginLeft: "20px" }}
                   >
                     {deals?.map((item, index) => {
@@ -702,35 +606,9 @@ export default function Home({ brand, product, deal }) {
                   </Slider>
                 )}
 
-                {type === "mobile" && deals?.length > 5 && (
-                  <>
-                    <div
-                      className="slider-arrow-prev-mobile"
-                      style={{}}
-                      onClick={() => sliderRef4.current?.slickPrev?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_ssrdw2.svg"
-                        alt="Previous slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                    <div
-                      className="slider-arrow-next-mobile"
-                      onClick={() => sliderRef4.current?.slickNext?.()}
-                    >
-                      <img
-                        src="https://res.cloudinary.com/dwxqg9so3/image/upload/v1690811676/Arrow_-_Right_3_1_irtfa7.svg"
-                        alt="Next slide"
-                        className="arrow-image"
-                      ></img>
-                    </div>
-                  </>
-                )}
-
                 <div>
                   {type === "mobile" && (
-                    <Slider {...settings} ref={sliderRef4}>
+                    <Slider {...settings}>
                       {deals?.map((item, index) => {
                         return (
                           <div key={index}>
@@ -752,7 +630,7 @@ export default function Home({ brand, product, deal }) {
               <div className="container mt-5">
                 <div className="row">
                   <div className="col-md-12">
-                    <h1
+                    <h2
                       className="text-center"
                       style={{
                         fontSize: "40px",
@@ -761,7 +639,7 @@ export default function Home({ brand, product, deal }) {
                       }}
                     >
                       E-COMMERCE VIDEO
-                    </h1>
+                    </h2>
                   </div>
                 </div>
                 <div className="row">
@@ -826,52 +704,6 @@ export default function Home({ brand, product, deal }) {
 }
 .package-btn-action:hover {
   background-color: #e92227;
-}
-.slider-arrow-prev {
-  position: absolute;
-  margin-top: 170px !important;
-  z-index: 2;
-  margin-left: -60px;
-  font-size: 10px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-prev-mobile {
-  position: absolute;
-  margin-top: 120px !important;
-  z-index: 2;
-  margin-left: -10px;
-  font-size: 10px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-next {
-  position: absolute;
-  margin-top: 170px;
-  z-index: 2;
-  right: 30px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.slider-arrow-next-mobile {
-  position: absolute;
-  margin-top: 120px;
-  z-index: 2;
-  right: 30px;
-  background-color: #f5f5f5;
-  padding: 17px 22px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.arrow-image {
-  width: 20px;
-  height: 30px;
 }
 .heading-first {
   font-size: 40px;

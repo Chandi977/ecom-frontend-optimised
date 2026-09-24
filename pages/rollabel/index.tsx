@@ -466,7 +466,7 @@ const BoppTape = ({
             className={"row " + "mainbody"}
             style={{ backgroundColor: "white" }}
           >
-            <div className="mt-2 d-flex flex-column">
+            <div className="mt-2 d-flex flex-column" data-catalog-breadcrumb>
               <p className={"catalogpath"}>
                 <span onClick={() => router.push("/")}>Homepage</span> /{" "}
                 <span className={"tw-no-underline"}>Label</span>
@@ -491,11 +491,16 @@ const BoppTape = ({
               renderFilterContent={renderFilterContent}
             />
             <div className="row mt-4 d-flex" style={{ position: "relative" }}>
-              <div className="col-md-3 ">{renderFilters()}</div>
+              <div className="col-md-3 desktop-product-filters" data-catalog-filters>
+                {renderFilters()}
+              </div>
 
               {/* this column is for windows view */}
               {products && products.length > 0 ? (
-                <div className={"col-md-9 " + "productslistdivwindow"}>
+                <div
+                  className={"col-md-9 " + "productslistdivwindow"}
+                  data-product-grid
+                >
                   {products.map((item, index) => {
                     return (
                       <div
@@ -645,14 +650,31 @@ const BoppTape = ({
         justify-content: flex-start;
         align-items: flex-start;
       }
+      .desktop-product-filters {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        align-self: flex-start;
+      }
       .productslistdivwindow {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
+        align-content: start;
+      }
+      :global(.productslistdivwindow > .row) {
+        width: auto;
+        min-width: 0;
+        margin-right: 0;
+        margin-left: 0;
+      }
+      :global(.productslistdivwindow .listing-product-card) {
+        width: 100%;
+        min-width: 0;
       }
       @media (min-width: 1600px) {
         .productslistdivwindow {
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(4, minmax(0, 1fr));
         }
       }
       @media (max-width: 1300px) {
@@ -661,6 +683,9 @@ const BoppTape = ({
         }
       }
       @media (max-width: 900px) {
+        .desktop-product-filters {
+          position: static;
+        }
         .productslistdivwindow {
           display: none !important;
         }

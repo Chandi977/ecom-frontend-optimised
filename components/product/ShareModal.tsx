@@ -24,7 +24,7 @@ function ShareModal({ data, handleClose }) {
 
   const handleProduce = () => {
     const productSlug = data?.slug ? encodeURIComponent(data.slug) : "";
-    const url = `https://store.prempackaging.com/${productSlug}`;
+    const url = `https://www.store.prempackaging.com/${productSlug}`;
     setShareUrl(url);
     setTitle(data?.name);
   };

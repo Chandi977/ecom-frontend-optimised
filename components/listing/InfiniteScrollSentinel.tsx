@@ -2,7 +2,7 @@ import React from "react";
 
 const InfiniteScrollSentinel = ({ loadMoreRef, isFetchingMore }) => (
   <>
-    <div ref={loadMoreRef} style={{ height: "1px" }} />
+    <div ref={loadMoreRef} data-infinite-scroll-sentinel style={{ height: "1px" }} />
     {isFetchingMore && (
       <div className="row">
         <div
