@@ -4,6 +4,8 @@ import { useState } from "react";
 import { addToCart } from "../../utils/cart";
 import { getProductDisplayName } from "../listing/productDisplay";
 import { useBrands } from "../../context/BrandContext";
+import { cdn } from "../../lib/cdn";
+import WishlistButton from "../common/WishlistButton";
 
 function DealsCardMobile({ item }) {
   const { brandNameById } = useBrands();
@@ -58,10 +60,11 @@ function DealsCardMobile({ item }) {
         }}
       >
         <img
-          src={item?.images?.[0]?.image || "/pp_logo_1.png"}
+          src={item?.images?.[0]?.image || cdn("/pp_logo_1.png")}
           alt={item?.name || "Product image"}
           style={{ width: "150px", height: "150px" }}
         />
+        <WishlistButton product={item} size="sm" placement="top-left" />
         <div
           className="d-flex flex-column justify-content-center align-items-center"
           style={{

@@ -1,7 +1,8 @@
 "use client"; // This is a client component 👈🏽
 import React, { useEffect, useState } from "react";
-import Banner from "../../components/landing/Banner";
 import Head from "next/head";
+import JsonLd from "../../components/common/JsonLd";
+import { canonicalUrl, contentPageSchema } from "../../utils/schema";
 
 const PrivacyPolicy = () => {
 
@@ -14,10 +15,22 @@ const PrivacyPolicy = () => {
           name="description"
           content="Read our Terms of Sale to understand pricing, orders, and conditions. We ensure transparency and trust in every packaging product purchase."
         />
+        <link rel="canonical" href={canonicalUrl("/terms-of-sale")} />
       </Head>
+
+      <JsonLd
+        id="page"
+        data={contentPageSchema({
+          path: "/terms-of-sale",
+          name: "Terms Of Sale",
+          type: "WebPage",
+          description:
+            "Read our Terms of Sale to understand pricing, orders, and conditions. We ensure transparency and trust in every packaging product purchase.",
+          breadcrumb: [{ name: "Terms Of Sale", path: "/terms-of-sale" }],
+        })}
+      />
       <div>
         <div className="row p-0 m-0">
-          <Banner />
           <div
             className="row policy-mainbody"
             style={{ backgroundColor: "white" }}

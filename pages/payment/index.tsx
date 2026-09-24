@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { indianStates } from "../../assets/data";
-import Banner from "../../components/landing/Banner";
 import { getService, putService } from "../../services/service";
 import Image from "next/image";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { cdn } from "../../lib/cdn";
 
 // The sequential "PI-<n>" number is only minted by the backend once payment is
 // confirmed (asynchronously). Until then an order carries a temporary "TMP-..." id.
@@ -149,7 +149,6 @@ const Checkoutpage = () => {
       </Head>
       <div>
         <div className="row p-0 m-0">
-          <Banner />
           <div
             className="row page-mainbody"
             style={{ backgroundColor: "white" }}
@@ -335,7 +334,7 @@ const Checkoutpage = () => {
                         style={{ display: "flex", justifyContent: "center" }}
                       >
                         <img
-                          src="/qr_code.png"
+                          src={cdn("/qr_code.png")}
                           alt="Payment QR Code"
                           style={{ width: "200px", height: "200px" }}
                         ></img>

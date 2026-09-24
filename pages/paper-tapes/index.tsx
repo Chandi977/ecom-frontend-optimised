@@ -3,7 +3,7 @@ import TapeListingPage, {
   getTapeListingServerSideProps,
 } from "../../components/listing/TapeListingPage";
 
-const PAPER_TAPE_SUBCATEGORY_ID = "6927e83dd53f3a772c701b93";
+const PAPER_TAPE_SUBCATEGORY_ID = "69de2800733b8ba05652a604";
 
 export const getServerSideProps = (context) =>
   getTapeListingServerSideProps(context, {

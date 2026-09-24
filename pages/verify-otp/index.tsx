@@ -3,31 +3,38 @@ import React, { useState } from "react";
 import { useRouter } from "next/router"; // Import useRouter from next/router
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import Head from "next/head";
 import { postService } from "../../services/service";
+import { cdn } from "../../lib/cdn";
 
 const VerifyOTP = () => {
   const [otp, setOTP] = useState(""); // State to store OTP input value
   const router = useRouter(); // Initialize useRouter
 
-  // Extract email from query parameters
-  const { email } = router.query;
+  const rawEmail = router.query.email;
+  const email = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail;
+  const normalizedEmail =
+    typeof email === "string" ? decodeURIComponent(email).trim() : "";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      //console.log("OTP:", otp);
-      const otpNumber = parseInt(otp); // Parse OTP to a number
-      if (isNaN(otpNumber)) {
-        toast.error("Please enter a valid OTP");
-        return;
-      }
+    const normalizedOtp = otp.trim();
 
+    if (!normalizedEmail) {
+      toast.error("Email address is missing. Please request a new OTP.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(normalizedOtp)) {
+      toast.error("Please enter the 6-digit OTP.");
+      return;
+    }
+
+    try {
       const response = await postService("reset/password/verify/otp", {
-        otp: otpNumber,
-        email,
+        otp: normalizedOtp,
+        email: normalizedEmail,
       });
 
       // Check if the request was successful
@@ -36,10 +43,10 @@ const VerifyOTP = () => {
 
         router.push({
           pathname: "/reset-password",
-          query: { email }, // Pass email as query parameter
+          query: { email: normalizedEmail },
         });
-      } else {
-        toast.error("Please enter correct OTP.");
+      } else if (response) {
+        toast.error(response?.data?.message || "Please enter correct OTP.");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -85,13 +92,20 @@ const VerifyOTP = () => {
                   <div className="row">
                     <div className="col-md-12">
                       <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        autoComplete="one-time-code"
                         required
                         className="form-control"
                         id="exampleInputEmail1"
                         aria-describedby="emailHelp"
                         placeholder="Enter your OTP"
                         value={otp}
-                        onChange={(e) => setOTP(e.target.value)}
+                        onChange={(e) =>
+                          setOTP(e.target.value.replace(/\D/g, "").slice(0, 6))
+                        }
                       />
                     </div>
                   </div>
@@ -111,7 +125,7 @@ const VerifyOTP = () => {
               </form>
             </div>
             <div className="col-md-6 text-center m-0 pb-3">
-              <img src="/verifyotpimg.png" alt="..." height={300} width={300} />
+              <img src={cdn("/verifyotpimg.png")} alt="..." height={300} width={300} />
             </div>
           </div>
         </div>
