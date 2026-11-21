@@ -265,16 +265,16 @@ const WishlistContent = () => {
         .wl-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .wl-card-header {
           margin-bottom: 18px;
         }
         .wl-card-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: #0f172a;
@@ -295,9 +295,9 @@ const WishlistContent = () => {
           padding: 80px 24px;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           color: #64748b;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .wl-spinner {
           font-size: 32px;
@@ -312,7 +312,7 @@ const WishlistContent = () => {
           }
         }
         .wl-empty-icon {
-          font-size: 42px;
+          font-size: 32px;
           color: #94a3b8;
           margin-bottom: 6px;
         }
@@ -372,7 +372,7 @@ const WishlistContent = () => {
           height: 96px;
           flex-shrink: 0;
           border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           background: #ffffff;
           padding: 8px;
           cursor: pointer;
@@ -415,7 +415,7 @@ const WishlistContent = () => {
         }
         .wl-item-price {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           color: #059669;
         }
         .wl-item-added {
@@ -572,8 +572,7 @@ const WishlistPage = () => {
 
       <style jsx>{`
         .wl-guest-root {
-          font-family: "Inter", "Montserrat", -apple-system, BlinkMacSystemFont,
-            "Segoe UI", Roboto, sans-serif;
+          font-family: var(--font-store);
           color: #0f172a;
           background-color: #f8fafc;
           min-height: 100vh;
@@ -616,7 +615,7 @@ const WishlistPage = () => {
         }
         .wl-guest-title {
           font-size: 32px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: -0.02em;
           margin: 0;
         }
@@ -632,7 +631,7 @@ const WishlistPage = () => {
           gap: 14px;
           background: #eff6ff;
           border: 1px solid #bfdbfe;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 14px 18px;
         }
         .wl-signin-banner :global(.wl-signin-icon) {

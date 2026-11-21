@@ -211,7 +211,7 @@ export function ProductPricing({
           display: flex;
           gap: 6px;
           align-items: center;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
         }
         .mrp-label {
           color: #7f7f7f;
@@ -229,7 +229,7 @@ export function ProductPricing({
           align-items: center;
           gap: 12px;
           flex-wrap: wrap;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
         }
         .new-mrp-group {
           display: flex;
@@ -284,7 +284,7 @@ export function ProductPricing({
           font-weight: 600;
           font-size: 14px;
           border: 1px solid #f2f2f2;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           padding: 6px 12px;
           background-color: #fff;
         }
@@ -332,7 +332,7 @@ export function ProductPricing({
           align-items: center;
           background-color: #f9fafb;
           border: 1px solid #f2f2f2;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 12px 16px;
           width: 100%;
           gap: 12px;

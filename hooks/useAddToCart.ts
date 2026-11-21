@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  flyToCart,
-  resolveFlySource,
-  type FlySource,
-} from "../utils/flyToCart";
+import type { FlySource } from "../utils/flyToCart";
 
 export type AddToCartState = "idle" | "adding" | "added";
 
@@ -34,7 +30,7 @@ const wait = (ms: number) =>
 
 /**
  * Drives the three-state add-to-cart button (idle → adding → added) and fires
- * the fly-to-cart animation on click. Render {@link AddToCartContent} inside
+ * immediate purchase feedback. Render {@link AddToCartContent} inside
  * the button so the states have something to cross-fade.
  *
  * The button element itself stays with the caller, so its existing styled-jsx
@@ -44,7 +40,7 @@ export function useAddToCart({
   onAdd,
   flySource,
   addedDuration = 1300,
-  minAddingDuration = 450,
+  minAddingDuration = 0,
   addedColor = "#17803d",
   style,
 }: UseAddToCartOptions) {
@@ -80,7 +76,6 @@ export function useAddToCart({
       const startedAt = Date.now();
 
       moveTo("adding");
-      flyToCart(resolveFlySource(flySource, button));
 
       let succeeded = true;
       try {

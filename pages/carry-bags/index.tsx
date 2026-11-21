@@ -570,7 +570,7 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
       }
       .catalogpath {
         color: #222;
-        font-family: "Montserrat", sans-serif;
+        font-family: var(--font-store);
         font-size: 15px;
         font-style: normal;
         font-weight: 500;
@@ -597,7 +597,7 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
         border: 0;
         color: #fff;
         text-align: center;
-        font-family: "Montserrat";
+        font-family: var(--font-store);
         font-size: 13px;
         font-style: normal;
         font-weight: 400;
@@ -677,13 +677,13 @@ const CarryBagsPage = ({ brands, product, brandId, subCategoryId, q, meta }) => 
       }
       .noProducts {
         font-size: 28px;
-        font-family: Montserrat;
+        font-family: var(--font-store);
         font-weight: 700;
         color: #3A5BA2;
       }
       .noProductsMobile {
         font-size: 28px;
-        font-family: Montserrat;
+        font-family: var(--font-store);
         font-weight: 700;
         color: #3A5BA2;
       }

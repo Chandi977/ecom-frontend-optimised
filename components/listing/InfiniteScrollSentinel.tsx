@@ -16,12 +16,7 @@ const InfiniteScrollSentinel = ({ loadMoreRef, isFetchingMore }) => (
           .pp-sentinel-skel {
             height: 12px;
             border-radius: 6px;
-            background: linear-gradient(
-              90deg,
-              #e9e9e9 25%,
-              #f5f5f5 37%,
-              #e9e9e9 63%
-            );
+            background: #e9e9e9;
             background-size: 400% 100%;
             animation: pp-sentinel-shimmer 1.4s ease infinite;
           }

@@ -73,13 +73,13 @@ function TopCard({ item }) {
       </div>
     </div>
       <style jsx>{`
-        .landing-toptext { color: var(--text, #666); text-align: center; font-family: "Montserrat", sans-serif; font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; transition: color 0.25s ease; }
+        .landing-toptext { color: var(--text, #666); text-align: center; font-family: var(--font-store); font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; transition: color 0.25s ease; }
 
         /* Hover lift — same easing as the category cards on the home page. */
         .top-card-media { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease; }
-        .top-card:hover .top-card-media { transform: translateY(-8px); box-shadow: 2px 22px 26px #e8e8f2; }
+        .top-card:hover .top-card-media { transform: none; box-shadow: var(--shadow-surface); }
         .top-card-media img { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .top-card:hover .top-card-media img { transform: scale(1.06); }
+        .top-card:hover .top-card-media img { transform: none; }
         .top-card:hover .landing-toptext { color: #182c5a; }
 
         @media (prefers-reduced-motion: reduce) {

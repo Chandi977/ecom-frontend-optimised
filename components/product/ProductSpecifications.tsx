@@ -160,7 +160,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key as any)}
-            className={`tw-relative tw-pb-3 tw-px-0 tw-bg-transparent tw-border-0 tw-text-xs sm:tw-text-sm md:tw-text-base tw-font-bold tw-uppercase tw-tracking-widest tw-transition-colors tw-cursor-pointer ${
+            className={`tw-relative tw-pb-3 tw-px-0 tw-bg-transparent tw-border-0 tw-text-xs sm:tw-text-sm md:tw-text-base tw-font-bold tw-uppercase tw-tracking-normal tw-transition-colors tw-cursor-pointer ${
               activeTab === tab.key
                 ? "tw-text-slate-900 tw-border-b-2 tw-border-solid tw-border-slate-900"
                 : "tw-text-slate-500 hover:tw-text-slate-900"
@@ -173,7 +173,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
 
       <div className="tw-min-h-[220px]">
         {activeTab === "specs" && (
-          <div className="tw-bg-white tw-p-5 sm:tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl tw-shadow-sm">
+          <div className="tw-bg-white tw-p-5 sm:tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-shadow-sm">
             {fields.length > 0 ? (
               <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-12 tw-gap-y-1">
                 {fields.map((field) => (
@@ -199,7 +199,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
         )}
 
         {activeTab === "usage" && (
-          <div className="tw-bg-white tw-p-6 sm:tw-p-7 tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl tw-shadow-sm tw-text-sm sm:tw-text-base tw-text-slate-900 tw-space-y-5">
+          <div className="tw-bg-white tw-p-6 sm:tw-p-7 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-shadow-sm tw-text-sm sm:tw-text-base tw-text-slate-900 tw-space-y-5">
             <h3 className="tw-text-lg sm:tw-text-xl tw-font-bold tw-text-slate-900 tw-m-0">
               Recommended Industrial Usage
             </h3>
@@ -213,7 +213,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
               className="tw-bg-slate-50 tw-p-5 sm:tw-p-6 tw-rounded-r-lg"
               style={{ border: "none", borderLeft: "4px solid #0F172A" }}
             >
-              <h4 className="tw-font-bold tw-mb-3 tw-uppercase tw-text-xs sm:tw-text-sm tw-tracking-wider tw-text-slate-900">
+              <h4 className="tw-font-bold tw-mb-3 tw-uppercase tw-text-xs sm:tw-text-sm tw-tracking-normal tw-text-slate-900">
                 HANDLING GUIDELINES:
               </h4>
               <ul className="tw-list-disc tw-pl-5 tw-space-y-2.5 tw-text-slate-700 tw-text-sm sm:tw-text-base tw-leading-relaxed tw-mb-0">
@@ -227,7 +227,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
         )}
 
         {activeTab === "shipping" && (
-          <div className="tw-bg-white tw-p-5 sm:tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl tw-shadow-sm tw-text-sm sm:tw-text-base tw-space-y-5">
+          <div className="tw-bg-white tw-p-5 sm:tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-shadow-sm tw-text-sm sm:tw-text-base tw-space-y-5">
             <div
               className="tw-flex tw-items-start tw-gap-4 tw-p-5 tw-bg-slate-50 tw-rounded-r-lg"
               style={{ border: "none", borderLeft: "4px solid #0F172A" }}
@@ -262,7 +262,7 @@ export function ProductSpecifications({ product }: { product?: IProduct }) {
               ].map((card) => (
                 <div
                   key={card.title}
-                  className="tw-p-4 tw-border tw-border-solid tw-border-slate-200 tw-bg-slate-50 tw-rounded-lg"
+                  className="tw-p-4 tw-border tw-border-solid tw-border-slate-200 tw-bg-slate-50 tw-rounded"
                 >
                   <div className="tw-font-bold tw-text-slate-900 tw-text-sm sm:tw-text-base tw-mb-1">{card.title}</div>
                   <div className="tw-text-slate-600 tw-text-xs sm:tw-text-sm">{card.body}</div>

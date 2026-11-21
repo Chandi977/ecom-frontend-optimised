@@ -167,7 +167,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputEmail1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   First Name <span className="text-danger">*</span>
                 </label>
@@ -195,7 +195,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputEmail1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   Last Name <span className="text-danger">*</span>
                 </label>
@@ -223,7 +223,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputEmail1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   Phone Number <span className="text-danger">*</span>
                 </label>
@@ -253,7 +253,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputEmail1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   Email <span className="text-danger">*</span>
                 </label>
@@ -281,7 +281,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputPassword1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   Password <span className="text-danger">*</span>
                 </label>
@@ -359,7 +359,7 @@ const Signuppage = () => {
                 <label
                   htmlFor="exampleInputPassword1"
                   className="form-label"
-                  style={{ fontSize: "20px", fontWeight: "bold" }}
+                  style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   Re-enter Password <span className="text-danger">*</span>
                 </label>
@@ -426,7 +426,7 @@ const Signuppage = () => {
                     className="p-0 m-0"
                     style={{
                       color: "#1A1B22",
-                      fontFamily: "Montserrat",
+                      fontFamily: "var(--font-store)",
                       fontSize: "15.559px",
                       fontStyle: "italic",
                       fontWeight: "400",
@@ -437,7 +437,7 @@ const Signuppage = () => {
                     <Link
                       href="/login"
                       style={{
-                        fontFamily: "Montserrat",
+                        fontFamily: "var(--font-store)",
                         fontSize: "15.559px",
                         fontStyle: "italic",
                         fontWeight: "400",
@@ -479,7 +479,7 @@ const Signuppage = () => {
             </form>
           </div>
           <div className="col-md-6 text-center mb-3 d-flex justify-content-center align-items-center">
-            <img src={cdn("/signuppageimg.png")} alt="..." height={400} width={400} />
+            <img src={cdn("/signuppageimg.png")} alt="Prem Packaging supplies" height={400} width={400} style={{ maxWidth: "100%", height: "auto" }} />
           </div>
         </div>
       </div>

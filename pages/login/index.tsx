@@ -191,7 +191,7 @@ const Loginpage = () => {
                               // textAlign: "end",
                               color: "#1A1B22",
                               // textAlign: "right",
-                              fontFamily: "Montserrat",
+                              fontFamily: "var(--font-store)",
                               fontSize: "16px",
                               fontStyle: "italic",
                               fontWeight: "400",
@@ -264,7 +264,7 @@ const Loginpage = () => {
                           // textAlign: "end",
                           color: "#182C5A",
                           // textAlign: "right",
-                          fontFamily: "Montserrat",
+                          fontFamily: "var(--font-store)",
                           fontSize: "16px",
                           fontStyle: "italic",
                           fontWeight: "400",
@@ -294,7 +294,7 @@ const Loginpage = () => {
                       className="p-0 mt-3 text-center"
                       style={{
                         color: "#182C5A",
-                        fontFamily: "Montserrat",
+                        fontFamily: "var(--font-store)",
                         fontSize: "16px",
                         // fontStyle: "italic",
                         fontWeight: "400",
@@ -312,7 +312,7 @@ const Loginpage = () => {
                         }}
                         style={{
                           color: "#182C5A",
-                          fontFamily: "Montserrat",
+                          fontFamily: "var(--font-store)",
                           fontSize: "16px",
                           fontStyle: "italic",
                           fontWeight: "400",

@@ -100,6 +100,7 @@ const Cartpage = () => {
   // Common Cart States
   const [token, setToken] = useState<string | null>(null);
   const [cart, setCart] = useState<any>(null);
+  const [cartLoaded, setCartLoaded] = useState(false);
   const [cartProducts, setCartProducts] = useState<any[]>([]);
   const [couponCode, setCouponCode] = useState("");
   const [couponUsed, setCouponUsed] = useState<any[]>([]);
@@ -145,10 +146,13 @@ const Cartpage = () => {
   };
 
   const handleCart = async () => {
-    const c = await getCart();
-    if (c !== null) {
-      setCart(c);
-      setCartProducts(c?.products);
+    try {
+      const c = await getCart();
+      const products = Array.isArray(c?.products) ? c.products : [];
+      setCart(c ?? { products: [], total_amount: 0 });
+      setCartProducts(products);
+    } finally {
+      setCartLoaded(true);
     }
   };
 
@@ -708,7 +712,6 @@ const Cartpage = () => {
 
   const stockCheckResult = checkstocks();
   const cartItems = cart?.products || [];
-  const cartLoaded = cart !== null && cart !== undefined;
   const isCartEmpty = cartLoaded && cartItems.length === 0;
 
   const subtotal = cartProducts.reduce(
@@ -1756,7 +1759,7 @@ const Cartpage = () => {
       <style jsx>{`
         /* ============ PREMIUM DESIGN STYLES ============ */
         .ct-root {
-          --font-family: "Inter", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --font-family: var(--font-store);
           --color-ink: #0f172a;
           --color-navy: #1e293b;
           --color-slate-muted: #64748b;
@@ -1796,7 +1799,7 @@ const Cartpage = () => {
         }
         .ct-title {
           font-size: 24px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: -0.02em;
           color: var(--color-ink);
           margin: 0;
@@ -1869,7 +1872,7 @@ const Cartpage = () => {
           border-color: var(--color-primary-btn);
           color: var(--color-primary-btn);
           background: #ffffff;
-          box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+          box-shadow: var(--shadow-surface);
         }
         .co-step.is-now .co-step-tx {
           color: var(--color-ink);
@@ -1965,9 +1968,9 @@ const Cartpage = () => {
         .ct-list {
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          box-shadow: var(--shadow-surface);
         }
 
         /* Columns Headers */
@@ -2113,7 +2116,7 @@ const Cartpage = () => {
           height: 100% !important;
           border: none !important;
           outline: none !important;
-          box-shadow: none !important;
+          box-shadow: var(--shadow-surface);
           background: #ffffff !important;
           color: var(--color-ink) !important;
           font-size: 16px !important;
@@ -2151,7 +2154,7 @@ const Cartpage = () => {
           color: var(--color-ink) !important;
           background: #ffffff !important;
           outline: none !important;
-          box-shadow: none !important;
+          box-shadow: var(--shadow-surface);
           margin: 0 !important;
           padding: 0 !important;
           box-sizing: border-box !important;
@@ -2160,7 +2163,7 @@ const Cartpage = () => {
         }
         :global(.ct-stepper-input:focus) {
           outline: none !important;
-          box-shadow: none !important;
+          box-shadow: var(--shadow-surface);
           border-color: var(--color-line) !important;
         }
         :global(.ct-stepper-input::-webkit-outer-spin-button) {
@@ -2287,14 +2290,14 @@ const Cartpage = () => {
         .ct-summary-card {
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          box-shadow: var(--shadow-surface);
           margin-bottom: 24px;
         }
         .ct-summary-title {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: 0.06em;
           color: var(--color-ink);
           margin: 0 0 20px;
@@ -2338,13 +2341,13 @@ const Cartpage = () => {
           margin-top: 4px;
         }
         .total-label {
-          font-weight: 800;
+          font-weight: 600;
           font-size: 14px;
           letter-spacing: 0.02em;
         }
         .total-val {
           font-size: 22px;
-          font-weight: 800;
+          font-weight: 600;
           color: var(--color-ink);
           letter-spacing: -0.01em;
         }
@@ -2454,7 +2457,7 @@ const Cartpage = () => {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+          box-shadow: var(--shadow-surface);
           transition: background 0.15s ease, transform 0.1s ease;
         }
         .ct-checkout-btn:hover {
@@ -2480,7 +2483,7 @@ const Cartpage = () => {
         /* WHY SHOP US */
         .ct-why-shop-us {
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           background: #ffffff;
           padding: 20px;
         }
@@ -2557,9 +2560,9 @@ const Cartpage = () => {
         .co-section-block {
           background: #ffffff;
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .co-section-title {
           font-size: 16px;
@@ -2580,7 +2583,7 @@ const Cartpage = () => {
           flex-direction: column;
           background: #ffffff;
           border: 1px solid var(--color-line);
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           padding: 16px;
           cursor: pointer;
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -2590,7 +2593,7 @@ const Cartpage = () => {
         }
         .co-addr-card.is-sel {
           border-color: var(--color-primary-btn);
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+          box-shadow: var(--shadow-surface);
         }
 
         .co-addr-card-header {
@@ -2727,7 +2730,7 @@ const Cartpage = () => {
           align-items: center;
           justify-content: center;
           border: 1.5px dashed #cbd5e1;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           background: transparent;
           cursor: pointer;
           min-height: 180px;
@@ -2790,7 +2793,7 @@ const Cartpage = () => {
           padding: 16px;
           background: #ffffff;
           border: 1px solid var(--color-line);
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         .co-delivery-option:hover .co-delivery-card {
@@ -2798,7 +2801,7 @@ const Cartpage = () => {
         }
         .co-delivery-card.is-sel {
           border-color: var(--color-primary-btn);
-          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+          box-shadow: var(--shadow-surface);
         }
 
         .co-delivery-radio {
@@ -2874,7 +2877,7 @@ const Cartpage = () => {
           border-radius: 6px;
           font-size: 14px;
           font-weight: 600;
-          letter-spacing: 0.1em;
+          letter-spacing: normal;
           outline: none;
         }
         .pincode-input:focus {
@@ -3045,7 +3048,7 @@ const Cartpage = () => {
           padding: 8px 12px;
           font-size: 11px;
           border-radius: 6px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+          box-shadow: var(--shadow-surface);
           width: 200px;
           z-index: 10;
           line-height: 1.4;
@@ -3072,7 +3075,7 @@ const Cartpage = () => {
         }
         .co-total-amt {
           font-size: 24px;
-          font-weight: 800;
+          font-weight: 600;
           color: var(--color-ink);
           letter-spacing: -0.01em;
         }
@@ -3124,7 +3127,7 @@ const Cartpage = () => {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+          box-shadow: var(--shadow-surface);
           transition: background 0.15s ease, transform 0.1s ease;
         }
         .co-checkout-btn:hover {
@@ -3170,12 +3173,12 @@ const Cartpage = () => {
           gap: 18px;
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
         }
         .ct-boot-bar {
           width: 160px;
           height: 3px;
-          border-radius: 99px;
+          border-radius: var(--radius-control);
           background: #dfe3ea;
           overflow: hidden;
         }
@@ -3183,7 +3186,7 @@ const Cartpage = () => {
           display: block;
           height: 100%;
           width: 40%;
-          border-radius: 99px;
+          border-radius: var(--radius-control);
           background: var(--color-primary-btn);
           animation: co-load 1.1s ease-in-out infinite;
         }
@@ -3201,12 +3204,12 @@ const Cartpage = () => {
         .ct-empty {
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 64px 24px;
           text-align: center;
           max-width: 580px;
           margin: 40px auto;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .ct-empty-ic {
           display: inline-flex;
@@ -3358,7 +3361,7 @@ const Cartpage = () => {
           padding: 10px 14px;
           font-size: 11px;
           border-radius: 6px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          box-shadow: var(--shadow-surface);
           width: 250px;
           z-index: 50;
           line-height: 1.4;

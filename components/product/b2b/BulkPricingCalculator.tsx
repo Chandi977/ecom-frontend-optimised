@@ -132,10 +132,10 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
       {/* Identity Header */}
       <div>
         <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-1.5 tw-flex-wrap">
-          <span className="tw-text-[#64748b] tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase">
+          <span className="tw-text-[#64748b] tw-text-[11px] tw-font-bold tw-tracking-normal tw-uppercase">
             BRAND: <span className="tw-text-[#0f172a] tw-font-bold">{brandName}</span>
           </span>
-          <span className="tw-text-[#64748b] tw-text-[11px] tw-font-semibold tw-tracking-widest">
+          <span className="tw-text-[#64748b] tw-text-[11px] tw-font-semibold tw-tracking-normal">
             SKU: {sku}
           </span>
         </div>
@@ -176,7 +176,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
       </div>
 
       {/* Main Pricing Box */}
-      <div className="tw-bg-white tw-p-4 tw-border tw-border-solid tw-border-[#e2e8f0] tw-rounded-xl tw-shadow-sm">
+      <div className="tw-bg-white tw-p-4 tw-border tw-border-solid tw-border-[#e2e8f0] tw-rounded tw-shadow-sm">
         <div className="tw-flex tw-items-baseline tw-gap-2 tw-mb-1 tw-flex-wrap">
           <span className="tw-text-[#0f172a] tw-text-2xl sm:tw-text-3xl tw-font-bold">
             {formatINR(unitPrice)}
@@ -188,7 +188,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
             </span>
           )}
           {showSavings && discountPercent > 0 && (
-            <span className="tw-ml-auto tw-text-green-700 tw-font-bold tw-text-[10px] tw-tracking-widest tw-bg-green-50 tw-border tw-border-solid tw-border-green-200 tw-px-2 tw-py-0.5 tw-rounded">
+            <span className="tw-ml-auto tw-text-green-700 tw-font-bold tw-text-[10px] tw-tracking-normal tw-bg-green-50 tw-border tw-border-solid tw-border-green-200 tw-px-2 tw-py-0.5 tw-rounded">
               SAVE {discountPercent}%
             </span>
           )}
@@ -198,7 +198,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
           {formatINR(selectedTier.sellingPrice)} per pack of {packSize}
         </p>
 
-        <p className="tw-text-[#475569] tw-text-[11px] tw-mb-2 tw-font-bold tw-uppercase tw-tracking-wider">
+        <p className="tw-text-[#475569] tw-text-[11px] tw-mb-2 tw-font-bold tw-uppercase tw-tracking-normal">
           BULK PRICING TIERS
         </p>
 
@@ -213,7 +213,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
                   if (matched) onTierChange(matched);
                 }}
                 aria-label="Select bulk pricing tier"
-                className="tw-w-full tw-h-10 sm:tw-h-11 tw-pl-3 tw-pr-9 tw-bg-slate-50 tw-border tw-border-solid tw-border-[#cbd5e1] hover:tw-border-[#0f172a] tw-rounded-lg tw-text-[#0f172a] tw-text-xs sm:tw-text-sm tw-font-semibold focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-[#0f172a] tw-cursor-pointer tw-appearance-none tw-transition-colors"
+                className="tw-w-full tw-h-10 sm:tw-h-11 tw-pl-3 tw-pr-9 tw-bg-slate-50 tw-border tw-border-solid tw-border-[#cbd5e1] hover:tw-border-[#0f172a] tw-rounded tw-text-[#0f172a] tw-text-xs sm:tw-text-sm tw-font-semibold focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-[#0f172a] tw-cursor-pointer tw-appearance-none tw-transition-colors"
               >
                 {tiers.map((tier, idx) => (
                   <option
@@ -230,7 +230,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
               </span>
             </div>
           ) : (
-            <div className="tw-flex tw-justify-between tw-items-center tw-py-2 tw-px-3 tw-rounded-lg tw-border tw-border-solid tw-border-[#e2e8f0] tw-bg-slate-50 tw-text-xs tw-text-[#64748b]">
+            <div className="tw-flex tw-justify-between tw-items-center tw-py-2 tw-px-3 tw-rounded tw-border tw-border-solid tw-border-[#e2e8f0] tw-bg-slate-50 tw-text-xs tw-text-[#64748b]">
               <span>Pricing on request</span>
               <span>Request a quote</span>
             </div>
@@ -240,7 +240,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
         {/* Quantity Estimator & Order CTA */}
         <div className="tw-flex tw-flex-col tw-gap-3">
           <div className="tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
-            <div className="tw-flex tw-items-center tw-border tw-border-solid tw-border-[#e2e8f0] tw-rounded-lg tw-overflow-hidden tw-h-10 sm:tw-h-10.5 tw-bg-slate-50">
+            <div className="tw-flex tw-items-center tw-border tw-border-solid tw-border-[#e2e8f0] tw-rounded tw-overflow-hidden tw-h-10 sm:tw-h-10.5 tw-bg-slate-50">
               <button
                 type="button"
                 onClick={() => stepQuantity(-1)}
@@ -286,7 +286,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
             {...buttonProps}
             type="button"
             disabled={outOfStock}
-            className={`tw-w-full tw-h-10.5 sm:tw-h-11 tw-rounded-lg tw-text-[11px] sm:tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 ${
+            className={`tw-w-full tw-h-10.5 sm:tw-h-11 tw-rounded tw-text-[11px] sm:tw-text-xs tw-font-bold tw-uppercase tw-tracking-normal tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 ${
               outOfStock
                 ? "tw-bg-slate-100 tw-text-slate-500 tw-border tw-border-solid tw-border-slate-200 tw-cursor-not-allowed"
                 : "tw-bg-[#0f172a] tw-text-white hover:tw-bg-slate-800 tw-cursor-pointer tw-shadow-sm tw-border-0"
@@ -311,7 +311,7 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
         <div className="tw-mt-3 tw-flex tw-items-center tw-gap-3.5 tw-flex-wrap tw-text-xs">
           <span
             className={outOfStock ? "tw-text-red-600 tw-font-semibold" : "tw-text-emerald-700 tw-font-semibold"}
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+            style={{ fontFamily: "var(--font-store)" }}
           >
             {outOfStock
               ? "Out of stock"
@@ -332,12 +332,12 @@ export const BulkPricingCalculator: React.FC<BulkPricingCalculatorProps> = ({
         {TRUST_BADGES.map((badge) => (
           <div
             key={badge.icon}
-            className="tw-flex tw-flex-col tw-items-center tw-p-2 tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-bg-slate-50 tw-text-center"
+            className="tw-flex tw-flex-col tw-items-center tw-p-2 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-bg-slate-50 tw-text-center"
           >
             <span className="material-symbols-outlined tw-text-slate-800 tw-mb-0.5 tw-text-lg">
               {badge.icon}
             </span>
-            <span className="tw-text-[9px] sm:tw-text-[10px] tw-font-semibold tw-uppercase tw-leading-tight tw-text-slate-700 tw-tracking-wider">
+            <span className="tw-text-[9px] sm:tw-text-[10px] tw-font-semibold tw-uppercase tw-leading-tight tw-text-slate-700 tw-tracking-normal">
               {badge.line1}
               <br />
               {badge.line2}

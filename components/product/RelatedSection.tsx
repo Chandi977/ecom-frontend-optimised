@@ -201,7 +201,7 @@ function RelatedSection({ product }) {
               <div className="tw-w-full tw-flex tw-justify-center tw-mt-8 tw-mb-4">
                 <button
                   onClick={handleViewAll}
-                  className="tw-border tw-border-solid tw-border-[#182c5a] tw-text-[#182c5a] tw-bg-white hover:tw-bg-[#182c5a] hover:tw-text-white tw-transition-colors tw-rounded-lg tw-px-6 tw-py-2.5 tw-text-[14px] tw-font-bold tw-flex tw-items-center tw-gap-2 tw-cursor-pointer"
+                  className="tw-border tw-border-solid tw-border-[#182c5a] tw-text-[#182c5a] tw-bg-white hover:tw-bg-[#182c5a] hover:tw-text-white tw-transition-colors tw-rounded tw-px-6 tw-py-2.5 tw-text-[14px] tw-font-bold tw-flex tw-items-center tw-gap-2 tw-cursor-pointer"
                   style={{ border: "1px solid #182c5a" }}
                 >
                   Explore All Products
@@ -221,8 +221,8 @@ function RelatedSection({ product }) {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .related-card-wrapper:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+          transform: none;
+          box-shadow: var(--shadow-surface);
         }
          .tw-prod-arrow-prev {
            position: absolute;
@@ -239,12 +239,12 @@ function RelatedSection({ product }) {
            cursor: pointer;
            border-radius: 50%;
            border: 1px solid #e5e7eb;
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           box-shadow: var(--shadow-surface);
            transition: background-color 0.2s, transform 0.2s;
          }
          .tw-prod-arrow-prev:hover {
            background-color: #f9fafb;
-           transform: translateY(-50%) scale(1.05);
+           transform: translateY(-50%);
          }
          .tw-prod-arrow-next {
            position: absolute;
@@ -261,12 +261,12 @@ function RelatedSection({ product }) {
            cursor: pointer;
            border-radius: 50%;
            border: 1px solid #e5e7eb;
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           box-shadow: var(--shadow-surface);
            transition: background-color 0.2s, transform 0.2s;
          }
          .tw-prod-arrow-next:hover {
            background-color: #f9fafb;
-           transform: translateY(-50%) scale(1.05);
+           transform: translateY(-50%);
          }
         .tw-prod-imageee {
           width: 20px;

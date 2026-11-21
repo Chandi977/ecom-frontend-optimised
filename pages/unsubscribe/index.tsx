@@ -4,20 +4,21 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { postService } from "../../services/service";
 
-type Status = "idle" | "loading" | "success" | "error";
+type Status = "idle" | "loading" | "success" | "error" | "resubscribed";
 
 export default function UnsubscribePage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [resubscribing, setResubscribing] = useState(false);
   // Guard so we only fire the unsubscribe request once, even with router re-renders.
   const requestedRef = useRef(false);
 
+  const email = String(router.query.e || "").trim();
+  const token = String(router.query.t || "").trim();
+
   useEffect(() => {
     if (!router.isReady || requestedRef.current) return;
-
-    const email = String(router.query.e || "").trim();
-    const token = String(router.query.t || "").trim();
 
     if (!email || !token) {
       setStatus("error");
@@ -43,14 +44,35 @@ export default function UnsubscribePage() {
         );
       }
     })();
-  }, [router.isReady, router.query.e, router.query.t]);
+  }, [router.isReady, email, token]);
+
+  const handleResubscribe = async () => {
+    if (!email || resubscribing) return;
+    setResubscribing(true);
+    try {
+      const res = await postService(
+        "/newsletter/subscribe",
+        { email },
+        { silent: true },
+      );
+      if (res?.data?.success) {
+        setStatus("resubscribed");
+        setMessage(res.data.message || "You're subscribed again. Welcome back!");
+      } else {
+        setMessage(res?.data?.message || "Could not resubscribe right now. Please try again.");
+      }
+    } finally {
+      setResubscribing(false);
+    }
+  };
 
   const isSuccess = status === "success";
+  const isResubscribed = status === "resubscribed";
 
   return (
     <>
       <Head>
-        <title>Unsubscribe · Prem Packaging</title>
+        <title>{isResubscribed ? "Subscribed" : "Unsubscribe"} · Prem Packaging</title>
         <meta name="robots" content="noindex" />
       </Head>
       <main
@@ -85,19 +107,21 @@ export default function UnsubscribePage() {
               alignItems: "center",
               justifyContent: "center",
               fontSize: 30,
-              background: isSuccess ? "#dcfce7" : status === "error" ? "#fee2e2" : "#e0e7ff",
+              background: isSuccess || isResubscribed ? "#dcfce7" : status === "error" ? "#fee2e2" : "#e0e7ff",
             }}
             aria-hidden
           >
-            {status === "loading" || status === "idle" ? "⏳" : isSuccess ? "✅" : "⚠️"}
+            {status === "loading" || status === "idle" ? "⏳" : isSuccess || isResubscribed ? "✅" : "⚠️"}
           </div>
 
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#102050", margin: "0 0 12px" }}>
             {status === "loading" || status === "idle"
               ? "Updating your preferences…"
-              : isSuccess
-                ? "You're unsubscribed"
-                : "Something went wrong"}
+              : isResubscribed
+                ? "You're subscribed"
+                : isSuccess
+                  ? "You're unsubscribed"
+                  : "Something went wrong"}
           </h1>
 
           <p style={{ fontSize: 15.5, lineHeight: 1.6, color: "#506078", margin: "0 0 24px" }}>
@@ -107,9 +131,36 @@ export default function UnsubscribePage() {
           </p>
 
           {isSuccess && (
+            <>
+              <p style={{ fontSize: 13, color: "#94a3b8", margin: "0 0 24px" }}>
+                You will still receive important account and order emails. Changed your mind?
+              </p>
+              <button
+                type="button"
+                onClick={handleResubscribe}
+                disabled={resubscribing}
+                style={{
+                  display: "inline-block",
+                  background: "#fff",
+                  color: "#102050",
+                  border: "1px solid #cbd5e1",
+                  padding: "13px 30px",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  cursor: resubscribing ? "not-allowed" : "pointer",
+                  marginBottom: 12,
+                }}
+              >
+                {resubscribing ? "Subscribing…" : "Resubscribe"}
+              </button>
+              <div />
+            </>
+          )}
+
+          {isResubscribed && (
             <p style={{ fontSize: 13, color: "#94a3b8", margin: "0 0 24px" }}>
-              You will still receive important account and order emails. Changed your mind? You can
-              re-subscribe anytime from the newsletter banner on our homepage.
+              You will receive promotional emails and offers from Prem Packaging.
             </p>
           )}
 
@@ -133,4 +184,4 @@ export default function UnsubscribePage() {
       </main>
     </>
   );
-}
+}

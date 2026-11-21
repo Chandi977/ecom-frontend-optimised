@@ -1,7 +1,7 @@
 .yesssss {
     margin-left: 30px;
     .slick-center {
-        transform: scale(1.15);
+        transform: none;
         filter: blur(0px) !important;
     }
 
@@ -21,7 +21,7 @@
         margin-left: 0px;
 
         .slick-center {
-            transform: scale(1.15);
+            transform: none;
             filter: blur(0px) !important;
         }
 
@@ -41,7 +41,7 @@
         .custom-select{
             color: #222;
             text-align: right;
-            font-family: "Montserrat", sans-serif;
+            font-family: var(--font-store);
             font-size: 12.045px;
             font-style: normal;
             font-weight: 400;

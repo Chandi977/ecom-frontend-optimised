@@ -532,7 +532,7 @@ const BoppTape = ({
         }
         .page-catalogpath {
           color: #222;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 15px;
           font-style: normal;
           font-weight: 500;
@@ -568,7 +568,7 @@ const BoppTape = ({
         }
         .page-noProducts {
           font-size: 28px;
-          font-family: Montserrat;
+          font-family: var(--font-store);
           font-weight: 700;
           color: #3A5BA2;
           text-align: center;

@@ -30,7 +30,7 @@ const Loader = ({ variant = "card", count = 1 }) => {
     <div className="tw-w-full">
       <div className="tw-w-full tw-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
         {Array.from({ length: count }).map((_, index) => (
-          <div className="tw-bg-white tw-border tw-border-[#ececec] tw-rounded-lg tw-p-3 tw-flex tw-flex-col" style={{ gap: '10px' }} key={index}>
+          <div className="tw-bg-white tw-border tw-border-[#ececec] tw-rounded tw-p-3 tw-flex tw-flex-col" style={{ gap: '10px' }} key={index}>
             <div className="shimmer" style={{ height: '140px' }} />
             <div className="shimmer" style={{ height: '12px' }} />
             <div className="shimmer" style={{ height: '12px', width: '60%' }} />
@@ -44,7 +44,7 @@ const Loader = ({ variant = "card", count = 1 }) => {
           100% { background-position: -100% 0; }
         }
         .shimmer {
-          background: linear-gradient(90deg, #ececec 25%, #f5f5f5 37%, #ececec 63%);
+          background: #ececec;
           background-size: 400% 100%;
           animation: shimmer 1.4s ease infinite;
           border-radius: 6px;

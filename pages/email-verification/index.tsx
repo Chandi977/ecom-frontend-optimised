@@ -79,7 +79,7 @@ const EmailVerification = () => {
             style={{
               color: "#000",
               fontFeatureSettings: "'liga' off",
-              fontFamily: "Montserrat",
+              fontFamily: "var(--font-store)",
               fontSize: "40.944px",
               fontStyle: "normal",
               fontWeight: "700",
@@ -93,7 +93,7 @@ const EmailVerification = () => {
             className="p-0"
             style={{
               color: "#000",
-              fontFamily: "Montserrat",
+              fontFamily: "var(--font-store)",
               fontSize: "16.378px",
               fontStyle: "normal",
               fontWeight: "400",

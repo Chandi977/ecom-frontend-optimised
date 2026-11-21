@@ -30,7 +30,7 @@ body {
   overflow-x: clip;
   background: var(--white);
   color: var(--ink);
-  font-family: "Geist", Arial, Helvetica, sans-serif;
+  font-family: var(--font-store);
   font-size: 16px;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
@@ -114,8 +114,8 @@ input:focus-visible {
   margin: 0 0 18px;
   color: var(--navy);
   font-size: 12px;
-  font-weight: 750;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: normal;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -167,11 +167,11 @@ input:focus-visible {
   align-items: center;
   padding: 2px 8px;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #ffffff;
   background: rgba(255, 255, 255, 0.12);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 600;
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: background-color 200ms ease;
@@ -214,7 +214,7 @@ input:focus-visible {
   position: relative;
   border-bottom: 1px solid rgba(11, 29, 62, 0.08);
   background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
+  backdrop-filter: none;
 }
 
 .navInner {
@@ -254,7 +254,7 @@ input:focus-visible {
 .brand strong {
   color: var(--navy-dark);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -313,7 +313,7 @@ input:focus-visible {
   margin-left: auto;
   padding-inline: 15px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #7b8494;
   background: var(--soft) !important;
   transition:
@@ -325,7 +325,7 @@ input:focus-visible {
 .searchBox:focus-within {
   border-color: rgba(20, 42, 85, 0.24);
   background: var(--soft) !important;
-  box-shadow: 0 0 0 4px rgba(20, 42, 85, 0.06);
+  box-shadow: var(--shadow-surface);
 }
 
 .siteHeader .searchBox input[type="search"] {
@@ -336,7 +336,7 @@ input:focus-visible {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-surface);
   appearance: none;
   -webkit-appearance: none;
   font-size: 13px;
@@ -385,11 +385,11 @@ input:focus-visible {
   place-items: center;
   padding-inline: 4px;
   border: 2px solid var(--white);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--white);
   background: var(--red);
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -444,7 +444,7 @@ input:focus-visible {
   max-width: 780px;
   margin: 0;
   color: var(--navy-dark);
-  font-size: clamp(64px, 5.8vw, 96px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 745;
   letter-spacing: -0.058em;
   line-height: 0.99;
@@ -484,7 +484,7 @@ input:focus-visible {
   gap: 12px;
   padding: 13px 21px;
   border: 1px solid var(--navy-dark);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--white);
   background: var(--navy-dark);
   font-size: 14px;
@@ -499,7 +499,7 @@ input:focus-visible {
 .primaryButton:hover {
   border-color: var(--red);
   background: var(--red);
-  box-shadow: 0 9px 22px rgba(228, 35, 44, 0.18);
+  box-shadow: var(--shadow-surface);
 }
 
 .secondaryButton {
@@ -563,13 +563,13 @@ input:focus-visible {
 }
 
 .heroCard:hover .heroVisual img {
-  transform: scale(1.015);
+  transform: none;
 }
 
 .heroVisualShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #F7F5F0 0%, rgba(247, 245, 240, 0.85) 15%, transparent 50%);
+  background: #F7F5F0;
   pointer-events: none;
 }
 
@@ -580,11 +580,11 @@ input:focus-visible {
   left: auto;
   padding: 10px 22px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #111827;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  box-shadow: var(--shadow-surface);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -610,7 +610,7 @@ input:focus-visible {
 
 .brandProof strong {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
   letter-spacing: -0.02em;
 }
@@ -618,13 +618,13 @@ input:focus-visible {
 .brandProof .flipkartWord {
   color: #2874f0;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .brandProof .ajioWord {
   color: #e4232c;
   letter-spacing: 0.06em;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .benefits {
@@ -704,8 +704,8 @@ input:focus-visible {
   margin: 0 0 10px;
   color: #667085;
   font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
@@ -719,7 +719,7 @@ input:focus-visible {
   max-width: 840px;
   margin: 0;
   color: var(--navy-dark);
-  font-size: clamp(42px, 4.1vw, 58px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 710;
   letter-spacing: -0.05em;
   line-height: 1.03;
@@ -795,7 +795,7 @@ input:focus-visible {
   overflow: hidden;
   padding: 26px 24px;
   border: 0;
-  border-radius: 24px;
+  border-radius: var(--radius-control);
   color: var(--navy-dark);
   text-align: left;
   isolation: isolate;
@@ -809,8 +809,8 @@ input:focus-visible {
 }
 
 .categoryCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px rgba(11, 29, 62, 0.12);
+  transform: none;
+  box-shadow: var(--shadow-surface);
 }
 
 /* Whole Card Pastel Backgrounds matching product image background */
@@ -868,8 +868,8 @@ input:focus-visible {
   margin-bottom: 8px;
   color: rgba(11, 29, 62, 0.6);
   font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
@@ -917,7 +917,7 @@ input:focus-visible {
   border-radius: 50%;
   background: #ffffff;
   color: #0B2348;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-surface);
   margin-top: auto;
   opacity: 0;
   transform: scale(0.7) translateY(8px);
@@ -930,7 +930,7 @@ input:focus-visible {
   transform: scale(1) translateY(0);
   background: #0B2348;
   color: #ffffff;
-  box-shadow: 0 8px 20px rgba(11, 35, 72, 0.25);
+  box-shadow: var(--shadow-surface);
   pointer-events: auto;
 }
 
@@ -972,7 +972,7 @@ input:focus-visible {
   transform: scale(1) translateY(0);
   background: #0B2348;
   color: #ffffff;
-  box-shadow: 0 6px 16px rgba(11, 35, 72, 0.22);
+  box-shadow: var(--shadow-surface);
   pointer-events: auto;
 }
 
@@ -996,7 +996,7 @@ input:focus-visible {
 .productsHeading h2 {
   max-width: 900px;
   color: var(--products-navy);
-  font-size: clamp(50px, 4.6vw, 68px);
+  font-size: clamp(26px, 3vw, 36px);
 }
 
 .productsHeading > p {
@@ -1025,7 +1025,7 @@ input:focus-visible {
   flex: 0 0 auto;
   padding: 9px 15px;
   border: 1px solid #dde1e7;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #46516a;
   background: transparent;
   font-size: 13px;
@@ -1062,7 +1062,7 @@ input:focus-visible {
   position: relative;
   aspect-ratio: 1.12;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--radius-control);
   background: #FAF8F5;
   border: 1px solid #EBE8E1;
 }
@@ -1076,7 +1076,7 @@ input:focus-visible {
 }
 
 .productCard:hover .productImage {
-  transform: scale(1.06);
+  transform: none;
 }
 
 .productBadge {
@@ -1085,11 +1085,11 @@ input:focus-visible {
   left: 14px;
   z-index: 2;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #ffffff;
   background: #0B2348;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1107,7 +1107,7 @@ input:focus-visible {
   border-radius: 50%;
   color: #0B2348;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-surface);
   cursor: pointer;
   transition: color 250ms ease, background-color 250ms ease, transform 250ms ease;
 }
@@ -1116,7 +1116,7 @@ input:focus-visible {
 .productHeartActive {
   color: #E4232C;
   background: #ffffff;
-  transform: scale(1.08);
+  transform: none;
 }
 
 .productMeta {
@@ -1189,7 +1189,7 @@ input:focus-visible {
 .priceLine strong {
   color: #0B2348;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 
@@ -1216,7 +1216,7 @@ input:focus-visible {
   margin-top: 0;
   padding: 10px 20px;
   border: 1px solid #0B2348;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #0B2348;
   background: #ffffff;
   font-size: 13.5px;
@@ -1229,7 +1229,7 @@ input:focus-visible {
   color: #ffffff;
   background: #0B2348;
   border-color: #0B2348;
-  box-shadow: 0 6px 18px rgba(11, 35, 72, 0.18);
+  box-shadow: var(--shadow-surface);
 }
 
 .addButton:active {
@@ -1245,7 +1245,7 @@ input:focus-visible {
   align-items: center;
   overflow: hidden;
   border: 1px solid #0b2348;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: #0b2348;
   background: #ffffff;
 }
@@ -1273,7 +1273,7 @@ input:focus-visible {
 .productQuantityControl span {
   min-width: 32px;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -1296,9 +1296,7 @@ input:focus-visible {
   border-radius: 50%;
   color: var(--navy);
   background: #bfc6c5;
-  box-shadow:
-    0 0 0 2px #d8d1c3,
-    0 18px 45px rgba(11, 29, 62, 0.12);
+  box-shadow: var(--shadow-surface);
 }
 
 .labelRoll::after {
@@ -1311,7 +1309,7 @@ input:focus-visible {
 
 .labelRoll span {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.08em;
 }
 
@@ -1324,13 +1322,7 @@ input:focus-visible {
   border: 1px solid #ddd4c5;
   border-radius: 4px;
   background:
-    repeating-linear-gradient(
-      90deg,
-      #fffdfa 0,
-      #fffdfa 32%,
-      #ece4d7 32%,
-      #ece4d7 34%
-    );
+    repeating-#fffdfa;
   transform: rotate(8deg);
 }
 
@@ -1372,7 +1364,7 @@ input:focus-visible {
 .whyIntro h2 {
   max-width: 600px;
   margin: 0;
-  font-size: clamp(54px, 5.4vw, 74px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 700;
   letter-spacing: -0.055em;
   line-height: 0.98;
@@ -1415,7 +1407,7 @@ input:focus-visible {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: normal;
 }
 
 .whyCard h3 {
@@ -1463,7 +1455,7 @@ input:focus-visible {
 .customVisual::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(11, 29, 62, 0.52), transparent 55%);
+  background: none;
   content: "";
 }
 
@@ -1489,12 +1481,12 @@ input:focus-visible {
 
 .customVisualOverlay strong {
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
 .customCopy h2 {
-  font-size: clamp(48px, 4.7vw, 66px);
+  font-size: clamp(26px, 3vw, 36px);
 }
 
 .customDescription {
@@ -1557,7 +1549,7 @@ input:focus-visible {
   max-width: 1240px;
   margin: 0 auto;
   color: var(--navy-dark);
-  font-size: clamp(34px, 2.6vw, 42px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 515;
   letter-spacing: -0.045em;
   line-height: 1.1;
@@ -1616,11 +1608,11 @@ input:focus-visible {
 
 .marketplacePartnerLogoImage--flipkart,
 .marketplacePartnerLogoImage--amazon {
-  transform: scale(1.55);
+  transform: none;
 }
 
 .marketplacePartnerLogoImage--ajio {
-  transform: scale(1.08);
+  transform: none;
 }
 
 @keyframes marketplacePartnerCycle {
@@ -1630,15 +1622,15 @@ input:focus-visible {
   }
   27%,
   48% {
-    transform: translateY(-50px);
+    transform: none;
   }
   54%,
   75% {
-    transform: translateY(-100px);
+    transform: none;
   }
   81%,
   100% {
-    transform: translateY(-150px);
+    transform: none;
   }
 }
 
@@ -1696,8 +1688,8 @@ input:focus-visible {
 
 .newsletterInner {
   pointer-events: auto;
-  width: 85% !important;
-  max-width: 1380px !important;
+  width: 85%;
+  max-width: 1380px;
   margin: 0 auto;
   min-height: 250px;
   display: grid;
@@ -1705,9 +1697,9 @@ input:focus-visible {
   align-items: center;
   gap: 50px;
   padding: 50px 60px;
-  border-radius: 24px;
+  border-radius: var(--radius-control);
   background: var(--red);
-  box-shadow: 0 16px 40px rgba(11, 29, 62, 0.2);
+  box-shadow: var(--shadow-surface);
 }
 
 .footerSocialIconsRow {
@@ -1735,14 +1727,14 @@ input:focus-visible {
 .footerSocialIconButton:hover {
   background: #e4232c;
   border-color: #e4232c;
-  transform: translateY(-2px);
+  transform: none;
   color: #ffffff !important;
 }
 
 .newsletterInner h2 {
   max-width: 680px;
   margin: 0;
-  font-size: clamp(40px, 4.1vw, 56px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 520;
   letter-spacing: -0.05em;
   line-height: 1.04;
@@ -1764,7 +1756,7 @@ input:focus-visible {
   align-items: center;
   gap: 10px;
   padding: 5px 5px 5px 17px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--navy-dark);
   background: var(--white);
 }
@@ -1787,7 +1779,7 @@ input:focus-visible {
   gap: 9px;
   padding: 0 18px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--white);
   background: var(--navy-dark);
   font-size: 12px;
@@ -1892,7 +1884,7 @@ input:focus-visible {
   color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
@@ -1924,7 +1916,7 @@ input:focus-visible {
   color: rgba(255, 255, 255, 0.75);
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
@@ -1972,7 +1964,7 @@ input:focus-visible {
   visibility: hidden;
   background: rgba(5, 14, 30, 0.5);
   opacity: 0;
-  backdrop-filter: blur(3px);
+  backdrop-filter: none;
   transition:
     opacity var(--transition),
     visibility var(--transition);
@@ -1993,7 +1985,7 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   background: var(--white);
-  box-shadow: -20px 0 55px rgba(11, 29, 62, 0.16);
+  box-shadow: var(--shadow-surface);
   transform: translateX(102%);
   transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2101,7 +2093,7 @@ input:focus-visible {
   display: grid;
   place-items: center;
   color: var(--navy);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cartItemCopy h3 {
@@ -2125,7 +2117,7 @@ input:focus-visible {
   margin-top: 10px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 .quantityControl button {
@@ -2210,10 +2202,10 @@ input:focus-visible {
   align-items: center;
   gap: 10px;
   padding: 11px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   color: var(--white);
   background: var(--navy-dark);
-  box-shadow: 0 16px 40px rgba(11, 29, 62, 0.22);
+  box-shadow: var(--shadow-surface);
   font-size: 12px;
   opacity: 0;
   pointer-events: none;
@@ -2246,10 +2238,10 @@ input:focus-visible {
     overflow: hidden;
     border-top: 1px solid var(--line);
     background: var(--white);
-    box-shadow: 0 18px 35px rgba(11, 29, 62, 0.1);
+    box-shadow: var(--shadow-surface);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-8px);
+    transform: none;
     transition:
       opacity var(--transition),
       transform var(--transition);
@@ -2377,14 +2369,14 @@ input:focus-visible {
   }
 
   .newsletterInner {
-    width: 92% !important;
-    padding: 36px 24px !important;
-    gap: 28px !important;
-    border-radius: 20px;
+    width: 92%;
+    padding: 36px 24px;
+    gap: 28px;
+    border-radius: var(--radius-control);
   }
 
   .footerGrid {
-    padding-top: 170px !important;
+    padding-top: 170px;
   }
 
   .whyGrid {
@@ -2503,7 +2495,7 @@ input:focus-visible {
 
   .heroCard {
     min-height: calc(100dvh - 159px);
-    border-radius: 20px;
+    border-radius: var(--radius-control);
   }
 
   .heroCopy {
@@ -2512,7 +2504,7 @@ input:focus-visible {
   }
 
   .heroCopy h1 {
-    font-size: clamp(52px, 14vw, 68px);
+    font-size: clamp(26px, 3vw, 36px);
     letter-spacing: -0.06em;
   }
 
@@ -2588,7 +2580,7 @@ input:focus-visible {
   .sectionHeader h2,
   .productsHeading h2,
   .customCopy h2 {
-    font-size: clamp(39px, 11.5vw, 50px);
+    font-size: clamp(26px, 3vw, 36px);
   }
 
   .sectionLink {
@@ -2637,7 +2629,7 @@ input:focus-visible {
   }
 
   .productsSection .productsHeading h2 {
-    font-size: clamp(44px, 12.5vw, 58px);
+    font-size: clamp(26px, 3vw, 36px);
   }
 
   .filterRow {
@@ -2658,7 +2650,7 @@ input:focus-visible {
   }
 
   .whyIntro h2 {
-    font-size: clamp(50px, 14vw, 66px);
+    font-size: clamp(26px, 3vw, 36px);
   }
 
   .whyCard {
@@ -2676,7 +2668,7 @@ input:focus-visible {
 
   .customVisual {
     min-height: 450px;
-    border-radius: 20px;
+    border-radius: var(--radius-control);
   }
 
   .customVisualOverlay {
@@ -2694,7 +2686,7 @@ input:focus-visible {
   }
 
   .quoteBlock blockquote {
-    font-size: clamp(34px, 10vw, 44px);
+    font-size: clamp(26px, 3vw, 36px);
   }
 
   .quoteBlock blockquote span {
@@ -2728,7 +2720,7 @@ input:focus-visible {
     min-height: 58px;
     flex-wrap: wrap;
     padding: 10px 10px 10px 16px;
-    border-radius: 18px;
+    border-radius: var(--radius-control);
   }
 
   .newsletterField input {
@@ -2739,7 +2731,7 @@ input:focus-visible {
   .newsletterField button {
     width: 100%;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: var(--radius-control);
   }
 
   .footerGrid {

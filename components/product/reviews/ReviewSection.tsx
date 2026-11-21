@@ -160,9 +160,13 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
   };
 
   const own = eligibility?.review || null;
+  // Only a verified purchaser may write, and only one review per product. Once a
+  // review exists the customer may edit it instead.
+  const canWrite = !!eligibility?.canReview;
+  const canOpenForm = canWrite || !!own;
 
   const renderCta = () => {
-    if (showForm) {
+    if (showForm && canOpenForm) {
       return (
         <ReviewForm
           productId={productId}
@@ -175,7 +179,7 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
 
     if (!loggedIn) {
       return (
-        <div className="tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded-xl tw-p-4 tw-text-[13px] tw-text-slate-600 tw-mb-6">
+        <div className="tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded tw-p-4 tw-text-[13px] tw-text-slate-600 tw-mb-6">
           <Link href="/login" className="tw-text-slate-900 tw-font-bold tw-underline hover:tw-text-slate-700">
             Log in
           </Link>{" "}
@@ -186,7 +190,7 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
 
     if (own) {
       return (
-        <div className="tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded-xl tw-p-4 tw-flex tw-items-center tw-justify-between tw-gap-3 tw-flex-wrap tw-mb-6">
+        <div className="tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded tw-p-4 tw-flex tw-items-center tw-justify-between tw-gap-3 tw-flex-wrap tw-mb-6">
           <span className="tw-text-[13px] tw-text-slate-700">
             You reviewed this product
             {own.status !== "approved" ? " — awaiting store approval." : "."}
@@ -194,10 +198,24 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="tw-text-slate-900 tw-font-semibold tw-text-[13px] tw-bg-white hover:tw-bg-slate-100 tw-border tw-border-slate-300 tw-rounded-lg tw-px-4 tw-py-1.5 tw-cursor-pointer tw-transition-colors"
+            className="tw-text-slate-900 tw-font-semibold tw-text-[13px] tw-bg-white hover:tw-bg-slate-100 tw-border tw-border-slate-300 tw-rounded tw-px-4 tw-py-1.5 tw-cursor-pointer tw-transition-colors"
           >
             Edit review
           </button>
+        </div>
+      );
+    }
+
+    // Logged in, but no paid order containing this product. The server enforces
+    // this too — the UI simply avoids showing a form that would be rejected.
+    if (eligibility && !eligibility.verifiedPurchase) {
+      return (
+        <div className="tw-bg-amber-50 tw-border tw-border-amber-200 tw-rounded tw-p-4 tw-text-[13px] tw-text-amber-900 tw-mb-6">
+          Only verified purchasers can review this product. Once you place a paid order
+          for it, the review form unlocks here.{" "}
+          <Link href="/my-orders" className="tw-font-bold tw-underline hover:tw-text-amber-700">
+            View your orders
+          </Link>
         </div>
       );
     }
@@ -206,7 +224,7 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
   };
 
   return (
-    <section className="tw-bg-white tw-text-slate-900 tw-rounded-2xl tw-p-6 sm:tw-p-8 tw-border tw-border-slate-200 tw-shadow-sm" id="reviews">
+    <section className="tw-bg-white tw-text-slate-900 tw-rounded tw-p-6 sm:tw-p-8 tw-border tw-border-slate-200 tw-shadow-sm" id="reviews">
       {/* Top Title Bar */}
       <div className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-mb-6 tw-flex-wrap">
         <h2 className="tw-text-xl sm:tw-text-2xl tw-font-bold tw-text-slate-900 tw-m-0 tw-tracking-tight">
@@ -222,7 +240,7 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
               id="b2b-sort-select"
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="tw-text-[12px] sm:tw-text-[13px] tw-bg-white tw-text-slate-800 tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-px-2.5 tw-py-1.5 focus:tw-outline-none focus:tw-border-slate-400 tw-font-medium tw-cursor-pointer tw-shadow-sm"
+              className="tw-text-[12px] sm:tw-text-[13px] tw-bg-white tw-text-slate-800 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-px-2.5 tw-py-1.5 focus:tw-outline-none focus:tw-border-slate-400 tw-font-medium tw-cursor-pointer tw-shadow-sm"
             >
               <option value="recent">Most recent</option>
               <option value="helpful">Most helpful</option>
@@ -231,20 +249,23 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
             </select>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (!loggedIn) {
-                window.location.href = "/login";
-              } else {
+          {(!loggedIn || canOpenForm) && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!loggedIn) {
+                  window.location.href = "/login";
+                  return;
+                }
+                if (!canOpenForm) return;
                 setShowForm((prev) => !prev);
-              }
-            }}
-            className="tw-bg-slate-900 hover:tw-bg-slate-800 tw-text-white tw-border-0 tw-rounded-lg tw-px-4 tw-py-2 tw-text-[12px] sm:tw-text-[13px] tw-font-bold tw-tracking-wider tw-uppercase tw-flex tw-items-center tw-gap-2 tw-cursor-pointer tw-transition-colors tw-shadow-sm"
-          >
-            <span className="tw-text-sm">📝</span>
-            <span>WRITE B2B REVIEW</span>
-          </button>
+              }}
+              className="tw-bg-slate-900 hover:tw-bg-slate-800 tw-text-white tw-border-0 tw-rounded tw-px-4 tw-py-2 tw-text-[12px] sm:tw-text-[13px] tw-font-bold tw-tracking-normal tw-uppercase tw-flex tw-items-center tw-gap-2 tw-cursor-pointer tw-transition-colors tw-shadow-sm"
+            >
+              <span className="tw-text-sm">📝</span>
+              <span>{own ? "EDIT YOUR REVIEW" : "WRITE B2B REVIEW"}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -261,7 +282,7 @@ const ReviewSection: React.FC<Props> = ({ product }) => {
         {/* Right Column: Review Items List */}
         <div className="lg:tw-col-span-8 tw-min-w-0">
           {loading ? (
-            <div className="tw-text-center tw-text-slate-500 tw-text-[14px] tw-py-12 tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded-xl">
+            <div className="tw-text-center tw-text-slate-500 tw-text-[14px] tw-py-12 tw-bg-slate-50 tw-border tw-border-slate-200 tw-rounded">
               Loading reviews…
             </div>
           ) : (

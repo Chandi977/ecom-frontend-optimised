@@ -1,21 +1,17 @@
 "use client";
 
-/* The homepage is a faithful port of the premium storefront concept
-   (hero -> benefits -> category grid -> product grid -> steps -> custom
-   packaging -> testimonial -> newsletter). It is wired to the real catalog
-   API instead of static mockups. Styling lives in public/homepage-store.css
-   (scoped under `.hps`); homepage.css still powers BestDeals & friends. */
+/* Product-first homepage, using the existing catalog and cart services. */
 
 import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
-  Box,
   Check,
+  Factory,
+  Headphones,
   Plus,
-  Search,
-  ShoppingBag,
+  ReceiptText,
   Truck,
 } from "lucide-react";
 import JsonLd from "../components/common/JsonLd";
@@ -32,7 +28,6 @@ import {
 import { useBrands } from "../context/BrandContext";
 import WishlistButton from "../components/common/WishlistButton";
 import { addToCart as apiAddToCart } from "../utils/cart";
-import ProcessJourneySection from "../components/landing/ProcessJourneySection";
 
 const HOME_CATEGORY_LINKS = [
   { name: "Corrugated Boxes", path: "/corrugated-boxes" },
@@ -233,125 +228,21 @@ type CategoryCardItem = {
   tone: string;
 };
 
-const CategoryCarousel = ({ cards }: { cards: CategoryCardItem[] }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<number | null>(null);
-  const pausedRef = useRef(false);
-  const [perView, setPerView] = useState(5);
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const measure = () => {
-      const width = containerRef.current?.clientWidth ?? 0;
-      let pv = 5;
-      if (width > 0 && width <= 520) pv = 1;
-      else if (width <= 760) pv = 2;
-      else if (width <= 980) pv = 3;
-      else if (width <= 1200) pv = 4;
-      setPerView(pv);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  useEffect(() => {
-    setIndex((i) => Math.max(0, Math.min(i, Math.max(0, cards.length - perView))));
-  }, [perView, cards.length]);
-
-  const advance = useCallback(
-    (dir: 1 | -1) => {
-      setIndex((i) => {
-        const max = Math.max(0, cards.length - perView);
-        return Math.max(0, Math.min(max, i + dir));
-      });
-    },
-    [cards.length, perView],
-  );
-
-  const startAutoplay = useCallback(() => {
-    if (timerRef.current) window.clearInterval(timerRef.current);
-    timerRef.current = window.setInterval(() => {
-      if (pausedRef.current) return;
-      setIndex((i) => {
-        const max = Math.max(0, cards.length - perView);
-        return i >= max ? i : i + 1;
-      });
-    }, 3500);
-  }, [cards.length, perView]);
-
-  useEffect(() => {
-    startAutoplay();
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [startAutoplay]);
-
-  const go = useCallback(
-    (dir: 1 | -1) => {
-      advance(dir);
-      startAutoplay();
-    },
-    [advance, startAutoplay],
-  );
-
-  const maxIndex = Math.max(0, cards.length - perView);
-  const slideWidth = 100 / perView;
-
-  return (
-    <div
-      className="cat-carousel"
-      ref={containerRef}
-      onMouseEnter={() => {
-        pausedRef.current = true;
-      }}
-      onMouseLeave={() => {
-        pausedRef.current = false;
-      }}
-    >
-      <div className="cat-viewport">
-        <div className="cat-track" style={{ transform: `translateX(-${index * slideWidth}%)` }}>
-          {cards.map((category) => (
-            <div className="cat-slide" style={{ width: `${slideWidth}%` }} key={category.name}>
-              <Link href={category.href} className={`category-card ${category.tone}`}>
-                <span>{category.tag}</span>
-                <h3>{category.name}</h3>
-                <img src={category.image} alt="" loading="lazy" />
-                <i>
-                  <ArrowRight size={18} strokeWidth={1.8} />
-                </i>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="cat-arrows">
-        <button
-          type="button"
-          className="cat-btn cat-btn-prev"
-          onClick={() => go(-1)}
-          disabled={index === 0}
-          aria-label="Previous categories"
-        >
-          <span className="cat-arrow-icon">
-            <ArrowRight size={15} strokeWidth={1.75} />
-          </span>
-        </button>
-        <button
-          type="button"
-          className="cat-btn cat-btn-next"
-          onClick={() => go(1)}
-          disabled={index === maxIndex}
-          aria-label="Next categories"
-        >
-          <span className="cat-arrow-icon">
-            <ArrowRight size={15} strokeWidth={1.75} />
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-};
+const CategoryCarousel = ({ cards }: { cards: CategoryCardItem[] }) => (
+  <div className="category-grid">
+    {cards.map((category) => (
+      <Link href={category.href} className="category-card" key={category.name}>
+        <span className="category-card__image">
+          <img src={category.image} alt="" loading="lazy" />
+        </span>
+        <span className="category-card__copy">
+          <h3>{category.name}</h3>
+          <small>{category.tag}</small>
+        </span>
+      </Link>
+    ))}
+  </div>
+);
 
 export default function Home() {
   const { brandNameById } = useBrands();
@@ -407,9 +298,10 @@ export default function Home() {
         const name = typeof category?.name === "string" ? category.name : "";
         const meta = CATEGORY_META[name];
         if (!meta) return null;
+        const productCount = counts.get(name) || 0;
         return {
           name: meta.name,
-          tag: `${counts.get(name) || 0} products`,
+          tag: `${productCount} ${productCount === 1 ? "product" : "products"}`,
           href: meta.href,
           image: meta.image,
           tone: meta.tone,
@@ -488,6 +380,8 @@ export default function Home() {
           name="description"
           content="Shop boxes, paper bags, poly mailers, tapes, labels and food packaging directly from Prem Industries India Limited."
         />
+        <meta name="page-type" content="product" />
+        <meta name="site-kind" content="other" />
         <link rel="canonical" href={canonicalUrl("/")} />
       </Head>
 
@@ -504,60 +398,112 @@ export default function Home() {
       <main className="hps">
         {/* Hero */}
         <section className="hero" aria-labelledby="hero-title">
-          <img
-            className="hero-background"
-            src="/hero-packaging.webp"
-            alt="Boxes, paper bags, mailers and packaging supplies"
-          />
-          <div className="hero-overlay" />
-          <div className="hero-copy">
-            <p className="eyebrow">Made to pack. Ready to send.</p>
-            <h1 id="hero-title">
-              Better packaging
-              <br />
-              starts right here.
-            </h1>
+          <div className="hero-copy" data-enter>
+            <span className="hero-eyebrow">B2B packaging supplier</span>
+            <h1 id="hero-title">Packaging solutions for every business</h1>
             <p className="hero-sub">
-              Shop dependable boxes, bags, mailers, tapes and labels for your
-              everyday orders — delivered directly from the manufacturer.
+              Source boxes, mailer bags, paper bags, tapes, pouches and custom
+              packaging from one supplier, with pack and bulk pricing.
             </p>
             <div className="hero-ctas">
               <a className="button primary" href="#products">
-                Shop bestsellers <ArrowRight size={19} strokeWidth={1.8} />
+                Browse products <ArrowRight size={17} aria-hidden="true" />
               </a>
-              <a className="button text-button" href="#categories">
-                Explore categories
-              </a>
-            </div>
-            <div className="hero-proof">
-              <span>
-                <Check size={15} strokeWidth={1.8} /> GST invoice
-              </span>
-              <span>
-                <Check size={15} strokeWidth={1.8} /> Secure checkout
-              </span>
-              <span>
-                <Check size={15} strokeWidth={1.8} /> Pan-India delivery
-              </span>
+              <Link className="button text-button" href="/contact-us">
+                Request a quote
+              </Link>
             </div>
           </div>
-          <div className="hero-note">
-            <span>Authorised packaging for</span>
-            <strong>amazon</strong>
-            <strong>Flipkart</strong>
-            <strong>AJIO</strong>
+          <figure className="hero-visual">
+            <img
+              className="hero-background"
+              src="/hero-packaging.webp"
+              alt="Corrugated boxes, paper bags, poly mailers, tape and labels"
+              width={1586}
+              height={992}
+              fetchPriority="high"
+            />
+          </figure>
+        </section>
+
+        <section className="commerce-benefits shell" aria-label="Why shop with Prem Packaging">
+          <article>
+            <Factory aria-hidden="true" />
+            <div><strong>Made by the manufacturer</strong><span>Reliable quality without extra layers</span></div>
+          </article>
+          <article>
+            <ReceiptText aria-hidden="true" />
+            <div><strong>Clear business pricing</strong><span>Pack sizes, unit rates and GST support</span></div>
+          </article>
+          <article>
+            <Truck aria-hidden="true" />
+            <div><strong>Pan-India dispatch</strong><span>Dependable delivery for daily operations</span></div>
+          </article>
+          <article>
+            <Headphones aria-hidden="true" />
+            <div><strong>Packaging specialists</strong><span>Practical support before and after purchase</span></div>
+          </article>
+        </section>
+
+        <section className="buying-section shell" aria-labelledby="buying-title">
+          <div className="buying-heading">
+            <h2 id="buying-title">Choose how you buy</h2>
+            <p>Start with ready stock, a custom brief, or a previous order.</p>
+          </div>
+
+          <div className="buying-grid">
+            <Link className="buying-banner buying-banner--stock" href="#products">
+              <div className="buying-banner__copy">
+                <span>Ready-stock catalogue</span>
+                <h3>Order standard packaging online</h3>
+                <p>Compare pack quantities and unit rates across the range.</p>
+                <strong>Shop ready stock <ArrowRight size={16} aria-hidden="true" /></strong>
+              </div>
+              <div className="buying-banner__products" aria-hidden="true">
+                <img src="/category-cutouts/corrugated-boxes.png" alt="" width={500} height={500} loading="lazy" />
+                <img src="/category-cutouts/bopp-tapes.png" alt="" width={571} height={437} loading="lazy" />
+              </div>
+            </Link>
+
+            <Link className="buying-banner buying-banner--custom" href="/custom-packaging">
+              <div className="buying-banner__copy">
+                <span>Custom production</span>
+                <h3>Build a pack around your product</h3>
+                <p>Share the size, print, finish and material you need.</p>
+                <strong>Start a custom project <ArrowRight size={16} aria-hidden="true" /></strong>
+              </div>
+              <img
+                className="buying-banner__custom-image"
+                src="/custom-box.webp"
+                alt=""
+                width={1448}
+                height={1086}
+                loading="lazy"
+                aria-hidden="true"
+              />
+            </Link>
+
+            <Link className="buying-banner buying-banner--repeat" href="/my-orders">
+              <ReceiptText aria-hidden="true" />
+              <div className="buying-banner__copy">
+                <span>Repeat purchase</span>
+                <h3>Find a previous business order</h3>
+                <strong>View your orders <ArrowRight size={16} aria-hidden="true" /></strong>
+              </div>
+            </Link>
           </div>
         </section>
 
         {/* Categories */}
         <section className="category-section shell" id="categories">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">Find your everyday essentials</p>
-              <h2>Shop top categories</h2>
+            <div className="section-heading__copy">
+              <span className="section-eyebrow">Shop by category</span>
+              <h2>Everything you need to pack and ship</h2>
+              <p>Browse packaging formats built for ecommerce, retail and fulfilment.</p>
             </div>
-            <a href="#products">
-              View everything <ArrowRight size={18} strokeWidth={1.8} />
+            <a href="#products" className="section-link">
+              View all products <ArrowRight size={16} aria-hidden="true" />
             </a>
           </div>
           {categoryCards.length > 0 ? (
@@ -574,13 +520,14 @@ export default function Home() {
         {/* Products */}
         <section className="products-section shell" id="products">
           <div className="section-heading product-heading">
-            <div>
-              <p className="eyebrow">Customer favourites</p>
-              <h2>Packaging people keep coming back for</h2>
+            <div className="section-heading__copy">
+              <span className="section-eyebrow">Popular products</span>
+              <h2>Packaging supplies for everyday orders</h2>
+              <p>Compare sizes, pack quantities and factory-direct prices.</p>
             </div>
-            <p>
+            <p className="product-result-count" aria-live="polite">
               {selectedFilter?.label === "All products"
-                ? "Useful sizes, honest prices and no catalogue confusion."
+                ? `${visibleProducts.length} bestselling products`
                 : `Showing ${visibleProducts.length} ${selectedFilter?.label.toLowerCase()} products`}
             </p>
           </div>
@@ -591,6 +538,7 @@ export default function Home() {
                 key={filter.key}
                 type="button"
                 className={activeFilter === filter.key ? "active" : ""}
+                aria-pressed={activeFilter === filter.key}
                 onClick={() => setActiveFilter(filter.key)}
               >
                 {filter.label}
@@ -619,21 +567,14 @@ export default function Home() {
           )}
         </section>
 
-        {/* Redesigned Process Journey Section */}
-        <ProcessJourneySection />
-
         {/* Custom packaging */}
         <section className="custom-section shell" id="custom">
           <div className="custom-visual">
             <img src="/custom-box.webp" alt="Custom kraft mailer box and labels" loading="lazy" />
-            <div className="custom-float">
-              <strong>Made for your brand</strong>
-              <span>Size · Print · Material</span>
-            </div>
           </div>
           <div className="custom-copy">
-            <p className="eyebrow">Make it unmistakably yours</p>
-            <h2>Need packaging with your name on it?</h2>
+            <span className="section-eyebrow">Built around your product</span>
+            <h2>Custom packaging for your business</h2>
             <p>
               From the right box size to print, finish and material, our
               packaging team can help turn your idea into a production-ready
@@ -651,7 +592,7 @@ export default function Home() {
               </li>
             </ul>
             <Link className="button primary" href="/custom-packaging">
-              Start a custom project <ArrowRight size={19} strokeWidth={1.8} />
+              Start a custom project <ArrowRight size={17} aria-hidden="true" />
             </Link>
           </div>
         </section>
@@ -659,7 +600,6 @@ export default function Home() {
         {/* Testimonial */}
         <section className="testimonial-section shell">
           <div className="testimonial-copy">
-            <p className="eyebrow">Loved by growing brands</p>
             <blockquote>“{TESTIMONIAL.quote}”</blockquote>
             <div className="quote-by">
               <strong>{TESTIMONIAL.name}</strong>
@@ -667,7 +607,7 @@ export default function Home() {
             </div>
           </div>
           <div className="testimonial-proof">
-            <span>Why shoppers choose Prem</span>
+            <span className="section-eyebrow">Why businesses choose Prem</span>
             {TESTIMONIAL_PROOF.map((proof) => (
               <div key={proof.title}>
                 <strong>{proof.title}</strong>
@@ -678,7 +618,7 @@ export default function Home() {
         </section>
       </main>
 
-      <div className={`hps-toast ${toast ? "visible" : ""}`}>
+      <div role="status" className={`hps-toast ${toast ? "visible" : ""}`}>
         <Check size={16} strokeWidth={2.2} /> {toast}
       </div>
     </>
@@ -714,7 +654,6 @@ function ProductCard({
       <div className="product-info">
         <div className="product-meta">
           <span>{getCategoryLabel(product)}</span>
-          <span>Quality checked</span>
         </div>
         <Link href={href}>
           <h3>{name}</h3>
@@ -742,7 +681,7 @@ function ProductCard({
               </>
             ) : (
               <>
-                <Plus size={17} strokeWidth={2} /> Add
+                <Plus size={17} strokeWidth={2} /> Add to cart
               </>
             )}
           </button>

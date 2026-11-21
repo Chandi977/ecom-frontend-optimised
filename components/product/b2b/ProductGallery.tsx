@@ -67,7 +67,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, inStock 
               onClick={() => setSelectedIndex(idx)}
               aria-label={`Show image ${idx + 1}: ${img.caption}`}
               aria-current={selectedIndex === idx}
-              className={`tw-w-20 tw-h-20 tw-p-0 tw-border tw-border-solid tw-overflow-hidden tw-shrink-0 tw-transition-all tw-bg-white tw-rounded-lg tw-relative tw-group tw-cursor-pointer ${
+              className={`tw-w-20 tw-h-20 tw-p-0 tw-border tw-border-solid tw-overflow-hidden tw-shrink-0 tw-transition-all tw-bg-white tw-rounded tw-relative tw-group tw-cursor-pointer ${
                 selectedIndex === idx
                   ? "tw-border-slate-900 tw-ring-1 tw-ring-slate-900"
                   : "tw-border-slate-200 hover:tw-border-slate-400"
@@ -86,19 +86,19 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, inStock 
       )}
 
       {/* Main showcase image */}
-      <div className="tw-order-1 md:tw-order-2 tw-grow tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl tw-relative tw-overflow-hidden tw-group tw-min-h-[380px] md:tw-min-h-[460px] md:tw-h-full tw-flex tw-items-center tw-justify-center tw-p-6">
+      <div className="tw-order-1 md:tw-order-2 tw-grow tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-relative tw-overflow-hidden tw-group tw-min-h-[380px] md:tw-min-h-[460px] md:tw-h-full tw-flex tw-items-center tw-justify-center tw-p-6">
         {inStock ? (
           <span
-            className="tw-absolute tw-top-4 tw-left-4 tw-z-10 tw-bg-white/95 tw-text-emerald-700 tw-border tw-border-solid tw-border-emerald-600/30 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-tracking-wider tw-rounded-md tw-flex tw-items-center tw-gap-2 tw-shadow-sm"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+            className="tw-absolute tw-top-4 tw-left-4 tw-z-10 tw-bg-white/95 tw-text-emerald-700 tw-border tw-border-solid tw-border-emerald-600/30 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-tracking-normal tw-rounded-md tw-flex tw-items-center tw-gap-2 tw-shadow-sm"
+            style={{ fontFamily: "var(--font-store)" }}
           >
-            <span className="tw-w-2 tw-h-2 tw-bg-emerald-600 tw-rounded-full tw-animate-pulse" />
+            <span className="tw-w-2 tw-h-2 tw-bg-emerald-600 tw-rounded-full" />
             IN STOCK
           </span>
         ) : (
           <span
-            className="tw-absolute tw-top-4 tw-left-4 tw-z-10 tw-bg-white/95 tw-text-red-700 tw-border tw-border-solid tw-border-red-600/30 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-tracking-wider tw-rounded-md tw-flex tw-items-center tw-gap-2 tw-shadow-sm"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+            className="tw-absolute tw-top-4 tw-left-4 tw-z-10 tw-bg-white/95 tw-text-red-700 tw-border tw-border-solid tw-border-red-600/30 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-tracking-normal tw-rounded-md tw-flex tw-items-center tw-gap-2 tw-shadow-sm"
+            style={{ fontFamily: "var(--font-store)" }}
           >
             <span className="tw-w-2 tw-h-2 tw-bg-red-600 tw-rounded-full" />
             OUT OF STOCK
@@ -135,7 +135,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, inStock 
 
         <div
           className="tw-absolute tw-bottom-3 tw-left-4 tw-text-xs tw-text-slate-700 tw-font-semibold tw-bg-white/95 tw-backdrop-blur-sm tw-border tw-border-solid tw-border-slate-200 tw-px-3 tw-py-1 tw-rounded-md tw-max-w-[65%] tw-truncate tw-shadow-sm"
-          style={{ fontFamily: "'Poppins', sans-serif" }}
+          style={{ fontFamily: "var(--font-store)" }}
         >
           {currentImg.caption} ({selectedIndex + 1}/{images.length})
         </div>
@@ -177,7 +177,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, inStock 
               initial={reduceMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={transition(DURATION.fast)}
-              className="tw-max-h-[80vh] tw-w-auto tw-object-contain tw-rounded tw-border tw-border-solid tw-border-white/10 tw-bg-white tw-p-2 tw-shadow-2xl"
+              className="tw-max-h-[80vh] tw-w-auto tw-object-contain tw-rounded tw-border tw-border-solid tw-border-white/10 tw-bg-white tw-p-2 tw-shadow-sm"
             />
 
             <p className="tw-text-white tw-text-xs tw-mt-3 tw-mb-0 tw-bg-black/60 tw-px-4 tw-py-1.5 tw-rounded-full tw-font-medium tw-text-center">

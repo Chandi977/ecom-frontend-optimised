@@ -131,7 +131,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
         Frequently Bought Together
       </h2>
 
-      <div className="tw-bg-white tw-text-slate-900 tw-p-6 sm:tw-p-8 tw-rounded-2xl">
+      <div className="tw-bg-white tw-text-slate-900 tw-p-6 sm:tw-p-8 tw-rounded">
         <div className="tw-flex tw-flex-col lg:tw-flex-row tw-items-start lg:tw-items-center tw-gap-8">
           {/* Item cards */}
           <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-3 sm:tw-gap-4">
@@ -146,7 +146,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
                     type="button"
                     onClick={() => toggleItem(id)}
                     aria-pressed={isSelected}
-                    className={`tw-relative tw-p-3.5 tw-rounded-xl tw-border-0 tw-transition-all tw-cursor-pointer tw-flex tw-flex-col tw-items-center tw-group tw-w-28 sm:tw-w-36 tw-text-center ${
+                    className={`tw-relative tw-p-3.5 tw-rounded tw-border-0 tw-transition-all tw-cursor-pointer tw-flex tw-flex-col tw-items-center tw-group tw-w-28 sm:tw-w-36 tw-text-center ${
                       isSelected
                         ? "tw-bg-slate-100 tw-ring-2 tw-ring-slate-900"
                         : "tw-bg-slate-50/80 tw-opacity-50 tw-grayscale"
@@ -162,7 +162,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
                     >
                       ✓
                     </span>
-                    <span className="tw-w-16 tw-h-16 tw-flex tw-items-center tw-justify-center tw-p-1 tw-mb-2 tw-overflow-hidden tw-bg-white tw-rounded-lg tw-shadow-xs">
+                    <span className="tw-w-16 tw-h-16 tw-flex tw-items-center tw-justify-center tw-p-1 tw-mb-2 tw-overflow-hidden tw-bg-white tw-rounded tw-shadow-xs">
                       <img
                         src={getProductImageSrc(item)}
                         alt={fullName}
@@ -222,7 +222,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
               {selectedItems.length === 1 ? "item" : "items"}):
             </p>
             <div className="tw-flex tw-items-baseline tw-gap-3 tw-mb-5">
-              <span className="tw-text-2xl sm:tw-text-3xl tw-font-extrabold tw-text-slate-900">
+              <span className="tw-text-2xl sm:tw-text-3xl tw-font-semibold tw-text-slate-900">
                 {formatINR(bundleTotal)}
               </span>
             </div>
@@ -231,7 +231,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
               {...buttonProps}
               type="button"
               disabled={selectedItems.length === 0}
-              className={`tw-w-full sm:tw-w-auto tw-px-8 tw-py-3.5 tw-rounded-xl tw-text-xs sm:tw-text-sm tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2.5 tw-border-0 ${
+              className={`tw-w-full sm:tw-w-auto tw-px-8 tw-py-3.5 tw-rounded tw-text-xs sm:tw-text-sm tw-font-semibold tw-uppercase tw-tracking-normal tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2.5 tw-border-0 ${
                 selectedItems.length > 0
                   ? "tw-bg-slate-900 tw-text-white hover:tw-bg-slate-800 tw-cursor-pointer tw-shadow-md"
                   : "tw-bg-slate-100 tw-text-slate-400 tw-cursor-not-allowed"

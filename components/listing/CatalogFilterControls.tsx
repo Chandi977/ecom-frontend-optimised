@@ -187,7 +187,7 @@ const CatalogFilterControls = ({
 .cfc-desktop-sort { display: flex; align-items: center; }
 @media (max-width: 900px) { .cfc-desktop-sort { display: none; } }
 .cfc-sort-control { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.cfc-sort-label { margin: 0; color: #111827; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; }
+.cfc-sort-label { margin: 0; color: #111827; font-family: var(--font-store); font-size: 15px; font-weight: 600; }
 .cfc-sort-select, .cfc-mobile-sort-select {
   width: 193px;
   height: 40px;
@@ -195,7 +195,7 @@ const CatalogFilterControls = ({
   border: 1px solid #d9d9d9;
   background: #fff;
   color: #111827;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-store);
   font-size: 14px;
 }
 .cfc-mobile-toolbar { display: none; }
@@ -214,7 +214,7 @@ const CatalogFilterControls = ({
   gap: 10px;
   min-height: 50px;
   padding: 0 16px;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-store);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -224,7 +224,7 @@ const CatalogFilterControls = ({
 @media (max-width: 900px) {
   .cfc-mobile-panel { display: block; margin-top: 12px; padding: 12px 12px 16px; border: 1px solid #e6e6e6; background: #fff; max-height: min(70vh, 720px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 }
-.cfc-mobile-panel-label { display: block; margin-bottom: 8px; color: #111827; font-family: "Montserrat", sans-serif; font-size: 14px; font-weight: 600; }
+.cfc-mobile-panel-label { display: block; margin-bottom: 8px; color: #111827; font-family: var(--font-store); font-size: 14px; font-weight: 600; }
 .cfc-mobile-filter-stack { display: flex; flex-direction: column; gap: 16px; }
 .cfc-mobile-filter-stack > * { width: 100%; }
 @media (max-width: 900px) { .cfc-mobile-sort-select { width: 100%; } }

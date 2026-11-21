@@ -202,7 +202,7 @@ export const SubCategoryContent: React.FC<SubCategoryContentProps> = ({ content 
 
       {hasCopy && (
         <div className="tw-mb-10">
-          <p className="tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500 tw-mb-2 tw-mt-0">
+          <p className="tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-normal tw-text-slate-500 tw-mb-2 tw-mt-0">
             Buying Guide
           </p>
           <h2 className="tw-text-xl sm:tw-text-2xl tw-font-bold tw-text-slate-900 tw-m-0 tw-mb-5">
@@ -275,7 +275,7 @@ export const SubCategoryContent: React.FC<SubCategoryContentProps> = ({ content 
               type="button"
               onClick={() => setExpanded((open) => !open)}
               aria-expanded={expanded}
-              className="tw-mt-3 tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-900 tw-flex tw-items-center tw-gap-1 hover:tw-underline"
+              className="tw-mt-3 tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-normal tw-text-slate-900 tw-flex tw-items-center tw-gap-1 hover:tw-underline"
             >
               {expanded ? "Read less" : "Read more"}
               <span
@@ -294,7 +294,7 @@ export const SubCategoryContent: React.FC<SubCategoryContentProps> = ({ content 
           <h2 className="tw-text-xl sm:tw-text-2xl tw-font-bold tw-text-slate-900 tw-m-0 tw-mb-5">
             Frequently Asked Questions
           </h2>
-          <div className="tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl tw-overflow-hidden tw-bg-white tw-shadow-sm">
+          <div className="tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-overflow-hidden tw-bg-white tw-shadow-sm">
             {content.faqs.map((faq, index) => (
               <details
                 key={`${faq.question}-${index}`}

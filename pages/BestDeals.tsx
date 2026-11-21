@@ -5,31 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import JsonLd from "../components/common/JsonLd";
 import { canonicalUrl, collectionPageSchema } from "../utils/schema";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Award,
-  Boxes,
-  Check,
-  CircleCheckBig as CheckCircle2,
-  ChevronDown,
-  Copy,
-  Flame,
-  Layers3,
-  Minus,
-  PackageCheck,
-  Palette,
-  Plus,
-  Ruler,
-  Search,
-  ShieldCheck,
-  ShoppingBag,
-  Sparkles,
-  Star,
-  Tag,
-  Truck,
-  Zap,
-} from "lucide-react";
+import { ChevronDown, Plus, Search } from "lucide-react";
 import { toast } from "react-toastify";
 import { getService } from "../services/service";
 import { addToCart as apiAddToCart } from "../utils/cart";
@@ -527,7 +503,6 @@ export default function BestDeals({ product }: any) {
     }
   };
 
-  const topThreeBestsellers = mappedProducts.slice(0, 3);
 
   return (
     <>
@@ -554,159 +529,27 @@ export default function BestDeals({ product }: any) {
         })}
       />
 
-      <main className="bestsellersFreshPage">
-        {/* Fresh Light Hero Section */}
-        <section className="freshHero">
-          <div className="container freshHeroContainer">
-            <div className="heroHeaderBlock">
-              <span className="eyebrow redEyebrow">MOST POPULAR PACKAGING SOLUTIONS</span>
-              <h1>Best Deals & Top Selling Packaging</h1>
-              <p className="heroSubtext">
-                Proven strength, certified quality, and factory-direct pricing. Shop the most trusted boxes, bags, mailers, tapes, and labels across India.
-              </p>
-            </div>
-
-            {/* 4 Metric Highlight Cards */}
-            <div className="heroMetricsGrid">
-              <div className="metricCard">
-                <div className="metricIcon"><Award size={22} /></div>
-                <div>
-                  <strong>#1 Choice in India</strong>
-                  <small>50M+ Boxes Shipped</small>
-                </div>
-              </div>
-              <div className="metricCard">
-                <div className="metricIcon"><Star size={22} /></div>
-                <div>
-                  <strong>4.9 / 5.0 Rating</strong>
-                  <small>12,000+ Verified Reviews</small>
-                </div>
-              </div>
-              <div className="metricCard">
-                <div className="metricIcon"><Truck size={22} /></div>
-                <div>
-                  <strong>24h Fast Dispatch</strong>
-                  <small>Direct from Prem Factory</small>
-                </div>
-              </div>
-              <div className="metricCard">
-                <div className="metricIcon"><ShieldCheck size={22} /></div>
-                <div>
-                  <strong>GST Tax Credit</strong>
-                  <small>Instant Invoice Downloads</small>
-                </div>
-              </div>
-            </div>
+      <main className="deals-bestsellersFreshPage">
+        <header className="deals-catalogHeader">
+          <div className="deals-container">
+            <nav className="deals-breadcrumbNav" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">/</span><span>Best deals</span></nav>
+            <h1>Best deals on packaging supplies</h1>
+            <p>Compare pack sizes and prices on boxes, bags, tapes and labels.</p>
           </div>
-        </section>
-
-        {/* Spotlight Top 3 Bestseller Cards Showcase */}
-        <section className="spotlightShowcase">
-          <div className="container">
-            <div className="showcaseHeader">
-              <div>
-                <p className="eyebrow redEyebrow">MONTHLY LEADERS</p>
-                <h2>Top 3 Bestsellers of the Month</h2>
-              </div>
-              <p className="showcaseSub">High-demand packaging items with maximum buyer satisfaction.</p>
-            </div>
-
-            <div className="spotlightGrid">
-              {topThreeBestsellers.map((item, index) => {
-                const rankBadges = [
-                  { label: "👑 #1 OVERALL BESTSELLER", color: "goldRank" },
-                  { label: "⚡ #2 FASTEST MOVER", color: "silverRank" },
-                  { label: "🌱 #3 TOP RATED CHOICE", color: "bronzeRank" },
-                ];
-                const rank = rankBadges[index % rankBadges.length];
-                const itemId = String(item._id || item.id);
-                const isFailed = failedImages[itemId];
-                const displayImgSrc =
-                  !isFailed && isValidImageSrc(item.image)
-                    ? item.image!
-                    : getCategoryFallbackImage(item.category, index);
-
-                return (
-                  <article className={`spotlightCard ${rank.color}`} key={item._id}>
-                    <div className="spotlightBadgeRow">
-                      <span className="rankTag">{rank.label}</span>
-                      <span className="spotlightDiscountTag">{item.discount}</span>
-                    </div>
-
-                    <div
-                      className="spotlightImgContainer"
-                      onClick={() => (item.slug ? router.push(`/${item.slug}`) : null)}
-                    >
-                      <WishlistButton product={item.rawItem} />
-                      <Image
-                        src={displayImgSrc}
-                        alt={item.name}
-                        fill
-                        sizes="(max-width: 900px) 100vw, 380px"
-                        priority
-                        style={{ objectFit: "contain", padding: "14px" }}
-                        className="spotlightImage"
-                        onError={() => handleImageError(itemId)}
-                      />
-                    </div>
-
-                    <div className="spotlightCardContent">
-                      <span className="spotlightCategoryLabel">{item.category}</span>
-                      <h3
-                        className="spotlightCardTitle"
-                        onClick={() => (item.slug ? router.push(`/${item.slug}`) : null)}
-                      >
-                        {item.name}
-                      </h3>
-
-                      <div className="spotlightMeta">
-                        <span>{item.pack}</span>
-                        <span>•</span>
-                        <span>{item.unit}</span>
-                      </div>
-
-                      <div className="spotlightPriceLine">
-                        <div>
-                          <strong className="spotlightPrice">₹{item.price}</strong>
-                          {item.oldPrice > item.price && (
-                            <s className="spotlightOldPrice">₹{item.oldPrice}</s>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          className="spotlightAddBtn"
-                          onClick={() => handleAddToCart(item)}
-                        >
-                          <Plus size={16} /> Add
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        </header>
 
         {/* Main Bestseller Catalog & Filter Section */}
-        <section className="catalogSection">
-          <div className="container">
-            <div className="sectionHeader">
-              <div>
-                <p className="eyebrow redEyebrow">EXPLORE CATALOG</p>
-                <h2>All Bestselling Packaging Solutions</h2>
-              </div>
-              <p className="sectionSub">Filter by category or search by item size & format.</p>
-            </div>
-
+        <section className="deals-catalogSection">
+          <div className="deals-container">
             {/* Filter Tabs & Search Controls */}
-            <div className="controlsContainer">
-              <div className="filterPillsRow">
+            <div className="deals-controlsContainer">
+              <div className="deals-filterPillsRow">
                 {categoryFilters.map((cat) => (
                   <button
                     key={cat}
                     type="button"
-                    className={`pillTab ${activeFilter === cat ? "pillActive" : ""}`}
+                    className={`deals-pillTab ${activeFilter === cat ? "deals-pillActive" : ""}`}
+                    aria-pressed={activeFilter === cat}
                     onClick={() => setActiveFilter(cat)}
                   >
                     {cat}
@@ -714,21 +557,23 @@ export default function BestDeals({ product }: any) {
                 ))}
               </div>
 
-              <div className="searchSortRow">
-                <div className="searchField">
-                  <span className="searchIconWrap">
+              <div className="deals-searchSortRow">
+                <div className="deals-searchField">
+                  <span className="deals-searchIconWrap">
                     <Search size={18} />
                   </span>
                   <input
                     type="text"
-                    placeholder="Search bestsellers..."
+                    aria-label="Search packaging products"
+                    placeholder="Search products or sizes"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   {searchQuery && (
                     <button
                       type="button"
-                      className="clearSearchBtn"
+                      className="deals-clearSearchBtn"
+                      aria-label="Clear product search"
                       onClick={() => setSearchQuery("")}
                     >
                       ×
@@ -736,7 +581,7 @@ export default function BestDeals({ product }: any) {
                   )}
                 </div>
 
-                <div className="sortField">
+                <div className="deals-sortField">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -748,7 +593,7 @@ export default function BestDeals({ product }: any) {
                     <option value="price-high">Sort by: Price (High to Low)</option>
                     <option value="rating-desc">Sort by: Highest Rated</option>
                   </select>
-                  <span className="selectChevronWrap">
+                  <span className="deals-selectChevronWrap">
                     <ChevronDown size={16} />
                   </span>
                 </div>
@@ -756,12 +601,12 @@ export default function BestDeals({ product }: any) {
             </div>
 
             {/* Results Count & Reset */}
-            <div className="resultsSummaryBar">
-              <span>Showing <strong>{filteredProducts.length}</strong> bestselling products</span>
+            <div className="deals-resultsSummaryBar">
+              <span><strong>{filteredProducts.length}</strong> products</span>
               {(activeFilter !== "All Bestsellers" || searchQuery) && (
                 <button
                   type="button"
-                  className="resetLink"
+                  className="deals-resetLink"
                   onClick={() => {
                     setActiveFilter("All Bestsellers");
                     setSearchQuery("");
@@ -774,7 +619,7 @@ export default function BestDeals({ product }: any) {
 
             {/* Product Grid */}
             {filteredProducts.length > 0 ? (
-              <div className="freshGrid">
+              <div className="deals-freshGrid">
                 {filteredProducts.map((item, index) => {
                   const isAdding = addingId === String(item.id);
                   const itemId = String(item._id || item.id);
@@ -785,20 +630,13 @@ export default function BestDeals({ product }: any) {
                       : getCategoryFallbackImage(item.category, index);
 
                   return (
-                    <article className="productCard" key={item._id}>
-                      <div className="productImageWrap">
-                        {item.badge && (
-                          <span className={`productBadge badge-${item.badgeType || "navy"}`}>
-                            {item.badge}
-                          </span>
-                        )}
+                    <article className="deals-productCard" key={item._id}>
+                      <div className="deals-productImageWrap">
 
                         <WishlistButton product={item.rawItem} />
 
-                        <div
-                          className="imageClickArea"
-                          onClick={() => (item.slug ? router.push(`/${item.slug}`) : null)}
-                        >
+                        <Link className="deals-imageClickArea" href={item.slug ? `/${item.slug}` : "/listingpage"} aria-label={`View ${item.name}`}>
+
                           <Image
                             src={displayImgSrc}
                             alt={item.name}
@@ -808,47 +646,38 @@ export default function BestDeals({ product }: any) {
                             className="productImage"
                             onError={() => handleImageError(itemId)}
                           />
-                        </div>
+                        </Link>
                       </div>
 
-                      <div className="productMeta">
-                        <div className="productMetaTop">
+                      <div className="deals-productMeta">
+                        <div className="deals-productMetaTop">
                           <p>{item.category}</p>
-                          <span className="ratingPill">
-                            <Star size={12} fill="#FF9800" color="#FF9800" />
-                            <strong>{item.rating}</strong>
-                          </span>
                         </div>
 
-                        <h3
-                          className="productTitle"
-                          onClick={() => (item.slug ? router.push(`/${item.slug}`) : null)}
-                        >
-                          {item.name}
-                        </h3>
+                        <h3 className="deals-productTitle"><Link href={item.slug ? `/${item.slug}` : "/listingpage"}>{item.name}</Link></h3>
 
-                        <div className="packLine">
+                        <div className="deals-packLine">
                           <span>{item.pack}</span>
                           <span className="packSeparator">•</span>
                           <span>{item.unit}</span>
                         </div>
 
-                        <div className="productPurchaseRow">
-                          <div className="priceLine">
+                        <div className="deals-productPurchaseRow">
+                          <div className="deals-priceLine">
                             <strong>₹{item.price}</strong>
                             {item.oldPrice > item.price && <s>₹{item.oldPrice}</s>}
-                            <span>{item.discount}</span>
+                            {item.oldPrice > item.price && <span>{item.discount}</span>}
                           </div>
 
-                          <div className="cardActions">
+                          <div className="deals-cardActions">
                             <button
                               type="button"
-                              className="addButton"
+                              className="deals-addButton"
                               disabled={isAdding}
                               onClick={() => handleAddToCart(item)}
                             >
                               <Plus size={16} />
-                              <span>{isAdding ? "Adding..." : "Add"}</span>
+                              <span>{isAdding ? "Adding..." : "Add to cart"}</span>
                             </button>
                           </div>
                         </div>
@@ -858,13 +687,13 @@ export default function BestDeals({ product }: any) {
                 })}
               </div>
             ) : (
-              <div className="emptyCatalogState">
+              <div className="deals-emptyCatalogState">
                 <Search size={32} />
                 <h3>No matching bestsellers found</h3>
                 <p>Try resetting search keywords or category filters.</p>
                 <button
                   type="button"
-                  className="resetCatalogBtn"
+                  className="deals-resetCatalogBtn"
                   onClick={() => {
                     setActiveFilter("All Bestsellers");
                     setSearchQuery("");
@@ -877,831 +706,78 @@ export default function BestDeals({ product }: any) {
           </div>
         </section>
 
-        {/* Custom Packaging Inquiry Section */}
-        <section className="section customSection">
-          <div className="container customGrid">
-            <div className="customVisual">
-              <Image
-                src="/hero-banner-beige.png"
-                alt="Custom shipping boxes with printing"
-                fill
-                sizes="(max-width: 900px) 100vw, 50vw"
-              />
-              <div className="customVisualOverlay">
-                <span>Made for your brand</span>
-                <strong>Size · Print · Material</strong>
-              </div>
-            </div>
-
-            <div className="customCopy">
-              <p className="eyebrow redEyebrow">MAKE IT UNMISTAKABLY YOURS</p>
-              <h2>Need custom sizes or logo printing on bestsellers?</h2>
-              <p className="customDescription">
-                From custom structural dimensions to multi-color brand printing, our engineering team manufactures high-volume packaging tailored for your business.
-              </p>
-              <ul className="customList">
-                <li>
-                  <span><Ruler size={20} /></span>
-                  Expert structural box dimensioning
-                </li>
-                <li>
-                  <span><Layers3 size={20} /></span>
-                  Multi-format corrugated, paper & film support
-                </li>
-                <li>
-                  <span><Palette size={20} /></span>
-                  Precision flexo & offset logo printing
-                </li>
-              </ul>
-              <a
-                className="primaryButton"
-                href="mailto:ecommerce@premindustries.in?subject=Custom Bestseller Order Inquiry"
-              >
-                Start a custom inquiry <ArrowUpRight size={18} />
-              </a>
-            </div>
-          </div>
-        </section>
+        <aside className="deals-catalogHelp deals-container">
+          <div><h2>Need a different size or printed packaging?</h2><p>Discuss quantities, materials and printing with our packaging team.</p></div>
+          <Link href="/custom-packaging">Request custom packaging</Link>
+        </aside>
       </main>
 
       <style jsx>{`
-        .bestsellersFreshPage {
-          background-color: #ffffff;
-          min-height: 100vh;
-          font-family: "Geist", "Inter", -apple-system, sans-serif;
-          color: #151922;
-        }
-
-        .eyebrow {
-          margin: 0 0 10px;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-        }
-        .redEyebrow {
-          color: #e4232c;
-        }
-
-        /* Promo Coupon Ticker Bar */
-        .promoTicker {
-          background: #e4232c;
-          color: #ffffff;
-          padding: 9px 0;
-          font-size: 13px;
-        }
-        .promoTickerInner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-        .promoTickerLeft {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .flameTag {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #0b1d3e;
-          color: #ffffff;
-          font-weight: 800;
-          font-size: 11px;
-          padding: 3px 10px;
-          border-radius: 999px;
-          letter-spacing: 0.05em;
-        }
-        .promoTickerLeft p {
-          margin: 0;
-        }
-        .copyCodeBtn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #ffffff;
-          color: #e4232c;
-          border: none;
-          padding: 4px 12px;
-          border-radius: 999px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .copyCodeBtn:hover {
-          background: #fbfbfa;
-        }
-
-        /* Fresh Light Hero Section */
-        .freshHero {
-          background: linear-gradient(180deg, #fbfbfa 0%, #f4f5f5 100%);
-          border-bottom: 1px solid #e5e7eb;
-          padding: 50px 0 45px;
-        }
-        .heroHeaderBlock {
-          max-width: 780px;
-          margin-bottom: 36px;
-        }
-        .heroHeaderBlock h1 {
-          font-size: 44px;
-          font-weight: 800;
-          color: #0b1d3e;
-          line-height: 1.15;
-          margin: 0 0 16px;
-          letter-spacing: -0.02em;
-        }
-        .heroSubtext {
-          font-size: 18px;
-          color: #667085;
-          line-height: 1.55;
-          margin: 0;
-        }
-
-        .heroMetricsGrid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-        }
-        .metricCard {
-          background: #ffffff;
-          border-radius: 14px;
-          padding: 16px 20px;
-          border: 1px solid #e5e7eb;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          box-shadow: 0 4px 16px rgba(17, 24, 39, 0.04);
-        }
-        .metricIcon {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
-          background: #f4f5f5;
-          color: #142a55;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .metricCard strong {
-          display: block;
-          font-size: 14px;
-          color: #151922;
-        }
-        .metricCard small {
-          font-size: 12px;
-          color: #667085;
-        }
-
-        /* Monthly Top 3 Showcase */
-        .spotlightShowcase {
-          padding: 55px 0 40px;
-          background: #ffffff;
-        }
-        .showcaseHeader {
-          margin-bottom: 28px;
-        }
-        .showcaseHeader h2 {
-          font-size: 32px;
-          font-weight: 800;
-          color: #0b1d3e;
-          margin: 0 0 6px;
-        }
-        .showcaseSub {
-          font-size: 16px;
-          color: #667085;
-          margin: 0;
-        }
-
-        .spotlightGrid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          align-items: stretch;
-          max-width: 1020px;
-          margin: 0 auto;
-        }
-        .spotlightCard {
-          background: #ffffff;
-          border-radius: 16px;
-          border: 1px solid #e5e7eb;
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-          width: 100%;
-          max-width: 320px;
-          margin: 0 auto;
-          box-sizing: border-box;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .spotlightCard:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 16px 36px rgba(11, 29, 62, 0.1);
-        }
-        .goldRank {
-          border-top: 4px solid #ff9800;
-        }
-        .silverRank {
-          border-top: 4px solid #142a55;
-        }
-        .bronzeRank {
-          border-top: 4px solid #e4232c;
-        }
-
-        .spotlightBadgeRow {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
-        }
-        .rankTag {
-          font-size: 11px;
-          font-weight: 800;
-          color: #0b1d3e;
-          letter-spacing: 0.04em;
-        }
-        .spotlightDiscountTag {
-          background: #e4232c;
-          color: #ffffff;
-          font-size: 11px;
-          font-weight: 800;
-          padding: 3px 8px;
-          border-radius: 6px;
-        }
-
-        .spotlightImgContainer {
-          position: relative;
-          height: 165px;
-          width: 100%;
-          background: #f9fafb;
-          border-radius: 10px;
-          margin-bottom: 14px;
-          cursor: pointer;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .spotlightImage {
-          object-fit: contain !important;
-          max-width: 100% !important;
-          max-height: 100% !important;
-          padding: 10px;
-          transition: transform 0.3s ease;
-        }
-        .spotlightCard:hover .spotlightImage {
-          transform: scale(1.05);
-        }
-
-        .spotlightCardContent {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        .spotlightCategoryLabel {
-          font-size: 11px;
-          font-weight: 700;
-          color: #667085;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          margin-bottom: 4px;
-        }
-        .spotlightCardTitle {
-          font-size: 16px;
-          font-weight: 700;
-          color: #0b1d3e;
-          margin: 0 0 8px;
-          line-height: 1.35;
-          cursor: pointer;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          height: 44px;
-        }
-        .spotlightCardTitle:hover {
-          color: #e4232c;
-        }
-
-        .spotlightMeta {
-          font-size: 12px;
-          color: #667085;
-          display: flex;
-          gap: 6px;
-          margin-bottom: 14px;
-        }
-        .spotlightPriceLine {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: auto;
-        }
-        .spotlightPrice {
-          font-size: 20px;
-          font-weight: 800;
-          color: #0b1d3e;
-          margin-right: 6px;
-        }
-        .spotlightOldPrice {
-          font-size: 13px;
-          color: #9ca3af;
-        }
-
-        .spotlightAddBtn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #142a55;
-          color: #ffffff;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .spotlightAddBtn:hover {
-          background: #e4232c;
-        }
-
-        /* Catalog Section */
-        .catalogSection {
-          padding: 40px 0 80px;
-          background: #ffffff;
-        }
-        .sectionHeader h2 {
-          font-size: 32px;
-          font-weight: 800;
-          color: #0b1d3e;
-          margin: 0 0 6px;
-        }
-        .sectionSub {
-          font-size: 16px;
-          color: #667085;
-          margin: 0 0 24px;
-        }
-
-        /* Filter Controls */
-        .controlsContainer {
-          background: #fbfbfa;
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 16px 20px;
-          margin-bottom: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .filterPillsRow {
-          display: flex;
-          gap: 10px;
-          overflow-x: auto;
-          scrollbar-width: none;
-        }
-        .filterPillsRow::-webkit-scrollbar {
-          display: none;
-        }
-        .pillTab {
-          background: #ffffff;
-          color: #4b5563;
-          border: 1px solid #e5e7eb;
-          padding: 8px 18px;
-          border-radius: 999px;
-          font-size: 14px;
-          font-weight: 600;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .pillTab:hover {
-          border-color: #142a55;
-          color: #142a55;
-        }
-        .pillActive {
-          background: #142a55 !important;
-          color: #ffffff !important;
-          border-color: #142a55 !important;
-          font-weight: 700;
-        }
-
-        .searchSortRow {
-          display: flex;
-          gap: 16px;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          width: 100%;
-        }
-        .searchField {
-          position: relative;
-          flex: 1;
-          min-width: 280px;
-          display: flex;
-          align-items: center;
-          height: 44px;
-        }
-        .searchIconWrap {
-          position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #6b7280;
-          pointer-events: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2;
-          width: 18px;
-          height: 18px;
-        }
-        .searchField input {
-          width: 100%;
-          height: 44px !important;
-          line-height: 44px !important;
-          padding: 0 36px 0 42px !important;
-          background: #ffffff !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 10px !important;
-          font-size: 14px !important;
-          color: #111827 !important;
-          outline: none !important;
-          box-shadow: none !important;
-          margin: 0 !important;
-        }
-        .searchField input:focus {
-          border-color: #142a55 !important;
-          box-shadow: 0 0 0 3px rgba(20, 42, 85, 0.1) !important;
-        }
-        .clearSearchBtn {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          font-size: 18px;
-          color: #9ca3af;
-          cursor: pointer;
-          padding: 0;
-          margin: 0;
-          line-height: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .sortField {
-          position: relative;
-          min-width: 220px;
-          display: flex;
-          align-items: center;
-          height: 44px;
-        }
-        .sortField select {
-          width: 100%;
-          height: 44px !important;
-          line-height: 44px !important;
-          appearance: none !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          padding: 0 36px 0 14px !important;
-          background: #ffffff !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 10px !important;
-          font-size: 14px !important;
-          font-weight: 600 !important;
-          color: #374151 !important;
-          cursor: pointer;
-          outline: none !important;
-          box-shadow: none !important;
-          margin: 0 !important;
-        }
-        .sortField select:focus {
-          border-color: #142a55 !important;
-        }
-        .selectChevronWrap {
-          position: absolute;
-          right: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          pointer-events: none;
-          color: #6b7280;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2;
-          width: 16px;
-          height: 16px;
-        }
-
-        .resultsSummaryBar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 14px;
-          color: #667085;
-          margin-bottom: 20px;
-        }
-        .resetLink {
-          background: none;
-          border: none;
-          color: #e4232c;
-          font-weight: 700;
-          cursor: pointer;
-          text-decoration: underline;
-        }
-
-        /* Product Grid (Matches Home Page Cards) */
-        .freshGrid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-          align-items: stretch;
-          max-width: 1140px;
-          margin: 0 auto;
-        }
-
-        .productCard {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: 270px;
-          margin: 0 auto;
-          box-sizing: border-box;
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-        }
-        .productCard:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
-          border-color: rgba(11, 29, 62, 0.2);
-        }
-
-        .productImageWrap {
-          position: relative;
-          height: 175px;
-          width: 100%;
-          background: #f9fafb;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
-        .productBadge {
-          position: absolute;
-          top: 12px;
-          left: 12px;
-          z-index: 2;
-          font-size: 10px;
-          font-weight: 800;
-          padding: 4px 9px;
-          border-radius: 6px;
-          letter-spacing: 0.04em;
-        }
-        .badge-navy {
-          background: #142a55;
-          color: #ffffff;
-        }
-        .badge-red {
-          background: #e4232c;
-          color: #ffffff;
-        }
-        .badge-green {
-          background: #16a34a;
-          color: #ffffff;
-        }
-        .badge-gold {
-          background: #ff9800;
-          color: #ffffff;
-        }
-
-        .productHeart {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          z-index: 2;
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          color: #9ca3af;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .productHeart:hover {
-          color: #e4232c;
-          transform: scale(1.1);
-        }
-        .productHeartActive {
-          color: #e4232c !important;
-          background: #fdecec !important;
-          border-color: #fca5a5 !important;
-        }
-
-        .imageClickArea {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .productImage {
-          object-fit: contain !important;
-          max-width: 100% !important;
-          max-height: 100% !important;
-          padding: 14px;
-          transition: transform 0.4s ease;
-        }
-        .productCard:hover .productImage {
-          transform: scale(1.05);
-        }
-        .imageFallback {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #cbd5e1;
-          font-weight: 900;
-          font-size: 22px;
-        }
-
-        .productMeta {
-          padding: 18px;
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        .productMetaTop {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 12px;
-          color: #667085;
-          margin-bottom: 6px;
-        }
-        .productMetaTop p {
-          margin: 0;
-          font-weight: 600;
-        }
-        .ratingPill {
-          display: flex;
-          align-items: center;
-          gap: 3px;
-          font-size: 11px;
-          color: #374151;
-        }
-
-        .productTitle {
-          font-size: 15px;
-          font-weight: 700;
-          color: #0b1d3e;
-          line-height: 1.35;
-          margin: 0 0 8px;
-          cursor: pointer;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          height: 40px;
-        }
-        .productTitle:hover {
-          color: #e4232c;
-        }
-
-        .packLine {
-          font-size: 12px;
-          color: #667085;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-bottom: 14px;
-        }
-        .packSeparator {
-          color: #cbd5e1;
-        }
-
-        .productPurchaseRow {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: auto;
-        }
-        .priceLine {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-          flex-wrap: wrap;
-        }
-        .priceLine strong {
-          font-size: 18px;
-          font-weight: 800;
-          color: #0b1d3e;
-        }
-        .priceLine s {
-          font-size: 12px;
-          color: #9ca3af;
-        }
-        .priceLine span {
-          font-size: 11px;
-          font-weight: 800;
-          color: #16a34a;
-          background: #dcfce7;
-          padding: 2px 6px;
-          border-radius: 4px;
-        }
-
-        .addButton {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #142a55;
-          color: #ffffff;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .addButton:hover {
-          background: #e4232c;
-        }
-
-        .emptyCatalogState {
-          text-align: center;
-          padding: 60px 20px;
-          background: #fbfbfa;
-          border-radius: 16px;
-          border: 1px dashed #cbd5e1;
-          color: #64748b;
-        }
-        .emptyCatalogState h3 {
-          font-size: 20px;
-          color: #0b1d3e;
-          margin: 12px 0 6px;
-        }
-        .resetCatalogBtn {
-          margin-top: 14px;
-          background: #142a55;
-          color: #fff;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-weight: 700;
-          font-size: 14px;
-          cursor: pointer;
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 1200px) {
-          .freshGrid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-          .heroMetricsGrid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .spotlightGrid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-        }
-        @media (max-width: 900px) {
-          .spotlightGrid {
-            grid-template-columns: 1fr;
-          }
-          .freshGrid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .heroHeaderBlock h1 {
-            font-size: 32px;
-          }
-        }
-        @media (max-width: 640px) {
-          .freshGrid {
-            grid-template-columns: 1fr;
-          }
-          .heroMetricsGrid {
-            grid-template-columns: 1fr;
-          }
-          .heroHeaderBlock h1 {
-            font-size: 26px;
-          }
+        .deals-bestsellersFreshPage { background: #fff; color: var(--ink); font-family: var(--font-store); padding-bottom: 32px; }
+        .deals-container { width: var(--store-content-width); max-width: 1280px; margin-inline: auto; padding: 0; }
+        .deals-catalogHeader { padding: 24px 0; }
+        .deals-breadcrumbNav { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--muted); font-size: 13px; }
+        .deals-breadcrumbNav :global(a) { color: var(--muted); text-decoration: none; }
+        h1 { margin: 0 0 8px; color: var(--brand-navy); font-size: 30px; line-height: 1.3; font-weight: 600; letter-spacing: -.02em; }
+        .deals-catalogHeader p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+        .deals-catalogSection { padding: 0; }
+        .deals-controlsContainer { padding: 16px 0; border-block: 1px solid var(--border); }
+        .deals-filterPillsRow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .deals-pillTab { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--brand-navy); font-size: 14px; font-weight: 500; cursor: pointer; }
+        .deals-pillTab:hover { border-color: var(--brand-navy); }
+        .deals-pillActive { background: var(--brand-navy); color: #fff; border-color: var(--brand-navy); }
+        .deals-searchSortRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .deals-searchField { display: flex; align-items: center; position: relative; width: min(100%, 440px); }
+        .deals-searchIconWrap { position: absolute; left: 12px; color: var(--muted); display: flex; pointer-events: none; }
+        .deals-searchField input { width: 100%; height: 44px; padding: 10px 44px 10px 40px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
+        .deals-clearSearchBtn { position: absolute; right: 0; height: 44px; width: 44px; background: transparent; border: 0; color: var(--muted); font-size: 22px; }
+        .deals-sortField { position: relative; width: 260px; flex-shrink: 0; }
+        .deals-sortField select { width: 100%; min-height: 44px; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 4px; appearance: none; font-size: 14px; }
+        .deals-selectChevronWrap { position: absolute; right: 12px; top: 12px; pointer-events: none; }
+        .deals-resultsSummaryBar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; color: var(--muted); font-size: 14px; }
+        .deals-resetLink { padding: 4px 0; border: 0; background: transparent; color: var(--brand-navy); text-decoration: underline; font-size: 14px; }
+        .deals-freshGrid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 24px; }
+        .deals-productCard { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--border); border-radius: 4px; background: #fff; overflow: hidden; }
+        .deals-productImageWrap { position: relative; height: 208px; }
+        .deals-imageClickArea { position: absolute; inset: 0; display: block; }
+        .deals-productMeta { display: flex; flex-direction: column; flex: 1; gap: 8px; padding: 16px; border-top: 1px solid var(--border); }
+        .deals-productMetaTop p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+        .deals-productTitle { min-height: 44px; margin: 0; font-size: 15px; font-weight: 600; line-height: 1.5; }
+        .deals-productTitle :global(a) { color: var(--brand-navy); text-decoration: none; }
+        .deals-productTitle :global(a:hover) { text-decoration: underline; }
+        .deals-packLine { display: flex; flex-wrap: wrap; gap: 4px 8px; min-height: 40px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+        .deals-productPurchaseRow { display: flex; align-items: stretch; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 4px; }
+        .deals-cardActions { width: 100%; }
+        .deals-priceLine { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; font-variant-numeric: tabular-nums; }
+        .deals-priceLine strong { font-size: 20px; font-weight: 600; color: var(--brand-navy); }
+        .deals-priceLine s { font-size: 13px; color: var(--muted); }
+        .deals-priceLine > span { font-size: 12px; color: #17683a; }
+        .deals-addButton, .deals-resetCatalogBtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: 4px; background: var(--brand-navy); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .deals-addButton:disabled { opacity: .65; cursor: wait; }
+        .deals-emptyCatalogState { padding: 48px 16px; text-align: center; }
+        .deals-emptyCatalogState h3 { font-size: 20px; margin: 16px 0 8px; }
+        .deals-emptyCatalogState p { color: var(--muted); }
+        .deals-resetCatalogBtn { width: auto; }
+        .deals-catalogHelp { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+        .deals-catalogHelp h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: var(--brand-navy); }
+        .deals-catalogHelp p { margin: 0; font-size: 14px; color: var(--muted); }
+        .deals-catalogHelp :global(a) { flex-shrink: 0; font-size: 14px; color: var(--brand-navy); text-decoration: underline; text-underline-offset: 3px; }
+        @media (max-width: 1100px) { .deals-freshGrid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; } }
+        @media (max-width: 767px) {
+          .deals-catalogHeader { padding: 20px 0; }
+          h1 { font-size: 26px; }
+          .deals-freshGrid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+          .deals-searchSortRow { flex-direction: column; align-items: stretch; gap: 12px; }
+          .deals-searchField, .deals-sortField { width: 100%; }
+          .deals-filterPillsRow { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+          .deals-pillTab { white-space: nowrap; }
+          .deals-productImageWrap { height: 160px; }
+          .deals-productMeta { padding: 12px; }
+          .deals-productTitle { min-height: 64px; font-size: 14px; }
+          .deals-packLine { min-height: 60px; }
+          .deals-priceLine { min-height: 56px; align-content: end; }
+          .deals-priceLine strong { font-size: 18px; }
+          .deals-catalogHelp { flex-direction: column; align-items: flex-start; gap: 16px; }
         }
       `}</style>
     </>

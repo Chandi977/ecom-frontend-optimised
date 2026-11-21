@@ -68,7 +68,7 @@ export const EVENTS = {
 
 const postSignal = (url: string, body: Props): void => {
   // Fire-and-forget; never block or surface errors in the customer flow.
-  void postService(url, { ...body, source: "web" }, { silent: true });
+  void postService(url, { ...body, source: "web" }, { silent: true, suppressAuthRedirect: true });
 };
 
 /** Track a search: to Mixpanel (via dataLayer) AND our demand-signals backend. */

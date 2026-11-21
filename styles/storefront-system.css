@@ -1,0 +1,76 @@
+/* Prem Packaging storefront standards. Loaded after vendor CSS. */
+:root {
+ --font-store: "Manrope", "Segoe UI", sans-serif;
+ --brand-navy: #182c5a;
+ --brand-navy-hover: #10213d;
+ --brand-red: #e92227;
+ --ink: #202938;
+ --muted: #596273;
+ --surface: #f5f6f7;
+ --border: #dce0e5;
+ --radius-control: 4px;
+ --shadow-surface: 0 2px 8px rgb(16 33 61 / 8%);
+ --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+ --max-width: 1280px;
+ --store-content-width: min(1280px, calc(100% - 48px));
+ --border-radius: 4px;
+}
+body { background: #fff; color: var(--ink); font-family: var(--font-store); font-size: 15px; line-height: 1.5; }
+button, input, select, textarea { font-family: inherit; }
+.storefront-page { display: flow-root; width: 100%; flex: 1; min-width: 0; }
+:where(h1,h2,h3,h4) { font-family: var(--font-store); font-weight: 600; line-height: 1.3; }
+:where(a,button,input,select,textarea,[tabindex]):focus-visible { outline: 2px solid var(--brand-navy); outline-offset: 3px; }
+:where(input[type=text],input[type=email],input[type=password],input[type=tel],input[type=search],select,textarea) { border-radius: var(--radius-control); }
+button:disabled { cursor: not-allowed; }
+.packagebtn, .page-packagebtn { min-height: 44px; max-width: none; width: auto; padding-inline: 16px; font-size: 14px; font-weight: 600; text-transform: none; border-radius: 4px; }
+.globalStorefrontFooter { font-family: var(--font-store); }
+.globalStorefrontFooter .newsletterSection { padding: 24px 0; background: var(--surface); color: var(--brand-navy); border-top: 1px solid var(--border); margin-bottom: 0; pointer-events: auto; }
+.globalStorefrontFooter .newsletterInner { width: var(--store-content-width); margin: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; min-height: 0; padding: 0; background: transparent; border-radius: 0; box-shadow: none; }
+.globalStorefrontFooter .newsletterInner h2 { font-size: 22px; font-weight: 600; max-width: none; margin: 0; color: var(--brand-navy); }
+.globalStorefrontFooter .newsletterInner form { width: 100%; }
+.globalStorefrontFooter .newsletterInner label { display: block; color: var(--ink); font-size: 14px; letter-spacing: normal; font-weight: 500; margin-bottom: 8px; text-transform: none; }
+.globalStorefrontFooter .newsletterField { display: flex; gap: 8px; height: auto; background: transparent; border: 0; padding: 0; border-radius: 0; }
+.globalStorefrontFooter .newsletterField input { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 4px; }
+.globalStorefrontFooter .newsletterField button { height: 44px; min-height: 44px; white-space: nowrap; border: 0; border-radius: 4px; padding: 10px 16px; background: var(--brand-navy); color: #fff; font-size: 14px; font-weight: 600; }
+.globalStorefrontFooter .newsletterMessage { min-height: 20px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.globalStorefrontFooter .siteFooter { padding: 32px 0 0; background: var(--brand-navy); color: #fff; }
+.globalStorefrontFooter .footerGrid { width: var(--store-content-width); max-width: 1280px; padding: 0; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
+.globalStorefrontFooter .footerBrand p { max-width: 340px; font-size: 14px; line-height: 1.6; margin: 16px 0; color: #e0e5ef; }
+.globalStorefrontFooter .footerContactDetails { display: grid; gap: 12px; margin: 0 0 12px; font-style: normal; }
+.globalStorefrontFooter .footerContactDetails p, .globalStorefrontFooter .footerContactLink { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: #e0e5ef; margin: 0; text-decoration: none; overflow-wrap: anywhere; }
+.globalStorefrontFooter .footerContactDetails svg, .globalStorefrontFooter .footerContactLink svg { flex-shrink: 0; margin-top: 3px; }
+.globalStorefrontFooter .footerGroup { display: flex; flex-direction: column; align-items: flex-start; gap: 0; min-width: 0; }
+.globalStorefrontFooter .footerGroup h3 { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 16px; text-transform: none; letter-spacing: normal; }
+.globalStorefrontFooter .footerGroup > a { display: block; padding-block: 6px; font-size: 14px; line-height: 1.5; color: #e0e5ef; text-decoration: none; }
+.globalStorefrontFooter a:hover { text-decoration: underline; }
+.globalStorefrontFooter .footerSocialLinks { margin-top: 16px; font-size: 14px; }
+.globalStorefrontFooter .footerSocialIconsRow { display: flex; gap: 4px; margin-top: 8px; }
+.globalStorefrontFooter .footerSocialIconButton { display: inline-flex; justify-content: center; align-items: center; width: 44px; height: 44px; color: #fff; border: 1px solid #75819b; border-radius: 4px; }
+.globalStorefrontFooter .footerBottom { width: var(--store-content-width); max-width: 1280px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-top: 1px solid #75819b; margin-top: 24px; padding: 16px 0; min-height: 0; font-size: 13px; color: #e0e5ef; }
+.globalStorefrontFooter .footerBottom p { margin: 0; }
+@media (max-width: 1024px) { .globalStorefrontFooter .footerGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 767px) {
+ .globalStorefrontFooter .newsletterInner, .globalStorefrontFooter .footerGrid { width: calc(100% - 32px); grid-template-columns: 1fr; gap: 24px; }
+ .globalStorefrontFooter .footerBottom { width: calc(100% - 32px); }
+}
+@media (prefers-reduced-motion: reduce) {
+ *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+.globalStorefrontFooter .footerGrid { padding-top: 0; }
+
+.form-control { min-height: 44px; border-radius: var(--radius-control); border-color: var(--border); font-size: 15px; }
+
+.storefront-shell { width: var(--store-content-width); margin-inline: auto; }
+.globalStorefrontFooter .footerBrandLogo { margin-top: 0; }
+.globalStorefrontFooter .footerContactLink { margin-top: 8px; }
+.globalStorefrontFooter .footerSocialLinks > span { margin-bottom: 8px; text-transform: none; font-size: 14px; font-weight: 500; }
+.globalStorefrontFooter .newsletterInner form { margin: 0; max-width: none; }
+.globalStorefrontFooter .newsletterField { align-items: stretch; }
+.globalStorefrontFooter .footerBrand > p { margin-block: 16px; }
+@media (max-width: 767px) {
+ :root { --store-content-width: calc(100% - 32px); }
+ .globalStorefrontFooter .footerGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+ .globalStorefrontFooter .footerBrand { grid-column: 1 / -1; }
+ .globalStorefrontFooter .footerGroup > a { padding-block: 8px; }
+}

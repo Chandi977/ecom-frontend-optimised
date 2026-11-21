@@ -12,7 +12,7 @@ const CustomDropdown = ({ options = [] as any[], placeholder, onChange }: any) =
 
   return (
     <div className="custom-dropdown">
-      <div className={` ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(!isOpen)} style={{textTransform:"capitalize" , padding:"10px" , position:"sticky" , fontSize:"18px" , fontFamily:"Montserrat"}}>
+      <div className={` ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(!isOpen)} style={{textTransform:"capitalize" , padding:"10px" , position:"sticky" , fontSize:"18px" , fontFamily: "var(--font-store)"}}>
         {selectedOption ? selectedOption.label : placeholder}
         {options.length > 0 && <span className="arrow-down"></span>}
       </div>

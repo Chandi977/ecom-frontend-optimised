@@ -81,7 +81,7 @@ function Banner() {
               <motion.button
                 className="tw-p-[12px] tw-text-white tw-rounded tw-border-0 max-[700px]:tw-text-[12px] max-[700px]:tw-p-[10px]"
                 style={{
-                  fontFamily: "Montserrat",
+                  fontFamily: "var(--font-store)",
                   backgroundColor: "#182c5a",
                   color: "#ffffff",
                   cursor: "pointer",

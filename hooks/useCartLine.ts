@@ -21,6 +21,7 @@ type CartLines = Map<string, CartLine>;
 
 let snapshot: CartLines | null = null;
 let inFlight: Promise<CartLines> | null = null;
+let requestVersion = 0;
 const subscribers = new Set<() => void>();
 
 const getLineProductId = (line: any) => {
@@ -50,21 +51,26 @@ const readCartLines = async (): Promise<CartLines> => {
 
 const notify = () => subscribers.forEach((callback) => callback());
 
-const refreshCartLines = () => {
-  if (!inFlight) {
-    inFlight = readCartLines()
-      .then((lines) => {
-        snapshot = lines;
-        inFlight = null;
-        notify();
-        return lines;
-      })
-      .catch(() => {
-        inFlight = null;
-        return snapshot || new Map();
-      });
-  }
+const refreshCartLines = (invalidate = false) => {
+  if (inFlight && !invalidate) return inFlight;
+  const version = ++requestVersion;
+  inFlight = readCartLines()
+    .then((lines) => {
+      if (version !== requestVersion) return lines;
+      snapshot = lines;
+      inFlight = null;
+      notify();
+      return lines;
+    })
+    .catch(() => {
+      if (version === requestVersion) inFlight = null;
+      return snapshot || new Map();
+    });
   return inFlight;
+};
+
+const onCartUpdated = () => {
+  refreshCartLines(true);
 };
 
 /**
@@ -77,22 +83,24 @@ export function useCartLine(productId?: string | null): CartLine | null {
 
   useEffect(() => {
     const onChange = () => forceRender((count) => count + 1);
+    const isFirstSubscriber = subscribers.size === 0;
     subscribers.add(onChange);
 
-    const onCartUpdated = () => {
-      refreshCartLines();
-    };
-    window.addEventListener("cartUpdated", onCartUpdated);
-
-    // A later mount (infinite scroll, client-side nav) reads the existing
-    // snapshot during its first render, so only the first one needs a fetch.
-    if (!snapshot) {
+    // Cart changes can happen while all product cards are unmounted (for
+    // example on the cart page). Revalidate when returning to the listing.
+    if (isFirstSubscriber) {
+      window.addEventListener("cartUpdated", onCartUpdated);
       refreshCartLines();
     }
 
     return () => {
       subscribers.delete(onChange);
-      window.removeEventListener("cartUpdated", onCartUpdated);
+      if (subscribers.size === 0) {
+        window.removeEventListener("cartUpdated", onCartUpdated);
+        // Discard any read started before the next listing visit.
+        requestVersion++;
+        inFlight = null;
+      }
     };
   }, []);
 

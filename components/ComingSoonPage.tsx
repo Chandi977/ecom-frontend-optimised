@@ -159,10 +159,10 @@ export default function ComingSoonPage({
           background: #fdecec;
           color: #e4232c;
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: 0.08em;
           padding: 6px 14px;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           text-transform: uppercase;
         }
 
@@ -176,12 +176,12 @@ export default function ComingSoonPage({
           background: #ffffff;
           border: 1px solid #e5e7eb;
           padding: 5px 12px;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
         }
 
         .comingSoonTitle {
-          font-size: clamp(36px, 5vw, 54px);
-          font-weight: 800;
+          font-size: clamp(26px, 3vw, 36px);
+          font-weight: 600;
           color: #0b1d3e;
           letter-spacing: -0.03em;
           line-height: 1.1;
@@ -199,11 +199,11 @@ export default function ComingSoonPage({
         .earlyAccessCard {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 20px;
+          border-radius: var(--radius-control);
           padding: 12px;
           max-width: 620px;
           margin: 0 auto 60px;
-          box-shadow: 0 12px 32px rgba(11, 29, 62, 0.06);
+          box-shadow: var(--shadow-surface);
         }
 
         .accessForm {
@@ -248,7 +248,7 @@ export default function ComingSoonPage({
           background: #0b1d3e;
           color: #ffffff;
           border: none;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           font-size: 14px;
           font-weight: 700;
           cursor: pointer;
@@ -299,20 +299,20 @@ export default function ComingSoonPage({
         .featureCard {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 18px;
+          border-radius: var(--radius-control);
           padding: 28px 24px;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .featureCard:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 36px rgba(11, 29, 62, 0.08);
+          transform: none;
+          box-shadow: var(--shadow-surface);
         }
 
         .featureIconWrap {
           width: 46px;
           height: 46px;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           background: #f4f5f5;
           color: #0b1d3e;
           display: flex;
@@ -352,7 +352,7 @@ export default function ComingSoonPage({
           font-size: 14px;
           font-weight: 700;
           padding: 14px 28px;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           text-decoration: none !important;
           transition: background 0.2s ease;
         }
@@ -370,7 +370,7 @@ export default function ComingSoonPage({
           font-size: 14px;
           font-weight: 600;
           padding: 14px 24px;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           text-decoration: none !important;
           transition: all 0.2s ease;
         }

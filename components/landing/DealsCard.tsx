@@ -151,18 +151,18 @@ function DealsCard({ item }) {
       </button>
     </div>
       <style jsx>{`
-        .landing-offtext { color: var(--white, #fff); padding: 0; margin: 0; text-align: center; font-family: Montserrat; font-size: 10px; font-style: normal; font-weight: 600; line-height: 12px; }
-        .landing-toptext { color: var(--text, #666); text-align: center; font-family: "Montserrat", sans-serif; font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; }
-        .landing-pricetext { color: #17803d; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
-        .landing-mrptext { color: #000000; font-family: Montserrat; font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
-        .landing-packagebtn { border: 0; color: #fff; text-align: center; font-family: Montserrat; font-size: 18px; font-style: normal; font-weight: 400; line-height: 20px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; background-color: #182c5a; transition: background-color 0.2s ease-out; }
+        .landing-offtext { color: var(--white, #fff); padding: 0; margin: 0; text-align: center; font-family: var(--font-store); font-size: 10px; font-style: normal; font-weight: 600; line-height: 12px; }
+        .landing-toptext { color: var(--text, #666); text-align: center; font-family: var(--font-store); font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; }
+        .landing-pricetext { color: #17803d; font-family: var(--font-store); font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
+        .landing-mrptext { color: #000000; font-family: var(--font-store); font-size: 16px; font-style: normal; font-weight: 400; line-height: 18px; }
+        .landing-packagebtn { border: 0; color: #fff; text-align: center; font-family: var(--font-store); font-size: 18px; font-style: normal; font-weight: 400; line-height: 20px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; background-color: #182c5a; transition: background-color 0.2s ease-out; }
         .landing-packagebtn:hover { background-color: #e92227; }
 
         /* Hover lift — same easing as the category cards on the home page. */
         .deals-card { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease; }
-        .deals-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(24, 44, 90, 0.12); border-color: rgba(24, 44, 90, 0.15) !important; }
+        .deals-card:hover { transform: none; box-shadow: var(--shadow-surface); border-color: rgba(24, 44, 90, 0.15) !important; }
         .deals-card img { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .deals-card:hover img { transform: scale(1.05); }
+        .deals-card:hover img { transform: none; }
 
         @media (prefers-reduced-motion: reduce) {
           .deals-card, .deals-card img { transition: none; }

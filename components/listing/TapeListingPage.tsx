@@ -591,7 +591,7 @@ const TapeListingPage = ({
 .showresulttext {
   font-size: 13px;
   color: #666;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-store);
   margin: 0;
 }
 .desktopFilter {
@@ -626,14 +626,14 @@ const TapeListingPage = ({
 .noProducts {
   font-size: 16px;
   color: #333;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-store);
   font-weight: 600;
   white-space: nowrap;
 }
 .noProductsMobile {
   font-size: 14px;
   color: #333;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-store);
   font-weight: 600;
   margin: 0;
 }

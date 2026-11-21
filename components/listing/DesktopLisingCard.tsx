@@ -144,9 +144,9 @@ function DesktopListingCard({ item }: { item?: any }) {
             <button type="button" className="add-cart-button" {...cartButtonProps}>
               <AddToCartContent
                 state={cartState}
-                idleLabel="ADD TO CART"
+                idleLabel="Add to cart"
                 addingLabel="ADDING..."
-                addedLabel="ADDED"
+                addedLabel="Added"
                 icon={false}
                 iconSize={13}
               />
@@ -161,10 +161,10 @@ function DesktopListingCard({ item }: { item?: any }) {
           display: flex;
           flex-direction: column;
           width: min(100%, 300px);
-          min-height: 380px;
+          min-height: 356px;
           background: #fff;
           border: 1px solid #d9dde6;
-          box-shadow: none;
+          box-shadow: var(--shadow-surface);
           overflow: hidden;
           /* Only border/shadow transition here — opacity and transform belong
              to the scroll reveal, which sets them inline. Listing both would
@@ -177,10 +177,10 @@ function DesktopListingCard({ item }: { item?: any }) {
         @media (hover: hover) {
           .listing-product-card:hover {
             border-color: #b9c0cd;
-            box-shadow: 0 12px 28px -14px rgba(15, 39, 71, 0.35);
+            box-shadow: var(--shadow-surface);
           }
           .listing-product-card:hover :global(img) {
-            transform: scale(1.045);
+            transform: none;
           }
         }
         .listing-product-card :global(img) {
@@ -195,23 +195,23 @@ function DesktopListingCard({ item }: { item?: any }) {
           align-items: center;
           min-height: 26px;
           padding: 0 10px;
-          background: #02051f;
+          background: var(--brand-navy);
           color: #fff;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           text-transform: uppercase;
         }
         .card-badge.sale {
-          background: #cf1717;
+          background: var(--brand-red);
         }
         .image-button {
           display: flex;
           align-items: center;
           justify-content: center;
           width: 100%;
-          height: 250px;
+          height: 224px;
           border: 0;
           padding: 30px 12px 12px;
           background: #fff;
@@ -232,7 +232,7 @@ function DesktopListingCard({ item }: { item?: any }) {
           overflow: hidden;
           background: transparent;
           color: #4a5160;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 14px;
           font-weight: 700;
           line-height: 1.35;
@@ -243,7 +243,7 @@ function DesktopListingCard({ item }: { item?: any }) {
           cursor: pointer;
         }
         .product-title:hover {
-          color: #02051f;
+          color: var(--brand-navy);
         }
         .product-summary {
           display: -webkit-box;
@@ -251,7 +251,7 @@ function DesktopListingCard({ item }: { item?: any }) {
           margin: 4px 0 14px;
           overflow: hidden;
           color: #596172;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 11px;
           font-weight: 500;
           line-height: 1.35;
@@ -262,7 +262,7 @@ function DesktopListingCard({ item }: { item?: any }) {
         .variant-line {
           margin: -8px 0 12px;
           color: #182c5a;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 11px;
           font-weight: 700;
           line-height: 1.35;
@@ -284,17 +284,17 @@ function DesktopListingCard({ item }: { item?: any }) {
           gap: 5px;
         }
         .price-stack strong {
-          color: #02051f;
-          font-family: "Montserrat", sans-serif;
+          color: var(--brand-navy);
+          font-family: var(--font-store);
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
         }
         .price-stack s {
           color: #666c78;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 11px;
           font-weight: 600;
           line-height: 1;
@@ -303,9 +303,9 @@ function DesktopListingCard({ item }: { item?: any }) {
         }
         .price-stack span {
           color: #17803d;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           white-space: nowrap;
         }
@@ -314,22 +314,23 @@ function DesktopListingCard({ item }: { item?: any }) {
           align-items: center;
           justify-content: center;
           min-width: 110px;
-          height: 38px;
+          min-height: 44px;
           border: 0;
           padding: 0 15px;
-          background: #02051f;
+          background: var(--brand-navy);
           color: #fff;
-          font-family: "Montserrat", sans-serif;
-          font-size: 10px;
-          font-weight: 800;
+          font-family: var(--font-store);
+          font-size: 14px;
+          font-weight: 600;
           line-height: 1;
-          text-transform: uppercase;
+          text-transform: none;
           white-space: nowrap;
           cursor: pointer;
           transition: background-color 180ms ease, transform 180ms ease;
+          border-radius: var(--radius-control);
         }
         .add-cart-button:hover {
-          background: #cf1717;
+          background: var(--brand-red);
         }
         .add-cart-button:active {
           transform: translateY(1px);
@@ -337,7 +338,7 @@ function DesktopListingCard({ item }: { item?: any }) {
         .image-button:focus-visible,
         .product-title:focus-visible,
         .add-cart-button:focus-visible {
-          outline: 2px solid #cf1717;
+          outline: 2px solid var(--brand-red);
           outline-offset: 3px;
         }
       `}</style>

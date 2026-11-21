@@ -144,9 +144,9 @@ function ListingCard({ item }: { item?: any }) {
           <button type="button" className="add-cart-button" {...cartButtonProps}>
             <AddToCartContent
               state={cartState}
-              idleLabel="ADD TO CART"
+              idleLabel="Add to cart"
               addingLabel="ADDING..."
-              addedLabel="ADDED"
+              addedLabel="Added"
               icon={false}
               iconSize={13}
             />
@@ -174,16 +174,16 @@ function ListingCard({ item }: { item?: any }) {
           align-items: center;
           min-height: 22px;
           padding: 0 8px;
-          background: #02051f;
+          background: var(--brand-navy);
           color: #fff;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 9px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           text-transform: uppercase;
         }
         .card-badge.sale {
-          background: #cf1717;
+          background: var(--brand-red);
         }
         .image-button {
           display: flex;
@@ -218,7 +218,7 @@ function ListingCard({ item }: { item?: any }) {
           overflow: hidden;
           background: transparent;
           color: #4a5160;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 12px;
           font-weight: 700;
           line-height: 1.35;
@@ -234,7 +234,7 @@ function ListingCard({ item }: { item?: any }) {
           margin: 4px 0 10px;
           overflow: hidden;
           color: #596172;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
           font-weight: 500;
           line-height: 1.35;
@@ -244,7 +244,7 @@ function ListingCard({ item }: { item?: any }) {
         .variant-line {
           margin: -6px 0 8px;
           color: #182c5a;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
           font-weight: 700;
           line-height: 1.35;
@@ -258,25 +258,25 @@ function ListingCard({ item }: { item?: any }) {
           margin-top: auto;
         }
         .price-row strong {
-          color: #02051f;
-          font-family: "Montserrat", sans-serif;
+          color: var(--brand-navy);
+          font-family: var(--font-store);
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
         }
         .price-row span {
           color: #17803d;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1;
           white-space: nowrap;
         }
         .price-row s {
           color: #666c78;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
           font-weight: 600;
           line-height: 1;
@@ -293,23 +293,24 @@ function ListingCard({ item }: { item?: any }) {
           align-items: center;
           justify-content: center;
           width: 100%;
-          min-height: 34px;
+          min-height: 44px;
           border: 0;
           margin-top: 10px;
           padding: 0 10px;
-          background: #02051f;
+          background: var(--brand-navy);
           color: #fff;
-          font-family: "Montserrat", sans-serif;
-          font-size: 10px;
-          font-weight: 800;
+          font-family: var(--font-store);
+          font-size: 14px;
+          font-weight: 600;
           line-height: 1;
-          text-transform: uppercase;
+          text-transform: none;
           white-space: nowrap;
           cursor: pointer;
           transition: background-color 180ms ease, transform 180ms ease;
+          border-radius: var(--radius-control);
         }
         .add-cart-button:hover {
-          background: #cf1717;
+          background: var(--brand-red);
         }
         .add-cart-button:active {
           transform: translateY(1px);
@@ -317,7 +318,7 @@ function ListingCard({ item }: { item?: any }) {
         .image-button:focus-visible,
         .product-title:focus-visible,
         .add-cart-button:focus-visible {
-          outline: 2px solid #cf1717;
+          outline: 2px solid var(--brand-red);
           outline-offset: 2px;
         }
       `}</style>

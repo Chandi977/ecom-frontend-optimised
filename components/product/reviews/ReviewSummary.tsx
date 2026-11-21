@@ -28,12 +28,12 @@ const ReviewSummary: React.FC<Props> = ({ summary, activeRating, onFilterRating 
   const denominator = totalCountInDist > 0 ? totalCountInDist : displayCount > 0 ? displayCount : 1;
 
   return (
-    <div className="tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded-2xl tw-p-6 sm:tw-p-8">
+    <div className="tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-p-6 sm:tw-p-8">
       <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-12 tw-gap-6 tw-items-center">
         {/* Left Rating Display */}
         <div className="sm:tw-col-span-5 tw-flex tw-flex-col tw-items-start">
           <div className="tw-flex tw-items-baseline tw-gap-1 tw-mb-3">
-            <span className="tw-text-[42px] sm:tw-text-[48px] tw-font-extrabold tw-text-slate-900 tw-leading-none tw-tracking-tight">
+            <span className="tw-text-[42px] sm:tw-text-[48px] tw-font-semibold tw-text-slate-900 tw-leading-none tw-tracking-tight">
               {displayAverage.toFixed(1)}
             </span>
             <span className="tw-text-slate-400 tw-text-lg sm:tw-text-xl tw-font-bold">/ 5</span>
@@ -66,7 +66,7 @@ const ReviewSummary: React.FC<Props> = ({ summary, activeRating, onFilterRating 
                 key={star}
                 type="button"
                 onClick={() => onFilterRating?.(isSelected ? null : star)}
-                className={`tw-w-full tw-flex tw-items-center tw-gap-3 tw-bg-transparent tw-border-0 tw-p-1 tw-rounded-lg tw-cursor-pointer tw-transition-colors hover:tw-bg-slate-200/50 ${
+                className={`tw-w-full tw-flex tw-items-center tw-gap-3 tw-bg-transparent tw-border-0 tw-p-1 tw-rounded tw-cursor-pointer tw-transition-colors hover:tw-bg-slate-200/50 ${
                   isSelected ? "tw-ring-1 tw-ring-slate-400" : ""
                 }`}
               >

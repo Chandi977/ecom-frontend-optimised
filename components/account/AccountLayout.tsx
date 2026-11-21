@@ -197,8 +197,7 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
 
       <style jsx>{`
         .account-root {
-          --font-family: "Inter", "Montserrat", -apple-system, BlinkMacSystemFont,
-            "Segoe UI", Roboto, sans-serif;
+          --font-family: var(--font-store);
           --color-ink: #0f172a;
           --color-navy: #182c5a;
           --color-red: #e92227;
@@ -251,7 +250,7 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
         }
         .account-title {
           font-size: 32px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: -0.02em;
           color: var(--color-ink);
           margin: 0;
@@ -273,9 +272,9 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
         .account-sidebar {
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .sidebar-user-card {
           display: flex;
@@ -386,7 +385,7 @@ const AccountLayout = ({ title, subtitle, activeNav, children }: AccountLayoutPr
           color: var(--color-slate-muted);
           background: var(--color-bg-card);
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
         }
         .account-loading :global(.loading-spinner) {
           font-size: 32px;

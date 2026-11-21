@@ -41,10 +41,10 @@ function Banner() {
         .orders-content { position: absolute; top: 20%; left: 10%; }
         @media (max-width: 700px) { .orders-content { top: 6%; left: 5%; } }
 
-        .orders-sliderheader { color: #fff; font-family: Montserrat; font-size: 72px; font-style: normal; font-weight: 700; line-height: 71px; margin-top: 85px; }
-        @media (max-width: 700px) { .orders-sliderheader { font-size: 52px; } }
+        .orders-sliderheader { color: #fff; font-family: var(--font-store); font-size: 32px; font-style: normal; font-weight: 700; line-height: 71px; margin-top: 85px; }
+        @media (max-width: 700px) { .orders-sliderheader { font-size: 32px; } }
 
-        .orders-slidertext { color: #fff; font-family: Montserrat; font-size: 20px; font-style: normal; font-weight: 400; line-height: 25.669px; padding-left: 4px; margin-top: 10px; margin-bottom: 20px; }
+        .orders-slidertext { color: #fff; font-family: var(--font-store); font-size: 20px; font-style: normal; font-weight: 400; line-height: 25.669px; padding-left: 4px; margin-top: 10px; margin-bottom: 20px; }
       `}</style>
     </div>
   );

@@ -45,7 +45,7 @@ const ReviewForm: React.FC<Props> = ({ productId, existing, onSubmitted, onCance
   };
 
   return (
-    <form onSubmit={submit} className="tw-bg-slate-50 tw-rounded-xl tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-mb-6">
+    <form onSubmit={submit} className="tw-bg-slate-50 tw-rounded tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-mb-6">
       <h4 className="tw-text-slate-900 tw-font-bold tw-text-[16px] tw-m-0 tw-mb-4">
         {isEdit ? "Edit your B2B review" : "Write a B2B review"}
       </h4>
@@ -61,7 +61,7 @@ const ReviewForm: React.FC<Props> = ({ productId, existing, onSubmitted, onCance
         maxLength={150}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Job Title & Company (e.g. Logistics Manager, TechHub)"
-        className="tw-w-full tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-px-3.5 tw-py-2.5 tw-text-[14px] tw-text-slate-900 placeholder:tw-text-slate-400 tw-mb-3 focus:tw-outline-none focus:tw-border-slate-900"
+        className="tw-w-full tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-px-3.5 tw-py-2.5 tw-text-[14px] tw-text-slate-900 placeholder:tw-text-slate-400 tw-mb-3 focus:tw-outline-none focus:tw-border-slate-900"
       />
 
       <textarea
@@ -70,14 +70,14 @@ const ReviewForm: React.FC<Props> = ({ productId, existing, onSubmitted, onCance
         rows={4}
         onChange={(e) => setComment(e.target.value)}
         placeholder="Share detailed feedback on performance, durability, shipping speed, etc…"
-        className="tw-w-full tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-px-3.5 tw-py-2.5 tw-text-[14px] tw-text-slate-900 placeholder:tw-text-slate-400 tw-resize-y focus:tw-outline-none focus:tw-border-slate-900"
+        className="tw-w-full tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-px-3.5 tw-py-2.5 tw-text-[14px] tw-text-slate-900 placeholder:tw-text-slate-400 tw-resize-y focus:tw-outline-none focus:tw-border-slate-900"
       />
 
       <div className="tw-flex tw-items-center tw-gap-3 tw-mt-4">
         <button
           type="submit"
           disabled={submitting}
-          className="tw-bg-slate-900 tw-text-white tw-font-bold tw-text-[13px] tw-px-5 tw-py-2.5 tw-rounded-lg tw-border-0 tw-cursor-pointer hover:tw-bg-slate-800 disabled:tw-opacity-60 tw-transition-colors tw-shadow-sm"
+          className="tw-bg-slate-900 tw-text-white tw-font-bold tw-text-[13px] tw-px-5 tw-py-2.5 tw-rounded tw-border-0 tw-cursor-pointer hover:tw-bg-slate-800 disabled:tw-opacity-60 tw-transition-colors tw-shadow-sm"
         >
           {submitting ? "Submitting…" : isEdit ? "Update Review" : "Submit B2B Review"}
         </button>
@@ -85,7 +85,7 @@ const ReviewForm: React.FC<Props> = ({ productId, existing, onSubmitted, onCance
           <button
             type="button"
             onClick={onCancel}
-            className="tw-bg-white tw-text-slate-700 tw-text-[13px] tw-px-4 tw-py-2.5 tw-rounded-lg tw-border tw-border-solid tw-border-slate-200 tw-cursor-pointer hover:tw-bg-slate-100 tw-transition-colors"
+            className="tw-bg-white tw-text-slate-700 tw-text-[13px] tw-px-4 tw-py-2.5 tw-rounded tw-border tw-border-solid tw-border-slate-200 tw-cursor-pointer hover:tw-bg-slate-100 tw-transition-colors"
           >
             Cancel
           </button>

@@ -15,7 +15,9 @@ import AccountLayout, {
   AccountUser,
 } from "../../components/account/AccountLayout";
 
-import { FiPhone, FiChevronDown, FiLoader, FiInfo, FiDownload } from "react-icons/fi";
+import { FiPhone, FiChevronDown, FiLoader, FiInfo, FiDownload, FiStar } from "react-icons/fi";
+import reviewService, { ReviewableProduct } from "../../services/reviews";
+import ReviewForm from "../../components/product/reviews/ReviewForm";
 
 const getOrderCreatedTime = (order: any) => {
   const timestamp = new Date(order?.createdAt || 0).getTime();
@@ -73,6 +75,12 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
   const [activeDetailsOrder, setActiveDetailsOrder] = useState<any | null>(null);
   const [filterStatus, setFilterStatus] = useState("All");
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
+
+  // Products from paid orders that the customer has not reviewed yet. Drives the
+  // "rate your recent purchases" prompt; the backend only returns products this
+  // user actually bought.
+  const [reviewable, setReviewable] = useState<ReviewableProduct[]>([]);
+  const [reviewTarget, setReviewTarget] = useState<ReviewableProduct | null>(null);
 
   // Generate + download a branded PDF invoice for the given order.
   const handleDownloadInvoice = async (order: any) => {
@@ -137,6 +145,33 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
     getUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email_address]);
+
+  // Ask the customer to review products they bought but haven't reviewed yet.
+  useEffect(() => {
+    if (!user?.email_address) return undefined;
+    let cancelled = false;
+    const loadReviewable = async () => {
+      try {
+        const res = await reviewService.getReviewable();
+        const list = res?.data?.data;
+        if (!cancelled && Array.isArray(list)) setReviewable(list);
+      } catch {
+        if (!cancelled) setReviewable([]);
+      }
+    };
+    loadReviewable();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.email_address]);
+
+  const handleReviewSubmitted = () => {
+    const reviewedProductId = reviewTarget?.product?._id;
+    setReviewTarget(null);
+    if (reviewedProductId) {
+      setReviewable((prev) => prev.filter((entry) => entry.product._id !== reviewedProductId));
+    }
+  };
 
   useEffect(() => {
     if (!userEmail) return undefined;
@@ -444,6 +479,54 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
               </div>
             </div>
           </div>
+
+          {/* Ask for a review on paid purchases (verified-buyer only) */}
+          {!loadingOrders && reviewable.length > 0 && (
+            <section className="review-prompt-card" aria-labelledby="review-prompt-title">
+              <div className="review-prompt-head">
+                <span className="review-prompt-icon" aria-hidden="true">
+                  <FiStar />
+                </span>
+                <div>
+                  <h2 id="review-prompt-title">How were your recent purchases?</h2>
+                  <p>
+                    Only customers who bought these products can review them. Your
+                    feedback helps other buyers choose with confidence.
+                  </p>
+                </div>
+              </div>
+              <div className="review-prompt-list">
+                {reviewable.map((entry) => {
+                  const img =
+                    getProductImageSrc(entry.product as any) || cdn("/pp_logo_1.png");
+                  return (
+                    <div className="review-prompt-item" key={entry.product._id}>
+                      <img
+                        src={img}
+                        alt={entry.product.name || "Purchased product"}
+                        className="review-prompt-thumb"
+                      />
+                      <div className="review-prompt-meta">
+                        <span className="review-prompt-name">
+                          {entry.product.name || "Product"}
+                        </span>
+                        <span className="review-prompt-order">
+                          {entry.orderId ? `Order ${entry.orderId}` : "Purchased"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="review-prompt-btn"
+                        onClick={() => setReviewTarget(entry)}
+                      >
+                        Write a review
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Orders Main Section */}
           {loadingOrders ? (
@@ -860,6 +943,31 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         </Modal>
       )}
 
+      {/* REVIEW MODAL — only opened from the verified-purchase prompt */}
+      {reviewTarget && (
+        <Modal
+          show={!!reviewTarget}
+          onHide={() => setReviewTarget(null)}
+          centered
+          className="review-modal-container"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Review {reviewTarget.product.name || "product"}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p className="review-modal-hint">
+              Verified purchase
+              {reviewTarget.orderId ? ` · Order ${reviewTarget.orderId}` : ""}
+            </p>
+            <ReviewForm
+              productId={reviewTarget.product._id}
+              onSubmitted={handleReviewSubmitted}
+              onCancel={() => setReviewTarget(null)}
+            />
+          </Modal.Body>
+        </Modal>
+      )}
+
       {/* UTR MODAL */}
       <Modal show={showUtrModal} onHide={handleModalClose} centered className="utr-modal-container">
         <Modal.Header closeButton>
@@ -925,7 +1033,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
       <style jsx>{`
         /* ============ PREMIUM MY ORDERS UI ============ */
         .orders-root {
-          --font-family: "Inter", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --font-family: var(--font-store);
           --color-ink: #0f172a;
           --color-navy: #1e293b;
           --color-slate-muted: #64748b;
@@ -1018,6 +1126,108 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           letter-spacing: 0.02em;
         }
 
+        /* Review prompt (verified purchases awaiting a review) */
+        .review-prompt-card {
+          background: #fffbeb;
+          border: 1px solid #fde68a;
+          border-radius: var(--radius-control);
+          padding: 18px 20px;
+          margin-bottom: 20px;
+        }
+        .review-prompt-head {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .review-prompt-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          flex-shrink: 0;
+          border-radius: 50%;
+          background: #f59e0b;
+          color: #ffffff;
+          font-size: 17px;
+        }
+        .review-prompt-head h2 {
+          margin: 0 0 4px;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--color-ink);
+        }
+        .review-prompt-head p {
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.5;
+          color: var(--color-slate-muted);
+        }
+        .review-prompt-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .review-prompt-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #ffffff;
+          border: 1px solid var(--color-line);
+          border-radius: var(--radius-control);
+          padding: 10px 12px;
+        }
+        .review-prompt-thumb {
+          width: 46px;
+          height: 46px;
+          object-fit: contain;
+          border-radius: 8px;
+          border: 1px solid var(--color-line);
+          background: #ffffff;
+          flex-shrink: 0;
+        }
+        .review-prompt-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+          flex: 1;
+        }
+        .review-prompt-name {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--color-ink);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .review-prompt-order {
+          font-size: 11.5px;
+          color: var(--color-slate-muted);
+        }
+        .review-prompt-btn {
+          flex-shrink: 0;
+          background: #0f172a;
+          color: #ffffff;
+          border: 0;
+          border-radius: 8px;
+          padding: 9px 14px;
+          font-size: 12.5px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background-color 0.15s ease;
+        }
+        .review-prompt-btn:hover {
+          background: #1e293b;
+        }
+        .review-modal-hint {
+          margin: 0 0 12px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #059669;
+        }
+
         /* Orders Loading State */
         .orders-loading {
           display: flex;
@@ -1045,9 +1255,9 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
           text-align: center;
           background: #ffffff;
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 80px 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .empty-state-icon {
           font-size: 40px;
@@ -1088,9 +1298,9 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         .orders-table-card {
           background: #ffffff;
           border: 1px solid var(--color-line);
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          box-shadow: var(--shadow-surface);
           width: 100%;
         }
         .orders-table-wrapper {
@@ -1362,7 +1572,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         /* ============ VIEW DETAILS MODAL STYLES ============ */
         .details-modal-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           color: var(--color-ink);
         }
         .modal-title-id {
@@ -1417,7 +1627,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
         .column-title {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: var(--color-ink);
@@ -1427,7 +1637,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
         .column-title-secondary {
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: var(--color-ink);
@@ -1514,7 +1724,7 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
         .total-row dd {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           color: var(--color-ink);
         }
 
@@ -1786,6 +1996,14 @@ const OrdersContent = ({ user }: { user: AccountUser }) => {
         }
 
         @media (max-width: 768px) {
+          /* Review prompt stacks so the CTA stays tappable */
+          .review-prompt-item {
+            flex-wrap: wrap;
+          }
+          .review-prompt-btn {
+            width: 100%;
+          }
+
           /* Table responsive collapse */
           .orders-table thead {
             display: none;

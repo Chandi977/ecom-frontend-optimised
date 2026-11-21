@@ -3,7 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Clock3, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, Clock3 } from "lucide-react";
 import {
   FaFacebookF,
   FaInstagram,
@@ -137,11 +137,10 @@ export default function Footer() {
       <section className="newsletterSection">
         <div className="newsletterInner">
           <div>
-            <p className="eyebrow redEyebrow">PACK SMARTER</p>
-            <h2>Fresh products and useful offers, occasionally.</h2>
+            <h2>Packaging updates and offers</h2>
           </div>
           <form onSubmit={handleNewsletter} noValidate>
-            <label htmlFor="global-newsletter-email">EMAIL ADDRESS</label>
+            <label htmlFor="global-newsletter-email">Email address</label>
             <div className="newsletterField">
               <input
                 type="email"
@@ -156,10 +155,9 @@ export default function Footer() {
               />
               <button type="submit" disabled={newsletterSubmitting}>
                 {newsletterSubmitting ? "Joining…" : "Join the list"}{" "}
-                <ArrowRight size={16} />
               </button>
             </div>
-            <p id="global-newsletter-message" className="newsletterMessage">
+            <p id="global-newsletter-message" className="newsletterMessage" role="status">
               {newsletterMessage || "No spam. Just useful packaging updates."}
             </p>
           </form>

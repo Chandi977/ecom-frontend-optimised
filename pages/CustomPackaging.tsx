@@ -98,7 +98,7 @@ export default function CustomPackaging() {
       <style jsx>{`
         .cp-section {
           padding: 20px 0 10px;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
         }
 
         /* ---------- CTA banner ---------- */
@@ -108,10 +108,10 @@ export default function CustomPackaging() {
           align-items: center;
           justify-content: space-between;
           gap: 28px;
-          background: linear-gradient(120deg, #182c5a 0%, #223a72 100%);
-          border-radius: 20px;
+          background: #182c5a;
+          border-radius: var(--radius-control);
           padding: 40px 48px;
-          box-shadow: 0 14px 34px rgba(24, 44, 90, 0.22);
+          box-shadow: var(--shadow-surface);
         }
         .cp-cta-copy {
           max-width: 640px;
@@ -142,14 +142,14 @@ export default function CustomPackaging() {
           letter-spacing: 0.03em;
           text-decoration: none;
           padding: 15px 28px;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           cursor: pointer;
           transition: background-color 0.25s ease, transform 0.25s ease;
         }
         .cp-cta :global(.cp-cta-btn:hover) {
           background-color: #ffffff;
           color: #182c5a;
-          transform: translateY(-2px);
+          transform: none;
         }
         .cp-cta :global(.cp-cta-btn svg) {
           transition: transform 0.25s ease;

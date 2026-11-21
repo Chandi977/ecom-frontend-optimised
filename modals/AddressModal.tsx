@@ -103,7 +103,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
       "&:hover": {
         borderColor: state.isFocused ? "#182c5a" : "#94a3b8",
       },
-      fontFamily: "Montserrat, sans-serif",
+      fontFamily: "var(--font-store)",
       fontSize: "14.5px",
       backgroundColor: "#ffffff",
     }),
@@ -123,7 +123,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
         ? "rgba(24, 44, 90, 0.06)"
         : "#ffffff",
       color: state.isSelected ? "#ffffff" : "#1e293b",
-      fontFamily: "Montserrat, sans-serif",
+      fontFamily: "var(--font-store)",
       fontSize: "14.5px",
       "&:active": {
         backgroundColor: "#182c5a",
@@ -294,7 +294,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
         .addr-form {
           display: flex;
           flex-direction: column;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           padding: 10px 5px;
         }
         .addr-grid {
@@ -315,7 +315,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
           font-weight: 600;
           color: #475569;
           margin: 0;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
         }
         .addr-input {
           width: 100%;
@@ -325,7 +325,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
           border: 1px solid #cbd5e1;
           border-radius: 8px;
           padding: 10px 14px;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 14.5px;
           transition:
             border-color 0.15s ease,
@@ -334,7 +334,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
         .addr-input:focus {
           outline: none;
           border-color: #182c5a;
-          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.12);
+          box-shadow: var(--shadow-surface);
         }
         .addr-input::placeholder {
           color: #94a3b8;
@@ -346,7 +346,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
           bottom: -10px;
           margin: 26px -5px -10px;
           padding: 16px 5px 10px;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), #ffffff 32%);
+          background: #ffffff;
           border-top: 1px solid #e2e8f0;
           z-index: 2;
         }
@@ -356,12 +356,12 @@ function AddressModal({ visible, handleVisible, prev, address }) {
           border: none;
           background-color: #182c5a;
           color: #ffffff;
-          font-family: "Montserrat", sans-serif;
+          font-family: var(--font-store);
           font-size: 15px;
           font-weight: 700;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(24, 44, 90, 0.2);
+          box-shadow: var(--shadow-surface);
           transition:
             background-color 0.15s ease,
             transform 0.1s ease,
@@ -369,7 +369,7 @@ function AddressModal({ visible, handleVisible, prev, address }) {
         }
         .addr-submit-btn:hover {
           background-color: #e92227;
-          box-shadow: 0 6px 16px rgba(233, 34, 39, 0.3);
+          box-shadow: var(--shadow-surface);
         }
         .addr-submit-btn:active {
           transform: scale(0.98);

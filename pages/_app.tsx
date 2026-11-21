@@ -27,7 +27,7 @@ import Head from "next/head";
 import { BrandProvider } from "../context/BrandContext";
 import { WishlistProvider } from "../context/WishlistContext";
 import JsonLd from "../components/common/JsonLd";
-import PageTransition from "../components/common/PageTransition";
+import "../styles/storefront-system.css";
 import { siteSchema } from "../utils/schema";
 
 const NOINDEX_PREFIXES: string[] = [
@@ -93,11 +93,10 @@ export default function MyApp({ Component, pageProps }) {
           >
             <ToastContainer />
             {showGlobalShell && <Navbar />}
-            <ConfigProvider>
-              {/* Re-keyed on the path so each route plays its entrance. */}
-              <PageTransition routeKey={router.asPath}>
+            <ConfigProvider theme={{ token: { colorPrimary: "#182c5a", borderRadius: 4, fontFamily: "var(--font-store)", controlHeight: 44 } }}>
+              <div className="storefront-page">
                 <Component {...pageProps} />
-              </PageTransition>
+              </div>
             </ConfigProvider>
             {showGlobalFooter && <Footer />}
           </div>

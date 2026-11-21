@@ -74,7 +74,7 @@ function TopCardMobile({ item }) {
       </div>
     </div>
       <style jsx>{`
-        .landing-toptext { color: var(--text, #666); text-align: center; font-family: "Montserrat", sans-serif; font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; }
+        .landing-toptext { color: var(--text, #666); text-align: center; font-family: var(--font-store); font-size: 15px; font-style: normal; font-weight: 700; line-height: 20px; }
       `}</style>
     </>
   );

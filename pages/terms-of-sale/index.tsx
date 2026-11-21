@@ -185,15 +185,16 @@ const PrivacyPolicy = () => {
   margin-left: 0px !important;
   margin-bottom: 0px !important;
   margin-right: 0px !important;
-  padding-left: 110px !important;
-  padding-right: 110px !important;
+  padding-left: max(16px, calc((100vw - 1120px) / 2)) !important;
+  padding-right: max(16px, calc((100vw - 1120px) / 2)) !important;
 }
 .policy-maindiv {
+  overflow-wrap: anywhere;
   margin-top: 30px;
 }
 .policy-subdiv {
   margin-top: 20px;
-  text-align: justify;
+  text-align: left;
 }
 .policy-subcontent1 {
   font-size: 18px;

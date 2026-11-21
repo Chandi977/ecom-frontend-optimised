@@ -85,14 +85,14 @@ const Feedback = () => {
         .feedback-arrow-next { position: absolute; margin-top: 130px; z-index: 2; right: -20px; background-color: #f5f5f5; padding: 17px 22px; cursor: pointer; border-radius: 50%; }
         .feedback-arrow-next img { width: 20px; height: 30px; }
 
-        .feedback-card { width: 90% !important; height: auto; padding: 20px; min-height: 230px; border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; background-color: white; }
+        .feedback-card { width: 90% !important; height: auto; padding: 20px; min-height: 230px; border-radius: var(--radius-control); box-shadow: var(--shadow-surface); background-color: white; }
         .feedback-card > div:first-child { width: 100%; height: auto; display: flex; align-items: center; justify-content: center; }
         .feedback-card > div:first-child img { width: 50px; height: 50px; border-radius: 50%; }
         .feedback-card > div:first-child > div { padding-left: 20px; }
-        .feedback-card > div:first-child > div p:first-child { font-family: "Montserrat"; font-size: 16px; color: #3a5ba2; font-weight: 700; text-transform: capitalize; margin-bottom: 0px; }
-        .feedback-card > div:first-child > div p:nth-child(2) { font-family: "Montserrat"; font-size: 13px; color: gray; font-weight: 500; text-transform: capitalize; margin-top: 0px; }
+        .feedback-card > div:first-child > div p:first-child { font-family: var(--font-store); font-size: 16px; color: #3a5ba2; font-weight: 700; text-transform: capitalize; margin-bottom: 0px; }
+        .feedback-card > div:first-child > div p:nth-child(2) { font-family: var(--font-store); font-size: 13px; color: gray; font-weight: 500; text-transform: capitalize; margin-top: 0px; }
 
-        .feedback-sub-text { font-family: "Montserrat"; font-size: 14px; color: #000; text-align: justify; }
+        .feedback-sub-text { font-family: var(--font-store); font-size: 14px; color: #000; text-align: justify; }
 
         @media (max-width: 1024px) and (min-width: 768px) {
           .feedback-main { width: 100%; height: auto; margin-top: 60px; padding: 0px 40px; }

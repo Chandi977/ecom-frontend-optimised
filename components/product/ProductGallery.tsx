@@ -192,7 +192,7 @@ export function ProductGallery({ product }: { product?: IProduct }) {
         }
         .thumb.active {
           border-color: #182c5a;
-          box-shadow: 0 0 0 1px #182c5a;
+          box-shadow: var(--shadow-surface);
         }
         .lightbox {
           position: fixed;

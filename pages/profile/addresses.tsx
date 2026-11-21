@@ -248,9 +248,9 @@ const AddressesPage = () => {
         .addresses-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .addresses-card .card-header {
           display: flex;
@@ -262,7 +262,7 @@ const AddressesPage = () => {
         }
         .addresses-card .card-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: #0f172a;
@@ -324,7 +324,7 @@ const AddressesPage = () => {
         .address-card {
           position: relative;
           border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           padding: 18px;
           display: flex;
           flex-direction: column;
@@ -333,7 +333,7 @@ const AddressesPage = () => {
         }
         .address-card:hover {
           border-color: #cbd5e1;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+          box-shadow: var(--shadow-surface);
         }
         .address-card.is-default {
           border-color: #182c5a;
@@ -350,7 +350,7 @@ const AddressesPage = () => {
           font-weight: 700;
           color: #182c5a;
           background: rgba(24, 44, 90, 0.1);
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           padding: 4px 10px;
         }
         .address-name {

@@ -102,10 +102,10 @@ function ShareModal({ data, handleClose }) {
       <style jsx>{`
         .tw-share-main { width: 100%; height: 100px; display: flex; justify-content: center; align-items: flex-start; position: absolute; top: 35%; z-index: 20; margin-left: 260px; }
         @media (max-width: 768px) { .tw-share-main { width: 80%; height: 100px; display: flex; justify-content: center; align-items: flex-start; position: absolute; top: 85%; margin-left: 6%; z-index: 20; } }
-        .tw-share-modal-inner { width: 35%; height: auto; padding: 20px; border-radius: 10px; background: white; border: 1px solid #D9D9D9; }
-        @media (max-width: 768px) { .tw-share-modal-inner { width: 100%; height: auto; padding: 20px; border-radius: 10px; background: white; border: 1px solid #D9D9D9; } }
+        .tw-share-modal-inner { width: 35%; height: auto; padding: 20px; border-radius: var(--radius-control); background: white; border: 1px solid #D9D9D9; }
+        @media (max-width: 768px) { .tw-share-modal-inner { width: 100%; height: auto; padding: 20px; border-radius: var(--radius-control); background: white; border: 1px solid #D9D9D9; } }
         .tw-share-ineera { display: flex; justify-content: space-between; padding-right: 8px; }
-        .tw-share-heading { font-family: Montserrat; }
+        .tw-share-heading { font-family: var(--font-store); }
         .tw-share-linkisss { display: flex; flex-wrap: wrap; column-gap: 10px; margin-top: 20px; }
       `}</style>
     </>

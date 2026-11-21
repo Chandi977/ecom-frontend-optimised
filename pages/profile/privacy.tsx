@@ -36,9 +36,9 @@ const PREFERENCE_ITEMS: Array<{
 }> = [
   {
     key: "emailNotifications",
-    label: "Email Notifications",
+    label: "Promotional Emails",
     description:
-      "Order updates, offers and announcements delivered to your inbox.",
+      "Offers, new arrivals and announcements. Order and account emails are always sent.",
     Icon: FiMail,
   },
   {
@@ -205,16 +205,16 @@ const PrivacyPage = () => {
         .privacy-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .privacy-card .card-header {
           margin-bottom: 18px;
         }
         .privacy-card .card-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: #0f172a;
@@ -236,7 +236,7 @@ const PrivacyPage = () => {
           color: #64748b;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
         }
         .privacy-spinner {
           font-size: 32px;
@@ -275,7 +275,7 @@ const PrivacyPage = () => {
         .preference-icon-wrap {
           width: 48px;
           height: 48px;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           background: rgba(24, 44, 90, 0.08);
           color: #182c5a;
           display: flex;
@@ -305,7 +305,7 @@ const PrivacyPage = () => {
           position: relative;
           width: 52px;
           height: 28px;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           border: 0;
           background: #cbd5e1;
           cursor: pointer;
@@ -330,7 +330,7 @@ const PrivacyPage = () => {
           height: 22px;
           border-radius: 50%;
           background: #ffffff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+          box-shadow: var(--shadow-surface);
           transition: transform 0.2s ease;
         }
         .toggle.on .toggle-thumb {

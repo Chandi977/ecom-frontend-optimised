@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  // Allow production verification alongside a running development server.
+  distDir: process.env.NEXT_BUILD_DIR || ".next",
   transpilePackages: [
     "antd",
     "@rc-component/picker",

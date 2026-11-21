@@ -141,7 +141,7 @@ const Forgetpage = () => {
             style={{
               color: "#000",
               fontFeatureSettings: "'liga' off",
-              fontFamily: "Montserrat",
+              fontFamily: "var(--font-store)",
               fontSize: "40.944px",
               fontStyle: "normal",
               fontWeight: "700",
@@ -155,7 +155,7 @@ const Forgetpage = () => {
             className="p-0 text-danger"
             style={{
               color: "#000",
-              fontFamily: "Montserrat",
+              fontFamily: "var(--font-store)",
               fontSize: "16px",
               fontStyle: "normal",
               fontWeight: "400",

@@ -176,13 +176,11 @@ const ContactUs = () => {
       <main className="cu">
         {/* ── Hero band ─────────────────────────────────────────────── */}
         <section className="cu-hero">
-          <div className="cu-hero__glow" aria-hidden="true" />
           <div
             className="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-grain tw-opacity-[0.07]"
             aria-hidden="true"
           />
           <div className="cu-hero__inner cu-rise">
-            <span className="cu-eyebrow">Get in touch</span>
             <h1 className="cu-hero__title">Let&apos;s talk packaging</h1>
             <p className="cu-hero__sub">
               Bulk orders, custom packaging, or a question about an existing
@@ -355,14 +353,14 @@ const ContactUs = () => {
       <style jsx>{`
         .cu {
           background: #f7f8fa;
-          font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+          font-family: var(--font-store);
           color: #111827;
-          padding-bottom: 72px;
+          padding-bottom: 40px;
         }
 
         /* ── Entrance (staggered rise) ────────────────────────────── */
         .cu-rise {
-          animation: cu-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: none;
         }
         .cu-rise--1 {
           animation-delay: 0.08s;
@@ -390,13 +388,8 @@ const ContactUs = () => {
         .cu-hero {
           position: relative;
           overflow: hidden;
-          background: radial-gradient(
-              120% 140% at 15% 0%,
-              #1f3a6e 0%,
-              #182c5a 42%,
-              #0f2747 100%
-            );
-          padding: 84px 24px 132px;
+          background: #1f3a6e;
+          padding: 40px 24px;
           text-align: center;
         }
         .cu-hero__glow {
@@ -405,11 +398,7 @@ const ContactUs = () => {
           right: -10%;
           width: 640px;
           height: 640px;
-          background: radial-gradient(
-            circle,
-            rgba(233, 34, 39, 0.28) 0%,
-            transparent 62%
-          );
+          background: none;
           filter: blur(8px);
           pointer-events: none;
         }
@@ -420,19 +409,19 @@ const ContactUs = () => {
         }
         .cu-eyebrow {
           display: inline-block;
-          font-family: "JetBrains Mono", ui-monospace, monospace;
+          font-family: var(--font-store);
           font-size: 12px;
           font-weight: 600;
-          letter-spacing: 0.22em;
+          letter-spacing: normal;
           text-transform: uppercase;
           color: #ff9a9d;
           margin-bottom: 18px;
         }
         .cu-hero__title {
-          font-family: "Calistoga", Georgia, serif;
+          font-family: var(--font-store);
           font-weight: 400;
           color: #ffffff;
-          font-size: clamp(38px, 6vw, 60px);
+          font-size: clamp(26px, 3vw, 36px);
           line-height: 1.02;
           letter-spacing: -0.01em;
           margin: 0 0 18px;
@@ -452,7 +441,7 @@ const ContactUs = () => {
           position: relative;
           z-index: 2;
           max-width: 1120px;
-          margin: -84px auto 0;
+          margin: 32px auto 0;
           padding: 0 24px;
           display: grid;
           grid-template-columns: 0.82fr 1.18fr;
@@ -464,16 +453,16 @@ const ContactUs = () => {
         .cu-info {
           position: relative;
           overflow: hidden;
-          border-radius: 20px;
-          background: linear-gradient(160deg, #182c5a 0%, #0f2747 100%);
-          box-shadow: 0 28px 60px -30px rgba(15, 39, 71, 0.55);
+          border-radius: var(--radius-control);
+          background: #182c5a;
+          box-shadow: var(--shadow-surface);
         }
         .cu-info__body {
           position: relative;
           padding: 34px 30px;
         }
         .cu-info__title {
-          font-family: "Calistoga", Georgia, serif;
+          font-family: var(--font-store);
           font-weight: 400;
           color: #ffffff;
           font-size: 24px;
@@ -506,7 +495,7 @@ const ContactUs = () => {
           place-items: center;
           width: 42px;
           height: 42px;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           background: rgba(233, 34, 39, 0.14);
           color: #ff8a8d;
           font-size: 20px;
@@ -518,10 +507,10 @@ const ContactUs = () => {
           min-width: 0;
         }
         .cu-info__label {
-          font-family: "JetBrains Mono", ui-monospace, monospace;
+          font-family: var(--font-store);
           font-size: 10.5px;
           font-weight: 600;
-          letter-spacing: 0.16em;
+          letter-spacing: normal;
           text-transform: uppercase;
           color: #7f92b3;
         }
@@ -545,13 +534,12 @@ const ContactUs = () => {
         .cu-card {
           background: #ffffff;
           border: 1px solid #e6e8ec;
-          border-radius: 20px;
+          border-radius: var(--radius-control);
           padding: 36px 34px;
-          box-shadow: 0 1px 2px rgba(15, 39, 71, 0.06),
-            0 24px 50px -28px rgba(15, 39, 71, 0.22);
+          box-shadow: var(--shadow-surface);
         }
         .cu-card__title {
-          font-family: "Calistoga", Georgia, serif;
+          font-family: var(--font-store);
           font-weight: 400;
           color: #182c5a;
           font-size: 26px;
@@ -589,7 +577,7 @@ const ContactUs = () => {
           color: #111827;
           background: #f9fafb;
           border: 1.5px solid #e6e8ec;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 12px 14px;
           transition: border-color 0.18s ease, box-shadow 0.18s ease,
             background 0.18s ease;
@@ -607,7 +595,7 @@ const ContactUs = () => {
         .cu-field :global(textarea:focus) {
           border-color: #e92227;
           background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(233, 34, 39, 0.12);
+          box-shadow: var(--shadow-surface);
         }
         .cu-field :global(input.is-error),
         .cu-field :global(textarea.is-error) {
@@ -630,7 +618,7 @@ const ContactUs = () => {
           font-size: 15px;
           font-weight: 600;
           border: none;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           cursor: pointer;
           transition: transform 0.15s ease, background 0.2s ease,
             box-shadow 0.2s ease, color 0.2s ease;
@@ -644,17 +632,17 @@ const ContactUs = () => {
           padding: 14px 22px;
           color: #ffffff;
           background: #e92227;
-          box-shadow: 0 12px 26px -12px rgba(233, 34, 39, 0.6);
+          box-shadow: var(--shadow-surface);
         }
         .cu-btn--primary:hover {
           background: #182c5a;
-          box-shadow: 0 14px 30px -12px rgba(24, 44, 90, 0.55);
+          box-shadow: var(--shadow-surface);
         }
         .cu-btn--primary:active {
           transform: scale(0.985);
         }
         .cu-btn--primary:focus-visible {
-          box-shadow: 0 0 0 4px rgba(233, 34, 39, 0.28);
+          box-shadow: var(--shadow-surface);
         }
         .cu-btn--primary:disabled {
           opacity: 0.7;
@@ -705,7 +693,7 @@ const ContactUs = () => {
           margin-bottom: 18px;
         }
         .cu-success__title {
-          font-family: "Calistoga", Georgia, serif;
+          font-family: var(--font-store);
           font-weight: 400;
           color: #182c5a;
           font-size: 26px;
@@ -728,12 +716,12 @@ const ContactUs = () => {
         @media (max-width: 880px) {
           .cu-shell {
             grid-template-columns: 1fr;
-            margin-top: -72px;
+            margin-top: 24px;
           }
         }
         @media (max-width: 540px) {
           .cu-hero {
-            padding: 64px 20px 116px;
+            padding: 32px 16px;
           }
           .cu-card {
             padding: 28px 20px;

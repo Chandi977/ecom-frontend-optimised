@@ -79,7 +79,7 @@ export default function WishlistButton({
           background: rgba(255, 255, 255, 0.96);
           color: #747b88;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(15, 39, 71, 0.08);
+          box-shadow: var(--shadow-surface);
           transition:
             color 180ms ease,
             border-color 180ms ease,
@@ -102,14 +102,14 @@ export default function WishlistButton({
         .wishlist-inline {
           position: relative;
           border-radius: 50%;
-          box-shadow: none;
+          box-shadow: var(--shadow-surface);
         }
         .wishlist-action {
           width: 100%;
           min-height: 40px;
           border: 0;
           border-radius: 0;
-          box-shadow: none;
+          box-shadow: var(--shadow-surface);
         }
         .wishlist-md {
           width: 36px;
@@ -122,17 +122,17 @@ export default function WishlistButton({
           font-size: 13px;
         }
         .wishlist-card-button:hover:not(:disabled) {
-          color: #cf1717;
-          border-color: #cf1717;
-          transform: translateY(-1px);
+          color: var(--brand-red);
+          border-color: var(--brand-red);
+          transform: none;
         }
         .wishlist-card-button:active:not(:disabled) {
           transform: scale(0.96);
         }
         .wishlist-card-button.is-active {
-          border-color: #cf1717;
+          border-color: var(--brand-red);
           background: #fff5f5;
-          color: #cf1717;
+          color: var(--brand-red);
         }
         .wishlist-card-button.is-pending :global(svg) {
           animation: wishlist-pulse 700ms ease-in-out infinite alternate;
@@ -142,7 +142,7 @@ export default function WishlistButton({
           opacity: 0.45;
         }
         .wishlist-card-button:focus-visible {
-          outline: 2px solid #cf1717;
+          outline: 2px solid var(--brand-red);
           outline-offset: 3px;
         }
         @keyframes wishlist-pulse {
@@ -152,7 +152,7 @@ export default function WishlistButton({
           }
           to {
             opacity: 1;
-            transform: scale(1.06);
+            transform: none;
           }
         }
         @media (prefers-reduced-motion: reduce) {

@@ -169,18 +169,18 @@ const RelatedCard: React.FC<{
         }
         .related-product-card:hover {
           border-color: #b9c0cd;
-          box-shadow: 0 10px 24px -10px rgba(15, 39, 71, 0.25);
+          box-shadow: var(--shadow-surface);
         }
         .card-sale-badge {
           position: absolute;
           top: 14px;
           left: 14px;
           z-index: 5;
-          background: #cf1717;
+          background: var(--brand-red);
           color: #ffffff;
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 600;
           padding: 4px 8px;
           letter-spacing: 0.5px;
           text-transform: uppercase;
@@ -211,7 +211,7 @@ const RelatedCard: React.FC<{
           transition: transform 0.3s ease;
         }
         .related-product-card:hover .card-img {
-          transform: scale(1.04);
+          transform: none;
         }
         .card-quick-view-btn {
           position: absolute;
@@ -228,12 +228,12 @@ const RelatedCard: React.FC<{
           justify-content: center;
           cursor: pointer;
           transition: all 0.2s ease;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+          box-shadow: var(--shadow-surface);
         }
         .card-quick-view-btn:hover {
-          background: #02051f;
+          background: var(--brand-navy);
           color: #ffffff;
-          border-color: #02051f;
+          border-color: var(--brand-navy);
         }
         .card-body-container {
           display: flex;
@@ -245,10 +245,10 @@ const RelatedCard: React.FC<{
           text-decoration: none;
         }
         .card-heading-title {
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 15px;
           font-weight: 700;
-          color: #02051f;
+          color: var(--brand-navy);
           line-height: 1.35;
           margin: 0 0 4px 0;
           display: -webkit-box;
@@ -257,10 +257,10 @@ const RelatedCard: React.FC<{
           overflow: hidden;
         }
         .card-heading-title:hover {
-          color: #cf1717;
+          color: var(--brand-red);
         }
         .card-dimension-text {
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 12px;
           font-weight: 500;
           color: #596172;
@@ -277,23 +277,23 @@ const RelatedCard: React.FC<{
           margin-bottom: 14px;
         }
         .card-selling-price {
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 19px;
-          font-weight: 800;
-          color: #02051f;
+          font-weight: 600;
+          color: var(--brand-navy);
           letter-spacing: -0.3px;
         }
         .card-mrp-price {
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 12px;
           font-weight: 600;
           color: #666c78;
           text-decoration: line-through;
         }
         .card-discount-badge {
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 600;
           color: #17803d;
         }
         .card-cart-btn {
@@ -304,11 +304,11 @@ const RelatedCard: React.FC<{
           min-width: 120px;
           height: 38px;
           padding: 0 16px;
-          background: #02051f;
+          background: var(--brand-navy);
           color: #ffffff;
-          font-family: "Montserrat", "Inter", sans-serif;
+          font-family: var(--font-store);
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 600;
           letter-spacing: 0.5px;
           text-transform: uppercase;
           border: 0;
@@ -317,7 +317,7 @@ const RelatedCard: React.FC<{
           transition: background 0.15s ease, transform 0.15s ease;
         }
         .card-cart-btn:hover:not(.disabled) {
-          background: #cf1717;
+          background: var(--brand-red);
         }
         .card-cart-btn.disabled {
           background: #f1f5f9;
@@ -401,7 +401,7 @@ export const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({
           onClick={() => setQuickView(null)}
         >
           <div
-            className="tw-bg-white tw-rounded-xl tw-max-w-lg tw-w-full tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-shadow-2xl tw-max-h-[90vh] tw-overflow-y-auto"
+            className="tw-bg-white tw-rounded tw-max-w-lg tw-w-full tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-shadow-sm tw-max-h-[90vh] tw-overflow-y-auto"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="tw-flex tw-justify-between tw-items-start tw-gap-4 tw-mb-4 tw-pb-2">
@@ -419,7 +419,7 @@ export const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({
             </div>
 
             <div className="tw-flex tw-flex-col sm:tw-flex-row tw-gap-4 tw-items-start">
-              <div className="tw-w-36 tw-h-36 tw-bg-slate-50 tw-rounded-lg tw-p-2 tw-flex tw-items-center tw-justify-center tw-shrink-0 tw-border tw-border-solid tw-border-slate-200">
+              <div className="tw-w-36 tw-h-36 tw-bg-slate-50 tw-rounded tw-p-2 tw-flex tw-items-center tw-justify-center tw-shrink-0 tw-border tw-border-solid tw-border-slate-200">
                 <img
                   src={getProductImageSrc(quickView)}
                   alt={String(quickView.name || "Product")}
@@ -461,7 +461,7 @@ export const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({
                 <div className="tw-pt-3">
                   <Link
                     href={`/${quickView.slug || normalizeId(quickView)}`}
-                    className="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-slate-900 tw-text-white tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-uppercase tw-tracking-widest tw-text-[11px] hover:tw-bg-slate-800 tw-transition-all tw-no-underline tw-shadow-sm"
+                    className="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-slate-900 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-font-bold tw-uppercase tw-tracking-normal tw-text-[11px] hover:tw-bg-slate-800 tw-transition-all tw-no-underline tw-shadow-sm"
                   >
                     View full details
                     <span className="material-symbols-outlined tw-text-sm">

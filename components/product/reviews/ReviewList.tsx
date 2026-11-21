@@ -67,8 +67,8 @@ const ReviewItem: React.FC<{ review: Review; isHorizontal?: boolean }> = ({
     <div
       className={
         isHorizontal
-          ? "tw-w-[300px] sm:tw-w-[360px] tw-shrink-0 tw-snap-start tw-bg-white tw-border tw-border-solid tw-border-[#dadce0] tw-rounded-2xl tw-p-5 tw-shadow-[0_1px_3px_rgba(60,64,67,0.08),0_1px_2px_rgba(60,64,67,0.16)] tw-transition-all hover:tw-shadow-[0_4px_12px_rgba(60,64,67,0.15)] tw-flex tw-flex-col tw-justify-between"
-          : "tw-bg-white tw-border tw-border-solid tw-border-[#dadce0] tw-rounded-2xl tw-p-5 sm:tw-p-6 tw-mb-4 tw-shadow-[0_1px_3px_rgba(60,64,67,0.08),0_1px_2px_rgba(60,64,67,0.16)] tw-transition-all hover:tw-shadow-[0_4px_12px_rgba(60,64,67,0.15)]"
+          ? "tw-w-[300px] sm:tw-w-[360px] tw-shrink-0 tw-snap-start tw-bg-white tw-border tw-border-solid tw-border-[#dadce0] tw-rounded tw-p-5 tw-shadow-[0_1px_3px_rgba(60,64,67,0.08),0_1px_2px_rgba(60,64,67,0.16)] tw-transition-all hover:tw-shadow-[0_4px_12px_rgba(60,64,67,0.15)] tw-flex tw-flex-col tw-justify-between"
+          : "tw-bg-white tw-border tw-border-solid tw-border-[#dadce0] tw-rounded tw-p-5 sm:tw-p-6 tw-mb-4 tw-shadow-[0_1px_3px_rgba(60,64,67,0.08),0_1px_2px_rgba(60,64,67,0.16)] tw-transition-all hover:tw-shadow-[0_4px_12px_rgba(60,64,67,0.15)]"
       }
     >
       <div>
@@ -96,7 +96,7 @@ const ReviewItem: React.FC<{ review: Review; isHorizontal?: boolean }> = ({
                   </span>
                 )}
                 {review.verifiedPurchase !== false && (
-                  <span className="tw-inline-flex tw-items-center tw-gap-1 tw-text-[10px] tw-font-bold tw-tracking-wider tw-uppercase tw-text-emerald-700 tw-bg-emerald-50 tw-border tw-border-solid tw-border-emerald-200 tw-px-1.5 tw-py-0.5 tw-rounded-md">
+                  <span className="tw-inline-flex tw-items-center tw-gap-1 tw-text-[10px] tw-font-bold tw-tracking-normal tw-uppercase tw-text-emerald-700 tw-bg-emerald-50 tw-border tw-border-solid tw-border-emerald-200 tw-px-1.5 tw-py-0.5 tw-rounded-md">
                     VERIFIED B2B
                   </span>
                 )}
@@ -127,7 +127,7 @@ const ReviewItem: React.FC<{ review: Review; isHorizontal?: boolean }> = ({
 
         {/* Response from Store / Owner (Sleek Threaded Response) */}
         {review.adminReply?.message ? (
-          <div className="tw-mt-4 tw-p-3.5 tw-bg-slate-50 tw-rounded-xl tw-border-0">
+          <div className="tw-mt-4 tw-p-3.5 tw-bg-slate-50 tw-rounded tw-border-0">
             <div className="tw-flex tw-items-center tw-gap-2 tw-mb-1.5">
               <div className="tw-w-6 tw-h-6 tw-rounded-full tw-bg-[#182c5a] tw-text-white tw-flex tw-items-center tw-justify-center tw-text-[11px] tw-font-bold tw-shrink-0">
                 P
@@ -192,7 +192,7 @@ const ReviewList: React.FC<Props> = ({
 
   if (!reviews.length) {
     return (
-      <div className="tw-text-center tw-text-slate-500 tw-text-[14px] tw-py-12 tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded-xl">
+      <div className="tw-text-center tw-text-slate-500 tw-text-[14px] tw-py-12 tw-bg-white tw-border tw-border-solid tw-border-slate-200 tw-rounded">
         No industrial reviews yet. Be the first to review this product.
       </div>
     );
@@ -207,7 +207,7 @@ const ReviewList: React.FC<Props> = ({
           <select
             value={sort}
             onChange={(e) => onSortChange(e.target.value)}
-            className="tw-text-[12px] tw-bg-white tw-text-slate-800 tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-px-2.5 tw-py-1 focus:tw-outline-none focus:tw-border-slate-400 tw-font-medium"
+            className="tw-text-[12px] tw-bg-white tw-text-slate-800 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-px-2.5 tw-py-1 focus:tw-outline-none focus:tw-border-slate-400 tw-font-medium"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value} className="tw-bg-white tw-text-slate-800">
@@ -232,7 +232,7 @@ const ReviewList: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => setIsExpanded(true)}
-              className="tw-bg-slate-900 hover:tw-bg-slate-800 tw-text-white tw-font-bold tw-text-xs sm:tw-text-sm tw-uppercase tw-tracking-wider tw-px-6 tw-py-3 tw-rounded-xl tw-border-0 tw-cursor-pointer tw-transition-all tw-shadow-sm hover:tw-shadow-md tw-flex tw-items-center tw-gap-2"
+              className="tw-bg-slate-900 hover:tw-bg-slate-800 tw-text-white tw-font-bold tw-text-xs sm:tw-text-sm tw-uppercase tw-tracking-normal tw-px-6 tw-py-3 tw-rounded tw-border-0 tw-cursor-pointer tw-transition-all tw-shadow-sm hover:tw-shadow-md tw-flex tw-items-center tw-gap-2"
             >
               <span>Read More Reviews ({reviews.length})</span>
               <span className="material-symbols-outlined tw-text-base">expand_more</span>
@@ -254,7 +254,7 @@ const ReviewList: React.FC<Props> = ({
                 type="button"
                 onClick={onLoadMore}
                 disabled={loadingMore}
-                className="tw-text-white tw-font-bold tw-text-xs sm:tw-text-sm tw-bg-slate-900 hover:tw-bg-slate-800 tw-border-0 tw-rounded-xl tw-px-6 tw-py-3 tw-cursor-pointer disabled:tw-opacity-60 tw-transition-colors tw-shadow-sm"
+                className="tw-text-white tw-font-bold tw-text-xs sm:tw-text-sm tw-bg-slate-900 hover:tw-bg-slate-800 tw-border-0 tw-rounded tw-px-6 tw-py-3 tw-cursor-pointer disabled:tw-opacity-60 tw-transition-colors tw-shadow-sm"
               >
                 {loadingMore ? "Loading…" : "Load more reviews"}
               </button>
@@ -263,7 +263,7 @@ const ReviewList: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => setIsExpanded(false)}
-              className="tw-bg-slate-100 hover:tw-bg-slate-200 tw-text-slate-800 tw-font-bold tw-text-xs sm:tw-text-sm tw-uppercase tw-tracking-wider tw-px-6 tw-py-3 tw-rounded-xl tw-border tw-border-solid tw-border-slate-300 tw-cursor-pointer tw-transition-colors tw-flex tw-items-center tw-gap-2"
+              className="tw-bg-slate-100 hover:tw-bg-slate-200 tw-text-slate-800 tw-font-bold tw-text-xs sm:tw-text-sm tw-uppercase tw-tracking-normal tw-px-6 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-slate-300 tw-cursor-pointer tw-transition-colors tw-flex tw-items-center tw-gap-2"
             >
               <span>Show Less</span>
               <span className="material-symbols-outlined tw-text-base">expand_less</span>
@@ -282,11 +282,11 @@ const ReviewList: React.FC<Props> = ({
         }
         .reviews-horizontal-scroll::-webkit-scrollbar-track {
           background: #f1f5f9;
-          border-radius: 9999px;
+          border-radius: var(--radius-control);
         }
         .reviews-horizontal-scroll::-webkit-scrollbar-thumb {
           background: #cbd5e1;
-          border-radius: 9999px;
+          border-radius: var(--radius-control);
         }
         .reviews-horizontal-scroll::-webkit-scrollbar-thumb:hover {
           background: #94a3b8;

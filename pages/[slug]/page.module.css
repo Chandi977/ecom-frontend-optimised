@@ -214,7 +214,7 @@
 }
 
 .zoomEffect:hover {
-  transform: scale(1.8);
+  transform: none;
 } */
 
 .detailsettingslayout {
@@ -234,7 +234,7 @@
 /* /////// */
 .catalogpath {
   color: var(--h-eading, #222);
-  font-family: "Montserrat";
+  font-family: var(--font-store);
   font-size: 15px;
   font-style: normal;
   font-weight: 500;
@@ -277,7 +277,7 @@
     padding-left: 14px;
     padding-right: 14px;
     color: var(--text-2, #000);
-    font-family: Montserrat;
+    font-family: var(--font-store);
     font-size: 17px;
     text-transform: capitalize;
     font-style: normal;
@@ -352,7 +352,7 @@
 .dotdesctext {
   display: block;
   color: #000;
-  font-family: Montserrat;
+  font-family: var(--font-store);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -402,7 +402,7 @@
 
 .pricesecondtext {
   color: #249b3e;
-  font-family: Montserrat;
+  font-family: var(--font-store);
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
@@ -413,7 +413,7 @@
   padding: 0px;
   margin: 0px;
   text-align: center;
-  font-family: Montserrat;
+  font-family: var(--font-store);
   font-size: 10px;
   font-style: normal;
   font-weight: 600;
@@ -474,7 +474,7 @@
     display: block;
     color: #828282;
     font-feature-settings: "liga" off;
-    font-family: Montserrat;
+    font-family: var(--font-store);
     font-size: 14.9px;
     font-style: normal;
     font-weight: 600;
@@ -492,7 +492,7 @@
     color: #000;
     text-align: center;
     font-feature-settings: "liga" off;
-    font-family: Montserrat;
+    font-family: var(--font-store);
     font-size: 14.9px;
     font-style: normal;
     font-weight: 400;

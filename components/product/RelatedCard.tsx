@@ -121,7 +121,7 @@ function RelatedCard({ product }) {
         ) : (
         <div className="tw-flex tw-flex-row tw-w-full tw-gap-2 tw-items-center tw-mt-auto">
           {/* Quantity selector */}
-          <div className="tw-flex tw-flex-row tw-items-center tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg tw-overflow-hidden tw-h-[36px]" style={{ border: "1px solid #d1d5db" }}>
+          <div className="tw-flex tw-flex-row tw-items-center tw-border tw-border-solid tw-border-gray-200 tw-rounded tw-overflow-hidden tw-h-[36px]" style={{ border: "1px solid #d1d5db" }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -148,7 +148,7 @@ function RelatedCard({ product }) {
           {/* Add to Cart button */}
           <button
             {...cartButtonProps}
-            className="tw-flex-1 tw-border-0 tw-text-white tw-text-center tw-text-[12px] tw-font-semibold tw-flex tw-h-[36px] tw-items-center tw-justify-center tw-gap-[6px] tw-bg-[#182c5a] tw-rounded-lg hover:tw-bg-[#e92227] tw-transition-colors tw-cursor-pointer"
+            className="tw-flex-1 tw-border-0 tw-text-white tw-text-center tw-text-[12px] tw-font-semibold tw-flex tw-h-[36px] tw-items-center tw-justify-center tw-gap-[6px] tw-bg-[#182c5a] tw-rounded hover:tw-bg-[#e92227] tw-transition-colors tw-cursor-pointer"
           >
             <AddToCartContent
               state={cartState}

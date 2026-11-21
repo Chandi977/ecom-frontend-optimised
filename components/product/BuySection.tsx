@@ -408,7 +408,7 @@ function BuySection({ product }) {
         </h2>
 
         {/* Frequently Bought Together Card Container */}
-        <div className="tw-bg-white tw-border tw-border-solid tw-border-[#E2E8F0] tw-rounded-lg tw-p-5 tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-6 max-[991px]:tw-flex-col">
+        <div className="tw-bg-white tw-border tw-border-solid tw-border-[#E2E8F0] tw-rounded tw-p-5 tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-6 max-[991px]:tw-flex-col">
           {/* Product Thumbnails with + signs */}
           <div className="tw-flex tw-flex-row tw-items-center tw-gap-4 max-[767px]:tw-gap-2">
             {products.map((item, index) => {
@@ -445,7 +445,7 @@ function BuySection({ product }) {
             <div className="tw-flex tw-flex-col">
               <span className="tw-text-gray-500 tw-text-xs tw-font-medium">Total Bundle Price:</span>
               <div className="tw-flex tw-items-baseline tw-gap-2">
-                <span className="tw-text-[#B91C1C] tw-text-[22px] tw-font-extrabold">
+                <span className="tw-text-[#B91C1C] tw-text-[22px] tw-font-semibold">
                   {formatCurrency(totalSellingPrice)}
                 </span>
                 {totalSavings > 0 && (
@@ -457,7 +457,7 @@ function BuySection({ product }) {
             </div>
 
             <button
-              className="tw-bg-[#31107F] hover:tw-bg-[#240A62] tw-text-white tw-font-bold tw-text-sm tw-px-6 tw-py-3 tw-rounded-md tw-border-0 tw-cursor-pointer tw-transition-colors tw-whitespace-nowrap"
+              className="tw-bg-[#182c5a] hover:tw-bg-[#10213d] tw-text-white tw-font-bold tw-text-sm tw-px-6 tw-py-3 tw-rounded-md tw-border-0 tw-cursor-pointer tw-transition-colors tw-whitespace-nowrap"
               {...cartButtonProps}
             >
               <AddToCartContent

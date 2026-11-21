@@ -33,10 +33,10 @@ const initialForm = {
 type FieldErrors = Partial<Record<keyof typeof initialForm, string>>;
 
 const inputClass =
-  "tw-w-full tw-px-3 tw-py-2 tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded-lg tw-text-xs tw-text-slate-900 placeholder:tw-text-slate-400 focus:tw-border-slate-900 focus:tw-outline-none";
+  "tw-w-full tw-px-3 tw-py-2 tw-bg-slate-50 tw-border tw-border-solid tw-border-slate-200 tw-rounded tw-text-xs tw-text-slate-900 placeholder:tw-text-slate-400 focus:tw-border-slate-900 focus:tw-outline-none";
 
 const labelClass =
-  "tw-block tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-600 tw-mb-1";
+  "tw-block tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-normal tw-text-slate-600 tw-mb-1";
 
 /** "Request custom quote" — files a lead against the product being viewed. */
 export const RequestQuoteModal: React.FC<RequestQuoteModalProps> = ({
@@ -153,7 +153,7 @@ export const RequestQuoteModal: React.FC<RequestQuoteModalProps> = ({
       {/* The panel inherits the backdrop's animation state, so scrim and card
           arrive together and leave together. */}
       <motion.div
-        className="tw-bg-white tw-rounded-xl tw-max-w-md tw-w-full tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-shadow-2xl tw-max-h-[90vh] tw-overflow-y-auto"
+        className="tw-bg-white tw-rounded tw-max-w-md tw-w-full tw-p-6 tw-border tw-border-solid tw-border-slate-200 tw-shadow-sm tw-max-h-[90vh] tw-overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
         variants={reduceMotion ? withoutMotion(modalPanel) : modalPanel}
       >
@@ -297,7 +297,7 @@ export const RequestQuoteModal: React.FC<RequestQuoteModalProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className={`tw-w-full tw-py-2.5 tw-font-bold tw-uppercase tw-tracking-widest tw-rounded-lg tw-border-0 tw-transition-all tw-text-[11px] ${
+            className={`tw-w-full tw-py-2.5 tw-font-bold tw-uppercase tw-tracking-normal tw-rounded tw-border-0 tw-transition-all tw-text-[11px] ${
               submitting
                 ? "tw-bg-slate-200 tw-text-slate-400 tw-cursor-wait"
                 : "tw-bg-slate-900 tw-text-white hover:tw-bg-slate-800 tw-cursor-pointer tw-shadow-sm"

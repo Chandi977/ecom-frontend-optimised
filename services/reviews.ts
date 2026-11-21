@@ -41,6 +41,20 @@ export interface CreateReviewPayload {
   images?: string[];
 }
 
+// A product from one of the caller's paid orders that they have not reviewed yet.
+export interface ReviewableProduct {
+  product: {
+    _id: string;
+    name: string;
+    slug: string;
+    images?: unknown[];
+    ratingAverage?: number;
+    ratingCount?: number;
+  };
+  orderId: string;
+  orderDate: string | null;
+}
+
 // `silent` on the eligibility / mine reads: guests hit these behind the axios
 // interceptor and a 401 shouldn't spawn an error toast or a login redirect.
 const quiet = { silent: true, suppressAuthRedirect: true, suppressErrorStatuses: [401, 403] };
@@ -59,6 +73,10 @@ export const reviewService = {
 
   getMine: (productId: string) =>
     getService(`review/mine/${encodeURIComponent(productId)}`, {}, quiet),
+
+  // Products bought by the caller that still need a review — powers the account
+  // page prompt. Quiet so guests never see an auth error toast.
+  getReviewable: () => getService("review/reviewable", {}, quiet),
 
   create: (payload: CreateReviewPayload) => postService("review/create", payload),
 

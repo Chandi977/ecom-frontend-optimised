@@ -277,7 +277,7 @@ const Navbar = () => {
   const [showDropdownMobile, setShowDropdownMobile] = useState(false);
   const [searchQueryMobile, setSearchQueryMobile] = useState("");
   const [searchProductsMobile, setSearchProductsMobile] = useState<any[]>([]);
-  const breakpoint = 700;
+  const breakpoint = 1100;
   const DEFAULT_NAVBAR_HEIGHT = 120;
   const [width, setWidth] = useState(1200);
   const [navbarHeight, setNavbarHeight] = useState(DEFAULT_NAVBAR_HEIGHT);
@@ -439,6 +439,47 @@ const Navbar = () => {
       return null;
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const updateNavbarHeight = () => {
+      const nextHeight = Math.ceil(
+        navbarRef.current?.getBoundingClientRect().height || 0,
+      );
+
+      if (nextHeight > 0) {
+        document.documentElement.style.setProperty("--store-navbar-height", `${nextHeight}px`);
+        setNavbarHeight((currentHeight) =>
+          currentHeight === nextHeight ? currentHeight : nextHeight,
+        );
+      }
+    };
+
+    updateNavbarHeight();
+
+    if (!navbarRef.current) {
+      return undefined;
+    }
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateNavbarHeight)
+        : null;
+
+    if (resizeObserver) {
+      resizeObserver.observe(navbarRef.current);
+    }
+
+    window.addEventListener("resize", updateNavbarHeight);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateNavbarHeight);
+    };
+  }, [width]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -602,7 +643,7 @@ const Navbar = () => {
       }
 
       // Demand signal + Mixpanel (via dataLayer). Dedupe the debounced query.
-      if (trimmedQuery !== lastTrackedSearchRef.current) {
+      if (response?.data?.success && trimmedQuery !== lastTrackedSearchRef.current) {
         lastTrackedSearchRef.current = trimmedQuery;
         trackSearch(trimmedQuery, results.length);
       }
@@ -643,7 +684,7 @@ const Navbar = () => {
       }
 
       // Demand signal + Mixpanel (via dataLayer). Dedupe the debounced query.
-      if (trimmedQuery !== lastTrackedSearchRef.current) {
+      if (response?.data?.success && trimmedQuery !== lastTrackedSearchRef.current) {
         lastTrackedSearchRef.current = trimmedQuery;
         trackSearch(trimmedQuery, results.length);
       }
@@ -704,7 +745,8 @@ const Navbar = () => {
   const handleClickFoodWrappingPaper = () => {
     router.push("/packpro-food-wrapping-papers");
   };
-  const handleClickSignUp = () => {
+
+  const handleClickSignUp = () => {
     router.push("/sign-up");
   };
 
@@ -728,8 +770,8 @@ const Navbar = () => {
         className="tw-w-full tw-fixed tw-top-0 tw-left-0 tw-z-50 tw-bg-white tw-shadow-sm"
       >
         {/* Top Announcement Bar */}
-        <div className="tw-bg-[#0B2348] tw-text-white tw-text-sm sm:tw-text-base tw-py-1.5 tw-px-4 tw-w-full">
-          <div className="tw-max-w-[1320px] tw-mx-auto tw-flex tw-items-center tw-justify-between tw-text-center">
+        <div className="legacyAnnouncement tw-bg-[#0B2348] tw-text-white tw-text-sm sm:tw-text-base tw-py-1.5 tw-px-4 tw-w-full">
+          <div className="storefront-shell tw-flex tw-items-center tw-justify-between tw-text-center">
             <div className="tw-flex tw-items-center tw-gap-6 tw-mx-auto lg:tw-mx-0">
               <span className="tw-font-medium">
                 Summer edit: 10% off storewide with code{" "}
@@ -752,17 +794,124 @@ const Navbar = () => {
           </div>
         </div>
 
+        {width > breakpoint && (
+          <div className="desktopB2BNav">
+            <div className="desktopB2BNav__top">
+              <div className="storefront-shell desktopB2BNav__topInner">
+                <Link href="/" className="desktopB2BNav__brand tw-flex tw-flex-nowrap tw-items-center tw-gap-2 tw-no-underline" aria-label="Prem Industries home">
+                  <img src="/Logohead.png" alt="" width={52} height={56} className="tw-w-[52px] tw-h-[56px] tw-object-contain" />
+                  <img src="/Logotext.png" alt="Prem Industries — Innovation in action" width={168} height={28} className="tw-w-[168px] tw-h-[28px] tw-object-contain" />
+                </Link>
+
+                <div className="desktopB2BNav__storeLabel">
+                  <span>B2B packaging</span>
+                  <span>online store</span>
+                </div>
+
+                <div className="desktopB2BNav__search">
+                  <FontAwesomeIcon icon={faSearch} aria-hidden="true" />
+                  <input
+                    type="search"
+                    placeholder="Search for boxes, mailer bags, tapes, pouches..."
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    aria-label="Search packaging products"
+                  />
+                  <button type="button" onClick={() => handleSearch(searchQuery)} aria-label="Search products">
+                    <FontAwesomeIcon icon={faSearch} aria-hidden="true" />
+                  </button>
+
+                  {searchProducts.length > 0 && searchQuery.length >= 2 && showDropdown && (
+                    <div ref={dropdownRef} className="desktopB2BNav__searchResults">
+                      {searchProducts.map((product, index) => (
+                        <button
+                          type="button"
+                          key={product?._id || product?.slug || index}
+                          onClick={() => openSearchResult(product, setShowDropdown)}
+                        >
+                          {getSearchResultLabel(product)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className="desktopB2BNav__account"
+                  onMouseEnter={openUserMenu}
+                  onMouseLeave={closeUserMenu}
+                >
+                  <button type="button" onClick={isLoggedIn ? handleClickProfile : handleClickSignIn}>
+                    <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+                    <span>{isLoggedIn ? accountLabel : <>Sign in /<br />Register</>}</span>
+                  </button>
+                  {isMounted && isLoggedIn && isOpen && (
+                    <div className="desktopB2BNav__accountMenu">
+                      <button type="button" onClick={handleClickProfile}>My profile</button>
+                      <button type="button" onClick={handleClickMyAccount}>My orders</button>
+                      <button type="button" onClick={handleLogout}>Log out</button>
+                    </div>
+                  )}
+                </div>
+
+                <Link href="/my-cart" onClick={handleClickCart} className="desktopB2BNav__cart tw-text-[#071d44] tw-no-underline hover:tw-text-[#d71920]">
+                  <span ref={desktopCartRef} className="desktopB2BNav__cartIcon">
+                    <FontAwesomeIcon icon={faCartShopping} aria-hidden="true" />
+                    {cartCount > 0 && <strong>{cartCount}</strong>}
+                  </span>
+                  <span>Cart</span>
+                </Link>
+              </div>
+            </div>
+
+            <nav className="desktopB2BNav__categories" aria-label="Product categories">
+              <div className="storefront-shell desktopB2BNav__categoryInner">
+                <div
+                  ref={categoriesRef}
+                  className="desktopB2BNav__allProducts"
+                  onMouseEnter={openCategoriesMenu}
+                  onMouseLeave={closeCategoriesMenu}
+                >
+                  <button type="button" onClick={toggleCategoriesMenu} aria-expanded={isCategoriesOpen}>
+                    <FontAwesomeIcon icon={faNavicon} aria-hidden="true" />
+                    <span>All products</span>
+                    <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
+                  </button>
+                  {isCategoriesOpen && (
+                    <div className="desktopB2BNav__categoryMenu">
+                      {CATEGORY_DROPDOWN_ITEMS.map((item) => (
+                        <Link key={item.id} href={item.path} onClick={() => setIsCategoriesOpen(false)} className="tw-text-[#071d44] tw-no-underline hover:tw-text-[#d71920]">
+                          <span>{item.label}</span>
+                          {item.subItems.length > 0 && <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/corrugated-boxes">Corrugated boxes</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/poly-bags">Mailer bags</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/paper-bags">Paper bags</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/packpro-tapes">Tapes &amp; labels</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/poly-bags">Pouches</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/custom-packaging">Custom packaging</Link>
+                <Link className="tw-text-white tw-no-underline hover:tw-text-white" href="/contact-us">Bulk enquiry</Link>
+              </div>
+            </nav>
+          </div>
+        )}
+
         {/* Main Desktop Navigation Bar */}
         {width > breakpoint ? (
-          <nav className="tw-bg-white tw-border-b tw-border-solid tw-border-[#E6E8EC] tw-w-full">
-            <div className="tw-max-w-[1320px] tw-mx-auto tw-px-6 tw-py-2.5">
+          <nav className="legacyDesktopNav tw-bg-white tw-border-b tw-border-solid tw-border-[#E6E8EC] tw-w-full">
+            <div className="storefront-shell tw-py-2.5">
               <div className="tw-flex tw-items-center tw-justify-between tw-gap-8">
                 
                 {/* Logo & Category Links */}
                 <div className="tw-flex tw-items-center tw-gap-8 lg:tw-gap-10">
                   <Link href="/" className="tw-flex tw-items-center tw-no-underline">
                     <img
-                      src={cdn("/pp_logo.png")}
+                      src="/pp_logo.png"
                       alt="Prem Packaging Logo"
                       className="tw-h-12 tw-w-auto"
                     />
@@ -771,7 +920,6 @@ const Navbar = () => {
                   <div className="tw-flex tw-items-center tw-gap-7 tw-text-base tw-font-semibold tw-text-[#10213D]">
                     {/* Categories Dropdown Menu */}
                     <div
-                      ref={categoriesRef}
                       className="tw-relative"
                       onMouseEnter={openCategoriesMenu}
                       onMouseLeave={closeCategoriesMenu}
@@ -798,7 +946,7 @@ const Navbar = () => {
                       {/* Vertical Categories Dropdown Menu */}
                       {isCategoriesOpen && (
                         <div
-                          className="tw-absolute tw-left-0 tw-top-full tw-mt-2 tw-w-72 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-2xl tw-shadow-2xl tw-py-2 tw-z-[99999] before:tw-content-[''] before:tw-absolute before:-tw-top-3 before:tw-left-0 before:tw-w-full before:tw-h-3"
+                          className="tw-absolute tw-left-0 tw-top-full tw-mt-2 tw-w-72 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded tw-shadow-sm tw-py-2 tw-z-[99999] before:tw-content-[''] before:tw-absolute before:-tw-top-3 before:tw-left-0 before:tw-w-full before:tw-h-3"
                           onMouseLeave={() => setActiveCategoryHover(null)}
                         >
                           <div className="tw-flex tw-flex-col">
@@ -839,7 +987,7 @@ const Navbar = () => {
                                   {/* Sub-menu Flyout */}
                                   {hasSubItems && isHovered && (
                                     <div
-                                      className="tw-absolute tw-left-full tw-top-0 -tw-mt-2 tw-ml-1.5 tw-w-64 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-2xl tw-shadow-2xl tw-py-2.5 tw-z-[99999]"
+                                      className="tw-absolute tw-left-full tw-top-0 -tw-mt-2 tw-ml-1.5 tw-w-64 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded tw-shadow-sm tw-py-2.5 tw-z-[99999]"
                                       onMouseEnter={openCategoriesMenu}
                                     >
                                       {item.subItems.map((sub, sIdx) => (
@@ -863,7 +1011,7 @@ const Navbar = () => {
                             {/* Dynamic backend categories if available */}
                             {categories.length > 0 && (
                               <div className="tw-mt-2 tw-pt-2 tw-border-t tw-border-solid tw-border-[#E6E8EC] tw-px-5">
-                                <span className="tw-text-[10px] tw-font-bold tw-text-[#667085] tw-uppercase tw-tracking-wider tw-block tw-mb-1.5">
+                                <span className="tw-text-[10px] tw-font-bold tw-text-[#667085] tw-uppercase tw-tracking-normal tw-block tw-mb-1.5">
                                   All Database Categories
                                 </span>
                                 <div className="tw-flex tw-flex-col tw-gap-1">
@@ -919,21 +1067,20 @@ const Navbar = () => {
                       placeholder="Search boxes, bags, tapes..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="tw-w-full tw-pl-11 tw-pr-4 tw-py-2 tw-bg-[#F7F8FA] tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-full tw-text-base tw-text-[#10213D] focus:tw-outline-none focus:tw-bg-white focus:tw-border-[#0B2348] tw-transition-all"
+                      className="tw-w-full tw-pl-11 tw-pr-4 tw-py-2 tw-bg-[#F7F8FA] tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded tw-text-base tw-text-[#10213D] focus:tw-outline-none focus:tw-bg-white focus:tw-border-[#0B2348] tw-transition-all"
                     />
                   </div>
 
                   {/* Search Results Dropdown */}
                   {searchProducts.length > 0 && searchQuery.length >= 2 && showDropdown && (
                     <div
-                      ref={dropdownRef}
-                      className="tw-absolute tw-left-0 tw-right-0 tw-top-full tw-mt-2 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-xl tw-shadow-xl tw-z-50 tw-max-h-[300px] tw-overflow-y-auto tw-p-2"
+                      className="tw-absolute tw-left-0 tw-right-0 tw-top-full tw-mt-2 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded tw-shadow-sm tw-z-50 tw-max-h-[300px] tw-overflow-y-auto tw-p-2"
                     >
                       {searchProducts.map((product, index) => (
                         <div
                           key={product?._id || product?.slug || index}
                           onClick={() => openSearchResult(product, setShowDropdown)}
-                          className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-rounded-lg tw-cursor-pointer tw-text-base tw-text-[#10213D] tw-font-medium tw-transition-colors tw-capitalize"
+                          className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-rounded tw-cursor-pointer tw-text-base tw-text-[#10213D] tw-font-medium tw-transition-colors tw-capitalize"
                         >
                           {getSearchResultLabel(product)}
                         </div>
@@ -959,7 +1106,7 @@ const Navbar = () => {
                         <ArrowDropDownIcon sx={{ color: "#10213D", fontSize: "18px", marginLeft: "-4px" }} />
                         
                         {isOpen && (
-                          <div className="tw-absolute tw-right-0 tw-top-full tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded-xl tw-shadow-xl tw-py-2 tw-z-50">
+                          <div className="tw-absolute tw-right-0 tw-top-full tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-solid tw-border-[#E6E8EC] tw-rounded tw-shadow-sm tw-py-2 tw-z-50">
                             <div
                               onClick={handleClickProfile}
                               className="tw-px-4 tw-py-2.5 hover:tw-bg-[#FAF9F6] tw-cursor-pointer tw-text-sm tw-text-[#10213D] tw-font-medium"
@@ -1007,7 +1154,6 @@ const Navbar = () => {
                     className="tw-flex tw-items-center tw-gap-2 tw-text-base tw-font-semibold tw-text-[#10213D] hover:tw-text-[#D7192D] tw-transition-colors tw-no-underline"
                   >
                     <span
-                      ref={desktopCartRef}
                       className="tw-relative tw-inline-flex tw-items-center tw-justify-center"
                       style={{
                         isolation: "isolate",
@@ -1045,7 +1191,7 @@ const Navbar = () => {
               </div>
 
               <Link href="/" className="mobileLogoLink tw-flex tw-items-center" style={{ textDecoration: "none" }}>
-                <img src={cdn("/pp_logo.png")} alt="Prem Packaging Logo" className="tw-h-9 tw-w-auto" />
+                <img src="/pp_logo.png" alt="Prem Packaging Logo" className="tw-h-9 tw-w-auto" />
               </Link>
 
               <div className="mobileHeaderGroup">
@@ -1200,25 +1346,76 @@ const Navbar = () => {
       </div>
       <div aria-hidden="true" style={{ height: `${navbarHeight}px` }} />
       <style jsx>{`
+.legacyAnnouncement,
+.legacyDesktopNav { display: none !important; }
+.desktopB2BNav { width: 100%; background: #fff; color: #071d44; font-family: var(--font-store); }
+.desktopB2BNav__top { min-height: 82px; border-bottom: 1px solid #d8dee8; background: #fff; }
+.desktopB2BNav__topInner { min-height: 82px; display: grid; grid-template-columns: auto auto minmax(320px, 1fr) auto auto; align-items: center; gap: 24px; }
+.desktopB2BNav__brand { display: inline-flex; align-items: center; gap: 8px; min-width: 224px; text-decoration: none; }
+.desktopB2BNav__brand img:first-child { width: 50px; height: 54px; object-fit: contain; }
+.desktopB2BNav__brand img:last-child { width: 168px; height: 28px; object-fit: contain; }
+.desktopB2BNav__storeLabel { min-width: 142px; padding-left: 22px; border-left: 1px solid #9ca8bb; color: #071d44; font-size: 14px; font-weight: 700; line-height: 1.25; text-transform: uppercase; }
+.desktopB2BNav__storeLabel span { display: block; }
+.desktopB2BNav__search { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 58px; min-height: 50px; align-items: center; border: 1px solid #aab4c4; border-radius: 6px; background: #fff; overflow: visible; }
+.desktopB2BNav__search > svg { width: 20px; height: 20px; justify-self: center; color: #071d44; }
+.desktopB2BNav__search input { width: 100%; height: 48px; padding: 0 8px; border: 0; outline: 0; background: transparent; color: #071d44; font-size: 15px; }
+.desktopB2BNav__search > button { width: 58px; height: 50px; margin: -1px -1px -1px 0; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 0 6px 6px 0; background: #d71920; color: #fff; cursor: pointer; }
+.desktopB2BNav__search > button:hover { background: #b91019; }
+.desktopB2BNav__search > button svg { width: 20px; height: 20px; }
+.desktopB2BNav__searchResults { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 100; max-height: 320px; padding: 8px; overflow-y: auto; border: 1px solid #d8dee8; border-radius: 6px; background: #fff; box-shadow: 0 16px 32px rgb(7 29 68 / 14%); }
+.desktopB2BNav__searchResults button { width: 100%; min-height: 44px; padding: 10px 12px; border: 0; background: #fff; color: #263750; text-align: left; text-transform: capitalize; cursor: pointer; }
+.desktopB2BNav__searchResults button:hover { background: #f3f6fa; color: #d71920; }
+.desktopB2BNav__account { position: relative; }
+.desktopB2BNav__account > button { min-height: 48px; display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: transparent; color: #071d44; font-size: 14px; font-weight: 700; line-height: 1.15; text-align: left; cursor: pointer; }
+.desktopB2BNav__account > button svg { width: 26px; height: 26px; }
+.desktopB2BNav__accountMenu { position: absolute; top: 100%; right: 0; z-index: 100; width: 170px; padding: 8px; border: 1px solid #d8dee8; border-radius: 6px; background: #fff; box-shadow: 0 16px 32px rgb(7 29 68 / 14%); }
+.desktopB2BNav__accountMenu button { width: 100%; min-height: 40px; padding: 8px 10px; border: 0; background: #fff; color: #263750; text-align: left; cursor: pointer; }
+.desktopB2BNav__accountMenu button:hover { background: #f3f6fa; color: #d71920; }
+.desktopB2BNav__cart { min-height: 48px; display: inline-flex; align-items: center; gap: 9px; padding-left: 20px; border-left: 1px solid #aab4c4; color: #071d44; font-size: 15px; font-weight: 700; text-decoration: none; }
+.desktopB2BNav__cart:hover { color: #d71920; }
+.desktopB2BNav__cartIcon { position: relative; display: inline-flex; }
+.desktopB2BNav__cartIcon svg { width: 26px; height: 26px; }
+.desktopB2BNav__cartIcon strong { position: absolute; top: -9px; right: -10px; min-width: 19px; height: 19px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: #d71920; color: #fff; font-size: 10px; }
+.desktopB2BNav__categories { min-height: 56px; background: #071d44; }
+.desktopB2BNav__categoryInner { min-height: 56px; display: flex; align-items: stretch; justify-content: space-between; }
+.desktopB2BNav__categoryInner > a { min-height: 56px; display: inline-flex; align-items: center; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.desktopB2BNav__categoryInner > a:hover { background: #0d2f67; color: #fff; }
+.desktopB2BNav__allProducts { position: relative; flex: 0 0 auto; }
+.desktopB2BNav__allProducts > button { min-width: 190px; height: 56px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 0 18px; border: 0; border-radius: 6px 6px 0 0; background: #d71920; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+.desktopB2BNav__allProducts > button:hover { background: #b91019; }
+.desktopB2BNav__allProducts > button svg:first-child { width: 18px; height: 18px; }
+.desktopB2BNav__allProducts > button svg:last-child { width: 12px; height: 12px; }
+.desktopB2BNav__categoryMenu { position: absolute; top: 100%; left: 0; z-index: 100; width: 300px; padding: 8px 0; border: 1px solid #d8dee8; border-top: 0; background: #fff; box-shadow: 0 16px 32px rgb(7 29 68 / 16%); }
+.desktopB2BNav__categoryMenu a { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; color: #071d44; font-size: 13px; font-weight: 700; text-decoration: none; }
+.desktopB2BNav__categoryMenu a:hover { background: #f3f6fa; color: #d71920; }
+.desktopB2BNav__categoryMenu svg { width: 12px; height: 12px; }
+@media (max-width: 1280px) {
+  .desktopB2BNav__topInner { gap: 16px; grid-template-columns: auto auto minmax(260px, 1fr) auto auto; }
+  .desktopB2BNav__brand { min-width: 190px; }
+  .desktopB2BNav__brand img:last-child { width: 140px; }
+  .desktopB2BNav__storeLabel { min-width: 118px; padding-left: 16px; font-size: 12px; }
+  .desktopB2BNav__categoryInner > a { padding-inline: 9px; font-size: 13px; }
+  .desktopB2BNav__allProducts > button { min-width: 170px; }
+}
 .mobileSidebarOverlay { display: none; }
-@media (max-width: 700px) {
+@media (max-width: 1100px) {
   .mobileSidebarOverlay { display: block; position: fixed; inset: 0; border: 0; background: rgba(17, 24, 39, 0.4); z-index: 999999; }
 }
 .mobileHeader { display: none; }
-@media (max-width: 700px) {
+@media (max-width: 1100px) {
   .mobileHeader { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e5e7eb; }
 }
 .mobileHeaderTopRow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
 .mobileHeaderGroup { display: flex; align-items: center; gap: 12px; }
 .mobileHeaderGroup:last-child { justify-content: flex-end; }
-.mobileIconButton { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; background: transparent; text-decoration: none; }
+.mobileIconButton { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; text-decoration: none; }
 .mobileLogoLink { display: inline-flex; align-items: center; justify-content: center; }
 .mobileSearchSection { width: 100%; }
-.mobileSearchBox { position: relative; display: flex; align-items: center; width: 100%; min-height: 42px; padding-left: 38px; border: 1px solid #e5e7eb; border-radius: 9999px; background: #f7f8fa; }
+.mobileSearchBox { position: relative; display: flex; align-items: center; width: 100%; min-height: 44px; padding-left: 38px; border: 1px solid #e5e7eb; border-radius: var(--radius-control); background: #f7f8fa; }
 .mobileSearchIcon { position: absolute; left: 14px; width: 16px; height: 16px; }
 .mobileSearchInput { width: 100%; border: 0; background: transparent; color: #111827; font-family: inherit; font-size: 14px; padding: 10px 14px 10px 0; }
-.mobileSearchInput:focus { outline: none; }
-.mobileSearchDropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 220px; overflow-y: auto; border: 1px solid #d1d5db; background: #fff; z-index: 1001; border-radius: 12px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+.mobileSearchInput:focus-visible { outline: 2px solid #182c5a; outline-offset: 2px; }
+.mobileSearchDropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 220px; overflow-y: auto; border: 1px solid #d1d5db; background: #fff; z-index: 1001; border-radius: var(--radius-control); box-shadow: var(--shadow-surface); }
 .mobileSearchDropdownItem { padding: 10px 14px; cursor: pointer; text-transform: capitalize; font-size: 13px; line-height: 1.5; border-bottom: 1px solid #f3f4f6; }
 `}</style>
     </>

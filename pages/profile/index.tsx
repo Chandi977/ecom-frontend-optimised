@@ -331,9 +331,9 @@ const ProfilePage = () => {
         .profile-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-surface);
         }
         .profile-card .card-header {
           display: flex;
@@ -343,7 +343,7 @@ const ProfilePage = () => {
         }
         .profile-card .card-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: #0f172a;
@@ -402,7 +402,7 @@ const ProfilePage = () => {
         }
         .profile-hero .hero-name {
           font-size: 24px;
-          font-weight: 800;
+          font-weight: 600;
           color: #0f172a;
           margin: 0;
           text-transform: capitalize;
@@ -425,7 +425,7 @@ const ProfilePage = () => {
           font-weight: 600;
           color: #475569;
           background: #f1f5f9;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           padding: 6px 14px;
         }
 
@@ -436,7 +436,7 @@ const ProfilePage = () => {
           gap: 14px;
           background: #fffbeb;
           border: 1px solid #fde68a;
-          border-radius: 12px;
+          border-radius: var(--radius-control);
           padding: 14px 18px;
         }
         .verify-banner-icon {
@@ -516,7 +516,7 @@ const ProfilePage = () => {
           color: #059669;
           background: #f0fdf4;
           border: 1px solid #bbf7d0;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           padding: 3px 10px;
         }
         .unverified-badge {
@@ -528,7 +528,7 @@ const ProfilePage = () => {
           color: #d97706;
           background: #fffbeb;
           border: 1px solid #fde68a;
-          border-radius: 999px;
+          border-radius: var(--radius-control);
           padding: 3px 10px;
         }
 
@@ -568,7 +568,7 @@ const ProfilePage = () => {
         .form-input:focus {
           outline: none;
           border-color: #182c5a;
-          box-shadow: 0 0 0 3px rgba(24, 44, 90, 0.12);
+          box-shadow: var(--shadow-surface);
         }
         .form-input:disabled {
           background: #f1f5f9;
@@ -633,7 +633,7 @@ const ProfilePage = () => {
         .security-icon-wrap {
           width: 48px;
           height: 48px;
-          border-radius: 10px;
+          border-radius: var(--radius-control);
           background: rgba(24, 44, 90, 0.08);
           color: #182c5a;
           display: flex;

@@ -60,7 +60,7 @@ function ChromoLabelBanner() {
         }
         .banner-corrugated-header {
           color: #14254c;
-          font-family: Montserrat;
+          font-family: var(--font-store);
           font-size: 38px;
           font-style: normal;
           font-weight: 700;
@@ -84,7 +84,7 @@ function ChromoLabelBanner() {
         }
         .banner-corrugated-subtext {
           color: #2b3e6b;
-          font-family: Montserrat;
+          font-family: var(--font-store);
           font-size: 14px;
           font-weight: 500;
           line-height: 22px;

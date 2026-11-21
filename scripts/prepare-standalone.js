@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const standaloneDir = path.join(root, ".next", "standalone");
+const buildDir = process.env.NEXT_BUILD_DIR || ".next";
+const standaloneDir = path.join(root, buildDir, "standalone");
 
 const copyDirectory = (source, destination) => {
   if (!fs.existsSync(source)) {
@@ -29,6 +30,6 @@ if (!fs.existsSync(path.join(standaloneDir, "server.js"))) {
 
 copyDirectory(path.join(root, "public"), path.join(standaloneDir, "public"));
 copyDirectory(
-  path.join(root, ".next", "static"),
-  path.join(standaloneDir, ".next", "static"),
+  path.join(root, buildDir, "static"),
+  path.join(standaloneDir, buildDir, "static"),
 );
